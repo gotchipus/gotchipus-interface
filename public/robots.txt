@@ -1,0 +1,12 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+
+# Host
+Host: https://gotchipus.com
+
+# Sitemaps
+Sitemap: https://gotchipus.com/sitemap.xml
