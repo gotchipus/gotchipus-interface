@@ -23,6 +23,14 @@ export const WINDOW_SIZE = {
   "about": {
     "width": 500,
     "height": 400
+  },
+  "farm": {
+    "width": 1200,
+    "height": 800
+  },
+  "hooks": {
+    "width": 800,
+    "height": 600
   }
 };
 
@@ -32,5 +40,7 @@ export const WINDOW_BG_COLOR = {
   "marketplace": "#000000",
   "nft": "#000000",
   "ai": "#000000",
-  "dashboard": "#000000"
+  "dashboard": "#000000",
+  "farm": "#000000",
+  "hooks": "#000000"
 };

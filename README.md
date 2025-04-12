@@ -24,12 +24,12 @@ To run this project locally, follow these steps:
 
 1. Clone the repository
 ```
-git clone https://github.com/gotchipus/gotchipus-frontend.git
+git clone https://github.com/gotchipus/gotchipus-interface.git
 ```
 
 2. Navigate to the project directory
 ```
-cd gotchipus-frontend
+cd gotchipus-interface
 ```
 
 3. Install dependencies

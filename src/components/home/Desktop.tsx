@@ -8,6 +8,8 @@ import ComingSoonContent from "@/components/window-content/SoonContent"
 import MyPharosContent from "@/src/components/window-content/MyPharosContent"
 import DashboardContent from "@/components/window-content/DashboardContent"
 import type { JSX } from "react/jsx-runtime"
+import FarmContent from "@/src/components/window-content/FarmContent"
+import HookContent from "@/src/components/window-content/HookContent"
 
 
 interface DesktopProps {
@@ -36,6 +38,16 @@ const icons = [
     id: "dashboard",
     title: "Dashboard",
     icon: "/dashboard.png",
+  },
+  {
+    id: "farm",
+    title: "Farm",
+    icon: "/farm.png",
+  },
+  {
+    id: "hooks",
+    title: "Hooks",
+    icon: "/hooks.png",
   }
 ]
 
@@ -70,6 +82,12 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         break
       case "dashboard":
         onOpenWindow("dashboard", "Dashboard", <DashboardContent />)
+        break
+      case "farm":
+        onOpenWindow("farm", "Farm", <FarmContent />)
+        break
+      case "hooks":
+        onOpenWindow("hooks", "Hooks", <HookContent />)
         break
       default:
         break
