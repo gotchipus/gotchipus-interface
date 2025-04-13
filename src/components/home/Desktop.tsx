@@ -10,7 +10,7 @@ import DashboardContent from "@/components/window-content/DashboardContent"
 import type { JSX } from "react/jsx-runtime"
 import FarmContent from "@/src/components/window-content/FarmContent"
 import HookContent from "@/src/components/window-content/HookContent"
-
+import DesktopPet from "@/components/home/DesktopPet"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -125,6 +125,7 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
           </div>
         ))}
       </div>
+      <DesktopPet />
     </div>
   )
 }

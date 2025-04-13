@@ -1,68 +1,56 @@
-import React, { useState } from 'react';
-import { X, Plus, ArrowRight, List, PlusCircle } from 'lucide-react';
+"use client"
 
-export interface Hook {
-  id: string; 
-  address: string; 
-  description: string; 
-  supportsAfterHarvest: boolean; 
+import React, { useState, useEffect } from 'react';
+import { X, Plus, ArrowRight, List, PlusCircle } from 'lucide-react';
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { useToast } from "@/hooks/use-toast"
+import { useStores } from "@stores/context"
+import { observer } from "mobx-react-lite"
+
+
+interface HookManagerProps {
+  isOpen: (isOpen: boolean) => void;
 }
 
-const initialHooks: Hook[] = [
-  {
-    id: '1',
-    address: '0x1234...abcd',
-    description: 'Reward Hook for extra fish',
-    supportsAfterHarvest: true,
-  },
-  {
-    id: '2',
-    address: '0x5678...efgh',
-    description: 'Fee Adjustment Hook',
-    supportsAfterHarvest: false,
-  },
-];
-
-const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }) => {
-  const [hooks, setHooks] = useState<Hook[]>(initialHooks);
-  const [selectedHook, setSelectedHook] = useState<Hook | null>(null);
+const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
+  const [hooks, setHooks] = useState([]);
+  const [selectedHook, setSelectedHook] = useState(false);
   const [newHook, setNewHook] = useState({ address: '', description: '' });
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'select' | 'add'>('select');
+  const { toast } = useToast()
+  const { walletStore } = useStores()
 
-  const addHook = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newHook.address || !/0x[a-fA-F0-9]{40}/.test(newHook.address)) {
-      setError('Invalid address');
-      return;
+  const hookAddresses: any = useContractRead("getHooks", [walletStore.address])
+
+  useEffect(() => {
+    if (hookAddresses) {
+      setHooks(hookAddresses)
     }
-    const hook: Hook = {
-      id: Date.now().toString(),
-      address: newHook.address,
-      description: newHook.description || 'No description',
-      supportsAfterHarvest: true, 
-    };
-    setHooks([...hooks, hook]);
-    setNewHook({ address: '', description: '' });
-    setError('');
-    setActiveTab('select');
+  }, [hookAddresses])
+
+
+  const selectHook = () => {
+    setSelectedHook(!selectedHook);
   };
 
-  const selectHook = (hook: Hook) => {
-    if (selectedHook?.id === hook.id) {
-      setSelectedHook(null);
-    } else {
-      setSelectedHook(hook);
-    }
-  };
+  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
 
   const callHarvest = () => {
-    if (selectedHook) {
-      alert(`Calling harvest with hook: ${selectedHook.address}`);
-    } else {
-      alert('Please select a hook');
-    }
+    contractWrite("harvest", [hooks[0], ""]);
+    toast({
+      title: "Transaction Submitted",
+      description: "Transaction submitted successfully",
+    })
   };
+
+  useEffect(() => {
+    if (isConfirmed) {
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
+    }
+  }, [isConfirmed])
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -119,12 +107,12 @@ const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }
                       <div className="space-y-2">
                         {hooks.map((hook) => (
                           <div
-                            key={hook.id}
-                            className={`border-2 ${selectedHook?.id === hook.id ? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
-                            onClick={() => selectHook(hook)}
+                            key={hook}
+                            className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
+                            onClick={() => selectHook()}
                           >
-                            <p className="font-mono pixel-text text-sm">{hook.address}</p>
-                            <p className="pixel-text text-sm mt-1">{hook.description}</p>
+                            <p className="font-mono pixel-text text-sm">{hook}</p>
+                            <p className="pixel-text text-sm mt-1">No description</p>
                           </div>
                         ))}
                       </div>
@@ -139,15 +127,15 @@ const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }
                     <div className="space-y-3">
                       <div>
                         <p className="pixel-text text-sm font-bold">Address:</p>
-                        <p className="font-mono pixel-text text-sm break-all">{selectedHook.address}</p>
+                        <p className="font-mono pixel-text text-sm break-all">{hooks[0]}</p>
                       </div>
                       <div>
                         <p className="pixel-text text-sm font-bold">Description:</p>
-                        <p className="pixel-text text-sm">{selectedHook.description}</p>
+                        <p className="pixel-text text-sm">No description</p>
                       </div>
                       <div>
                         <p className="pixel-text text-sm font-bold">Supports afterHarvest:</p>
-                        <p className="pixel-text text-sm">{selectedHook.supportsAfterHarvest ? 'Yes' : 'No'}</p>
+                        <p className="pixel-text text-sm">Yes</p>
                       </div>
                     </div>
                   ) : (
@@ -169,7 +157,7 @@ const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }
               </div>
             </div>
           ) : (
-            <form onSubmit={addHook} className="h-full flex flex-col">
+            <form onSubmit={() => {}} className="h-full flex flex-col">
               <div className="flex-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3">
                 <h3 className="font-bold mb-3 text-center pixel-text">Add New Hook</h3>
                 <div className="space-y-4">
@@ -193,7 +181,6 @@ const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }
                       className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
                     />
                   </div>
-                  {error && <p className="text-red-500 text-sm pixel-text">{error}</p>}
                 </div>
               </div>
               <div className="mt-4">
@@ -211,6 +198,6 @@ const HookManager: React.FC<{ isOpen: (isOpen: boolean) => void }> = ({ isOpen }
       </div>
     </div>
   );
-};
+});
 
 export default HookManager;

@@ -1,20 +1,68 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {Award, Gift, Sparkles, BookOpen, Atom, Heart, Dna} from "lucide-react"
 import EquipSelectWindow from "./equip/EquipSelectWindow"
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { CHAIN_ID, ZERO_ADDRESS } from "@/lib/constant"
+import { ethers } from "ethers"
+import { PUS_ADDRESS } from "@/src/app/blockchain"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@stores/context"
+import { useToast } from "@/hooks/use-toast"
 
-export default function DashboardContent() {
-  const [pusName, setPusName] = useState("Gotchipus by e123")
+const DashboardContent = observer(() => {
+  const [pusName, setPusName] = useState("")
   const [isRenaming, setIsRenaming] = useState(false)
   const [newName, setNewName] = useState("")
   const [selectedEquipSlot, setSelectedEquipSlot] = useState<number | null>(null)
   const [showEquipSelect, setShowEquipSelect] = useState(false)
+  const [dna, setDna] = useState("")
+  const [growth, setGrowth] = useState("")
+  const { walletStore } = useStores()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+    const encodeData = abiCoder.encode(
+      ["uint256", "uint256", "address"],
+      [CHAIN_ID, 0, PUS_ADDRESS]
+    );
+    const salt = ethers.keccak256(encodeData);
+    setDna(BigInt(salt).toString());
+  }, [])
+
+  const tokenGrowth = useContractRead("growth", [0]);
+  const tokenName = useContractRead("getTokenName", [0]);
+
+  useEffect(() => {
+    setGrowth(tokenGrowth as string);
+    setPusName(tokenName as string);
+  }, [tokenGrowth, tokenName])
+
+  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+
+  const handlePet = () => {
+    contractWrite("pet", [0]);
+    toast({
+      title: "Submited Transaction",
+      description: "Transaction submitted successfully",
+    })
+  }
+
+  useEffect(() => {
+    if (isConfirmed) {
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
+    }
+  }, [isConfirmed])
 
   const dnaData = {
     name: "Genes",
-    value: "626780225951962839803452825943235677688715375300503457486982648987859403",
+    value: dna,
     icon: <Dna size={14} className="text-purple-500" />
   }
 
@@ -56,17 +104,16 @@ export default function DashboardContent() {
     if (isRenaming) {
       if (newName.trim()) {
         setPusName(newName.trim())
+        contractWrite("setName", [newName.trim(), 0]);
+        toast({
+          title: "Submited Transaction",
+          description: "Transaction submitted successfully",
+        })
       }
       setIsRenaming(false)
-      setNewName("")
     } else {
       setIsRenaming(true)
-      setNewName(pusName)
     }
-  }
-
-  const handlePet = () => {
-    alert("You pet your gotchipus. It seems happy!")
   }
 
   const handleEquipSlotClick = (index: number) => {
@@ -81,9 +128,7 @@ export default function DashboardContent() {
 
   return (
     <div className="p-6 bg-[#ececec] h-full overflow-auto">
-      {/* 主要内容区域 */}
       <div className="flex mb-6 gap-4">
-        {/* 左侧 - 独角兽展示 */}
         <div className="w-3/5 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm p-4">
           <div className="text-center mb-4 flex justify-center items-center">
             {isRenaming ? (
@@ -135,7 +180,6 @@ export default function DashboardContent() {
           </div>
         </div>
 
-        {/* 右侧 - 属性区域 */}
         <div className="w-2/5 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm p-4">
           <div className="text-lg font-bold mb-3 flex items-center border-b border-[#c0c0c0] pb-2">
             <Award size={18} className="mr-2 text-blue-600" />
@@ -168,16 +212,15 @@ export default function DashboardContent() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-[#c0c0c0]">
-            <div className="text-sm text-gray-600 mb-2">Gotchipus Level: 5</div>
+            <div className="text-sm text-gray-600 mb-2">Gotchipus Level: 1</div>
             <div className="w-full bg-[#d4d0c8] border border-[#808080] h-4">
-              <div className="bg-[#000080] h-full" style={{ width: "45%" }}></div>
+              <div className="bg-[#000080] h-full" style={{ width: `${Number(growth)}%` }}></div>
             </div>
-            <div className="text-xs text-right mt-1">XP: 450/1000</div>
+            <div className="text-xs text-right mt-1">XP: {growth}/100</div>
           </div>
         </div>
       </div>
 
-      {/* 装备区域 */}
       <div>
         <div className="text-lg font-bold mb-3 flex items-center">
           <Gift size={18} className="mr-2 text-purple-600" />
@@ -239,5 +282,6 @@ export default function DashboardContent() {
       )}
     </div>
   )
-}
+})
 
+export default DashboardContent;

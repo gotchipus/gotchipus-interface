@@ -1,62 +1,57 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, List, PlusCircle } from 'lucide-react'
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { useToast } from "@/hooks/use-toast"
+import { useStores } from "@stores/context"
+import { observer } from "mobx-react-lite"
 
-export interface Hook {
-  id: string
-  address: string
-  description: string
-  supportsAfterHarvest: boolean
-}
+const HookContent = observer(() => {
+  const [hooks, setHooks] = useState([]);
+  const [selectedHook, setSelectedHook] = useState(false);
+  const [newHook, setNewHook] = useState({ address: '', description: '' });
+  const [activeTab, setActiveTab] = useState<'select' | 'add'>('select');
+  const { toast } = useToast()
+  const { walletStore } = useStores()
 
-const initialHooks: Hook[] = [
-  {
-    id: '1',
-    address: '0x1234...abcd',
-    description: 'Reward Hook for extra fish',
-    supportsAfterHarvest: true,
-  },
-  {
-    id: '2',
-    address: '0x5678...efgh',
-    description: 'Fee Adjustment Hook',
-    supportsAfterHarvest: false,
-  },
-]
+  const hookAddresses: any = useContractRead("getHooks", [walletStore.address])
 
-const HookContent = () => {
-  const [hooks, setHooks] = useState<Hook[]>(initialHooks)
-  const [selectedHook, setSelectedHook] = useState<Hook | null>(null)
-  const [newHook, setNewHook] = useState({ address: '', description: '' })
-  const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'select' | 'add'>('select')
+  useEffect(() => {
+    if (hookAddresses) {
+      setHooks(hookAddresses)
+    }
+  }, [hookAddresses])
+
+  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
 
   const addHook = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newHook.address || !/0x[a-fA-F0-9]{40}/.test(newHook.address)) {
-      setError('Invalid address')
       return
     }
-    const hook: Hook = {
-      id: Date.now().toString(),
-      address: newHook.address,
-      description: newHook.description || 'No description',
-      supportsAfterHarvest: true,
-    }
-    setHooks([...hooks, hook])
+
     setNewHook({ address: '', description: '' })
-    setError('')
     setActiveTab('select')
+    contractWrite("addHook", [newHook.address]);
+    toast({
+      title: "Transaction Submitted",
+      description: "Transaction submitted successfully",
+    })
   }
 
-  const selectHook = (hook: Hook) => {
-    if (selectedHook?.id === hook.id) {
-      setSelectedHook(null)
-    } else {
-      setSelectedHook(hook)
+  const selectHook = () => {
+    setSelectedHook(!selectedHook);
+  };
+
+  useEffect(() => {
+    if (isConfirmed) {
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
     }
-  }
+  }, [isConfirmed])
 
   return (
     <div className="p-4 bg-[#c0c0c0] h-full">
@@ -101,12 +96,12 @@ const HookContent = () => {
                     <div className="space-y-2">
                       {hooks.map((hook) => (
                         <div
-                          key={hook.id}
-                          className={`border-2 ${selectedHook?.id === hook.id ? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
-                          onClick={() => selectHook(hook)}
+                          key={hook}
+                          className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
+                          onClick={() => selectHook()}
                         >
-                          <p className="font-mono pixel-text text-sm">{hook.address}</p>
-                          <p className="pixel-text text-sm mt-1">{hook.description}</p>
+                          <p className="font-mono pixel-text text-sm">{hook}</p>
+                          <p className="pixel-text text-sm mt-1">No description</p>
                         </div>
                       ))}
                     </div>
@@ -121,15 +116,15 @@ const HookContent = () => {
                   <div className="space-y-3">
                     <div>
                       <p className="pixel-text text-sm font-bold">Address:</p>
-                      <p className="font-mono pixel-text text-sm break-all">{selectedHook.address}</p>
+                      <p className="font-mono pixel-text text-sm break-all">{hooks[0]}</p>
                     </div>
                     <div>
                       <p className="pixel-text text-sm font-bold">Description:</p>
-                      <p className="pixel-text text-sm">{selectedHook.description}</p>
+                      <p className="pixel-text text-sm">No description</p>
                     </div>
                     <div>
                       <p className="pixel-text text-sm font-bold">Supports afterHarvest:</p>
-                      <p className="pixel-text text-sm">{selectedHook.supportsAfterHarvest ? 'Yes' : 'No'}</p>
+                      <p className="pixel-text text-sm">Yes</p>
                     </div>
                   </div>
                 ) : (
@@ -162,7 +157,6 @@ const HookContent = () => {
                       className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
                     />
                   </div>
-                  {error && <p className="text-red-500 text-sm pixel-text">{error}</p>}
                 </div>
               </div>
               <div className="mt-4">
@@ -180,6 +174,6 @@ const HookContent = () => {
       </div>
     </div>
   )
-}
+})
 
 export default HookContent 

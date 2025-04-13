@@ -27,7 +27,6 @@ export default function Taskbar({
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [isStartPressed, setIsStartPressed] = useState(false)
   const [pressedButton, setPressedButton] = useState<string | null>(null)
-  const [socialPressed, setSocialPressed] = useState(false)
   const [clockPressed, setClockPressed] = useState(false)
   const [currentTime, setCurrentTime] = useState(
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -82,11 +81,11 @@ export default function Taskbar({
           <span className="ml-2">Gotchipus</span>
         </button>
 
-        <button
+        <div
           className="h-10 px-3 text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner"
         >
           <CustomConnectButton />
-        </button>
+        </div>
 
         {openWindows.map((window) => (
           <button

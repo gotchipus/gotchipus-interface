@@ -1,12 +1,23 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Zap, Heart, Sparkles, BookOpen, Check, ChevronDown, Atom, Dna, ChevronUp, Menu } from "lucide-react"
 import DualTokenIcon from "@/components/window-content/pharos/DualTokenIcon"
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { PUS_ADDRESS } from "@/src/app/blockchain"
+import { ethers } from "ethers"
+import { CHAIN_ID, ZERO_ADDRESS } from "@/lib/constant"
+import { useToast } from '@/hooks/use-toast'
+import { useStores } from "@stores/context"
+import { observer } from "mobx-react-lite"
+
+interface PharosGenesisPageProps {
+  tokenId: string
+}
 
 
-export default function PharosGenesisPage() {
+const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const [pusName, setPusName] = useState("")
   const [stakeAmount, setStakeAmount] = useState("")
   const [selectedToken, setSelectedToken] = useState<number | null>(0)
@@ -16,12 +27,61 @@ export default function PharosGenesisPage() {
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
   const [stakeToken, setStakeToken] = useState("USDC")
   const [traitsExpanded, setTraitsExpanded] = useState(true)
-  
+  const [selectedTimezone, setSelectedTimezone] = useState(0)
+  const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false)
+  const [tokenBoundAccount, setTokenBoundAccount] = useState("")
+  const [dna, setDna] = useState("")
+  const { toast } = useToast()
+  const { walletStore } = useStores()
+
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+  const encodeData = abiCoder.encode(
+    ["uint256", "uint256", "address"],
+    [CHAIN_ID, tokenId, PUS_ADDRESS]
+  );
+  const salt = ethers.keccak256(encodeData);
+
+  const accountData = useContractRead("account", [PUS_ADDRESS, salt, CHAIN_ID, PUS_ADDRESS, tokenId]);
+
+  useEffect(() => {
+    if (accountData) {
+      setTokenBoundAccount(accountData as string);
+      setDna(BigInt(salt).toString());
+    }
+  }, [accountData, salt]);
+
+  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+
+  const handleGenerate = () => {
+    if (!pusName || !stakeAmount || selectedToken === null) return;
+
+    const args = {
+      gotchipusTokenId: tokenId,
+      pusName: pusName,
+      collateralToken: ZERO_ADDRESS,
+      stakeAmount: ethers.parseEther(stakeAmount).toString(),
+      utc: selectedTimezone.toString()
+    };
+    contractWrite("summonGotchipus", [args]);
+    toast({
+      title: "Submited Transaction",
+      description: "Transaction submitted successfully",
+    })
+  };
+
+  useEffect(() => {
+    if (isConfirmed) {
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
+    }
+  }, [isConfirmed])
 
   const attributes = {
     dna: {
       name: "Genes",
-      displayValue: "626780225951962839803452825943235677688715375300503457486982648987859403",
+      displayValue: dna,
       icon: <Dna size={18} className="text-purple-500" />,
       description: "DNA Sequence",
       bgColor: "bg-purple-50"
@@ -67,22 +127,6 @@ export default function PharosGenesisPage() {
   }
   const positionVersions = ["token", "lp", "lend"]
 
-  const handleGenerate = () => {
-    if (!pusName || !stakeAmount || selectedToken === null) return
-
-    setIsGenerating(true)
-
-    // Simulate hatching progress
-    const interval = setInterval(() => {
-      setGeneratingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return prev + 5
-      })
-    }, 200)
-  }
 
   const handlePositionVersionChange = (version: string) => {
     setPositionVersion(version)
@@ -101,7 +145,7 @@ export default function PharosGenesisPage() {
         {/* Left Side - Gotchipus Preview */}
         <div className="w-full md:w-2/5 flex flex-col gap-4 scrollbar-none">
           <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-4 h-80 flex items-center justify-center relative">
-            <Image src="/preview-nft.jpeg" alt="Gotchipus" fill className="object-cover" />
+            <Image src="/pus.png" alt="Gotchipus" fill className="object-cover" />
           </div>
 
           {/* Attributes List */}
@@ -121,6 +165,22 @@ export default function PharosGenesisPage() {
               </div>
               <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-x-auto whitespace-nowrap scrollbar-none">
                 {attributes.dna.displayValue}
+              </div>
+            </div>
+
+            {/* Token Bound Account Section */}
+            <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm p-3 mb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-cyan-50">
+                  <Zap size={18} className="text-cyan-500" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm">Token Bound Account</div>
+                  <div className="text-xs text-gray-600">Bound NFT Account Address</div>
+                </div>
+              </div>
+              <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-x-auto whitespace-nowrap scrollbar-none">
+                {tokenBoundAccount}
               </div>
             </div>
 
@@ -183,12 +243,46 @@ export default function PharosGenesisPage() {
             </div>
           </div>
 
+          {/* Timezone Selection */}
+          <div className="mt-2">
+            <h3 className="text-lg font-bold mb-2">Select Timezone</h3>
+            <div className="relative">
+              <div 
+                className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-3 flex justify-between items-center cursor-pointer ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => !isGenerating && setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+              >
+                <span>UTC{selectedTimezone >= 0 ? '+' : ''}{selectedTimezone}</span>
+                <ChevronDown size={16} />
+              </div>
+              
+              {isTimezoneDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-lg max-h-60 overflow-y-auto">
+                  {Array.from({ length: 27 }, (_, i) => {
+                    const offset = i - 12;
+                    return (
+                      <div
+                        key={offset}
+                        className="p-2 hover:bg-[#d4d0c8] cursor-pointer"
+                        onClick={() => {
+                          setSelectedTimezone(offset);
+                          setIsTimezoneDropdownOpen(false);
+                        }}
+                      >
+                        UTC{offset >= 0 ? '+' : ''}{offset}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Staking Section */}
           <div className="mt-2">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold">Stake {stakeToken} Token </h3>
               <span className="text-sm bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] px-2 py-1">
-                Balance: 1.25 {stakeToken}
+                Balance: {walletStore.formattedPharos} {stakeToken}
               </span>
             </div>
 
@@ -295,4 +389,6 @@ export default function PharosGenesisPage() {
       </div>
     </>
   )
-}
+})
+
+export default PharosGenesisPage

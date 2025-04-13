@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { type Address, type Chain } from "viem";
-
+import { ethers } from "ethers";
 
 class WalletStore {
   address: Address | undefined = undefined;
@@ -47,9 +47,15 @@ class WalletStore {
     return this.chainId === 50002 ? 'Pharos Devnet' : 'Unknown Network';
   }
 
+  get formattedPharos() {
+    if (!this.balance) return '';
+    const formattedBalance = ethers.formatEther(this.balance);
+    return parseFloat(formattedBalance).toFixed(4);
+  }
+
   get formattedBalance() {
     if (!this.balance || !this.symbol) return '';
-    const formattedBalance = parseFloat(this.balance).toFixed(4);
+    const formattedBalance = ethers.formatUnits(this.balance, 18);
     return `${formattedBalance} ${this.symbol}`;
   }
 }

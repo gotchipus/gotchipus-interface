@@ -1,75 +1,54 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Fish, Anchor } from "lucide-react"
 import Image from "next/image"
 import HookManager from "./farm/hooks"
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@stores/context"
+import { useToast } from "@/hooks/use-toast"
 
 
-interface FishSeed {
-  id: string
-  name: string
-  count: number
-  image: string
-}
-
-interface HarvestHook {
-  id: string
-  address: string
-  name: string
-  description: string
-  icon: JSX.Element
-}
-
-// Constants
-const FISH_SEEDS: FishSeed[] = [
-  { id: "fish1", name: "Fish", count: 5, image: "/farm.png" },
-]
-
-
-
-// Components
-const OceanBackground = () => {
-  return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden">
-      <Image
-        src="/farmBackground.png"
-        alt="Ocean Background"
-        fill
-        className="object-cover"
-        priority
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-900/30" />
-    </div>
-  )
-}
-
-
-
-const FarmContent = () => {
+const FarmContent = observer(() => {
+  const { walletStore } = useStores()
+  const { toast } = useToast()
   const [showHarvestModal, setShowHarvestModal] = useState(false)
-  const [selectedFish, setSelectedFish] = useState<string | null>(null)
+  const [selectedFish, setSelectedFish] = useState(false)
+  const [fishCount, setFishCount] = useState("")
+
+  const fishData = useContractRead("getFishs", [walletStore.address])
+  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+
+  useEffect(() => {
+    setFishCount(fishData as string)
+  }, [fishData])
 
   const handleRelease = useCallback(() => {
     if (!selectedFish) return
+    contractWrite("Breed", [20])
+    toast({
+      title: "Submited Transaction",
+      description: "Transaction submitted successfully",
+    })
+  }, [selectedFish])
 
-    const fish = FISH_SEEDS.find((f) => f.id === selectedFish)
-    if (fish && fish.count > 0) {
-      console.log("ok!")
-    }
+  const handleSelectFish = useCallback(() => {
+    setSelectedFish(!selectedFish)
   }, [selectedFish])
 
   const handleHarvest = useCallback(() => {
     setShowHarvestModal(true)
   }, [])
 
-
-  const handleSelectFish = useCallback((fishId: string) => {
-    const fish = FISH_SEEDS.find((f) => f.id === fishId)
-    if (fish && fish.count > 0) {
-      setSelectedFish(fishId)
+  useEffect(() => {
+    if (isConfirmed) {
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
     }
-  }, [])
+  }, [isConfirmed])
 
   return (
     <div className="p-4 bg-[#c0c0c0] h-full relative">
@@ -80,8 +59,16 @@ const FarmContent = () => {
 
       <div className="flex h-[calc(100%-80px)]">
         <div className="w-3/4 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#0066cc] rounded-sm p-4 mr-4 relative overflow-hidden">
-          <OceanBackground />
-          
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <Image
+              src="/farmBackground.png"
+              alt="Ocean Background"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-900/30" />
+          </div>
         </div>
 
         <div className="w-1/4 flex flex-col">
@@ -89,26 +76,23 @@ const FarmContent = () => {
             <h3 className="font-bold mb-3 text-center pixel-text">Your Fish</h3>
 
             <div className="space-y-3">
-              {FISH_SEEDS.map((fish) => (
-                <div
-                  key={fish.id}
-                  className={`border-2 ${selectedFish === fish.id ? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-2 flex items-center justify-between ${fish.count === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-[#d4d0c8]"}`}
-                  onClick={() => fish.count > 0 && handleSelectFish(fish.id)}
-                >
-                  <div className="flex items-center">
-                    <div className="relative w-12 h-12 mr-2">
-                      <Image
-                        src={fish.image}
-                        alt={fish.name}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <span className="pixel-text">{fish.name}</span>
+              <div
+                className={`border-2 cursor-pointer ${selectedFish ? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-2 flex items-center justify-between}`}
+                onClick={handleSelectFish}
+              >
+                <div className="flex items-center">
+                  <div className="relative w-12 h-12 mr-2">
+                    <Image
+                      src="/farm.png"
+                      alt="Fish"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
-                  <div className="font-bold pixel-text">x{fish.count}</div>
+                  <span className="pixel-text">Fish</span>
                 </div>
-              ))}
+                <div className="font-bold pixel-text">x{fishCount}</div>
+              </div>
             </div>
           </div>
 
@@ -135,6 +119,6 @@ const FarmContent = () => {
       {showHarvestModal && <HookManager isOpen={setShowHarvestModal} />}
     </div>
   )
-}
+})
 
 export default FarmContent

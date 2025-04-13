@@ -25,7 +25,7 @@ const pharosDevnetCustomChain = {
 
 export const config = createConfig({
   chains: [pharosDevnetCustomChain],
-  multiInjectedProviderDiscovery: false,
+  multiInjectedProviderDiscovery: true,
   connectors,
   transports: {
     [pharosDevnetCustomChain.id]: http(),

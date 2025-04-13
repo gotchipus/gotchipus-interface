@@ -13,6 +13,8 @@
     "postbuild": "next-sitemap"
   },
   "dependencies": {
+    "@ai-sdk/react": "^1.2.8",
+    "@ai-sdk/xai": "^1.2.11",
     "@cloudflare/wrangler": "^1.21.0",
     "@heroicons/react": "^2.1.5",
     "@nextui-org/slider": "^2.2.15",
@@ -38,6 +40,7 @@
     "@tanstack/react-query-devtools": "^5.54.0",
     "@types/antd": "^1.0.0",
     "@types/three": "^0.160.0",
+    "ai": "^4.3.5",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -51,6 +54,7 @@
     "next": "14.2.5",
     "next-sitemap": "^4.2.3",
     "ogl": "^1.0.11",
+    "openai": "^4.93.0",
     "pino-pretty": "^11.2.2",
     "react": "^18.3.1",
     "react-debounce-input": "^3.3.0",

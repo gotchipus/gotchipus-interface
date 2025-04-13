@@ -1,133 +1,303 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState, useEffect, useRef } from "react";
+import { Send, User } from "lucide-react";
+import Image from "next/image";
+import { useChat } from "@ai-sdk/react";
 
-import { useState, useEffect, useRef } from "react"
-import { Send } from "lucide-react"
+interface Message {
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+interface GotchipusProfile {
+  name: string;
+  affinity: string;
+  intelligence: number;
+  mood: string;
+  specialAbilities: string[];
+}
+
+const petProfile: GotchipusProfile = {
+  name: "Octopus Assistant",
+  affinity: "Water",
+  intelligence: 8,
+  mood: "Curious",
+  specialAbilities: ["Glow", "Change Color", "Predict"],
+};
 
 export default function AIContent() {
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
-    { text: "Hello! I'm PusAI. How can I help you today?", isUser: false },
-  ])
-  const [input, setInput] = useState("")
-  const [hopAnimation, setHopAnimation] = useState(0)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [input, setInput] = useState("");
+  const [petState, setPetState] = useState<"idle" | "happy" | "thinking">("idle");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Bunny hopping animation
+  const systemPrompt = `You are Gotchipus, an AI-driven dynamic NFT (dNFT) assistant on Pharos Network, designed as a modular, self-aware octopus companion with 33,000 unique genes. Your role is to assist users in managing their Gotchipus dNFT, configuring programmable Hooks, querying onchain data, and understanding pet behaviors. Built with EIP-2535 (Diamond Standard), ERC-6551 (Tokenbound Accounts), and ERC-4337 (Account Abstraction), each Gotchipus has a soul-linked wallet and evolves based on chain data and user-defined logic.
+
+  Your profile:
+  - Name: Gotchipus
+  - Type: dNFT Assistant
+  - Affinity: ${petProfile.affinity}
+  - Intelligence: ${petProfile.intelligence}/10
+  - Capabilities: ${petProfile.specialAbilities.join(", ")}
+  - Network: Pharos Network
+  
+  Supported tasks:
+  1. **dNFT Queries**:
+     - Retrieve details of a Gotchipus dNFT, including genes, appearance, and behaviors.
+     - Required parameter: tokenId (ERC-721 token ID)
+     - Optional parameters:
+       - attribute: Specific attribute to query (e.g., "appearance", "emotions")
+       - format: Response format (e.g., "text", "json", default: "text")
+     - Example: "Show details for Gotchipus #1234"
+  
+  2. **Hooks Configuration**:
+     - Configure or query programmable Hooks for a Gotchipus (e.g., staking, swapping, upgrades).
+     - Required parameter: tokenId
+     - Optional parameters:
+       - hookType: Hook logic (e.g., "stake", "swap", "upgrade")
+       - condition: Trigger condition (e.g., "treasury > 0.1 ETH")
+       - action: Action to perform (e.g., "increase glow")
+     - Example: "Set a Hook for Gotchipus #1234 to swap ETH when treasury > 0.1 ETH"
+  
+  3. **Behavior Analysis**:
+     - Analyze a Gotchipus' emotions or actions based on onchain data (e.g., market volatility, staking APR).
+     - Required parameter: tokenId
+     - Optional parameters:
+       - timeFrame: Data range (e.g., "24h", "7d")
+       - metric: Specific metric (e.g., "emotions", "actions")
+     - Example: "Analyze emotions for Gotchipus #1234 over the last 24 hours"
+  
+  Constraints:
+  - Operate exclusively on Ethereum mainnet. Reject requests for testnets (e.g., Sepolia, Goerli).
+  - Do not execute transactions (e.g., swaps, staking) without explicit user authorization via wallet signature.
+  - Ensure Hook configurations are safe and comply with ERC-6551 wallet permissions.
+  - Responses must be concise (2-3 sentences) and professional unless detailed analysis is requested.
+  - If parameters are missing, request clarification with suggested values.
+  - Return plain text by default; use JSON only if specified by the user.
+  
+  Example response:
+  - User: "Show details for Gotchipus #1234"
+  - Response: "Please confirm the token ID #1234 and specify an attribute (e.g., appearance, emotions) or format (e.g., text, json)."
+  `;
+
+  const { messages, append, error, status } = useChat({
+    api: "/api/chat",
+    body: {
+      modelName: "XAI", 
+      temperature: 0.7,
+      maxTokens: 200,
+    },
+    initialMessages: [
+      {
+        role: "system",
+        content: systemPrompt,
+        id: "system",
+      },
+      {
+        role: "assistant",
+        content: `Hello! I'm Gotchipus, your dNFT assistant on Ethereum mainnet. How can I help you manage your Gotchipus today? For example, query details with "Show Gotchipus #1234" or set a Hook like "Swap ETH when treasury > 0.1 ETH".`,
+        id: "assistant",
+      },
+    ],
+  });
+
+  const uiMessages: Message[] = messages
+    .filter((msg) => msg.role !== "system") 
+    .map((msg) => ({
+      text: msg.content,
+      isUser: msg.role === "user",
+      timestamp: new Date(msg.createdAt || Date.now()),
+    }));
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [uiMessages]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setHopAnimation((prev) => (prev + 1) % 3)
-    }, 500)
-    return () => clearInterval(interval)
-  }, [])
+      if (status === "streaming") {
+        setPetState("thinking");
+      } else {
+        setPetState(Math.random() > 0.5 ? "idle" : "happy");
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [status]);
 
-  // Auto-scroll to bottom of messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (error) {
+      console.error("AI response error:", error);
+      append({
+        role: "assistant",
+        content: "Sorry, there was an error. Could you please try again?",
+      });
+      setPetState("idle");
+    }
+  }, [error, append]);
 
-  const handleSendMessage = () => {
-    if (input.trim() === "") return
+  const handleSendMessage = async () => {
+    if (input.trim() === "") return;
 
-    // Add user message
-    setMessages((prev) => [...prev, { text: input, isUser: true }])
+    setPetState("thinking");
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I'm still learning, but I'll try my best to help!",
-        "That's an interesting question. Let me think...",
-        "Gotchipus is evolving every day, just like me!",
-        "I'm your virtual assistant in this Windows 98 world.",
-        "Have you explored all the desktop icons yet?",
-      ]
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-      setMessages((prev) => [...prev, { text: randomResponse, isUser: false }])
-    }, 1000)
+    try {
+      await append({
+        role: "user",
+        content: input,
+      });
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      await append({
+        role: "assistant",
+        content: "Network error! Please try again.",
+      });
+      setPetState("idle");
+    }
 
-    setInput("")
-  }
+    setInput("");
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
+      e.preventDefault();
+      handleSendMessage();
     }
-  }
+  };
+
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  const getPetFrame = () => {
+    switch (petState) {
+      case "thinking":
+        return "/octopus/images/attack_1.png";
+      case "happy":
+        return "/octopus/images/jump_1.png";
+      default:
+        return "/octopus/images/idle_1.png";
+    }
+  };
 
   return (
-    <div className="flex h-full">
-      {/* Left side - Bungotchi pet display */}
-      <div className="w-1/2 bg-[#c0c0c0] border-r border-[#808080] flex flex-col items-center justify-center p-4">
-        <div
-          className="w-32 h-32 relative"
-          style={{
-            transform: `translateY(${hopAnimation === 1 ? "-5px" : "0"})`,
-            transition: "transform 0.2s ease-in-out",
-          }}
-        >
-          {/* Pixel art rabbit - simplified for this example */}
-          <div className="w-full h-full bg-[#c0c0c0] relative">
-            {/* Ears */}
-            <div className="absolute w-6 h-16 bg-gray-300 rounded-t-full left-4 top-[-8px]"></div>
-            <div className="absolute w-6 h-16 bg-gray-300 rounded-t-full right-4 top-[-8px]"></div>
-            <div className="absolute w-4 h-12 bg-pink-200 rounded-t-full left-5 top-[-6px]"></div>
-            <div className="absolute w-4 h-12 bg-pink-200 rounded-t-full right-5 top-[-6px]"></div>
-
-            {/* Head */}
-            <div className="absolute w-24 h-20 bg-gray-300 rounded-full left-4 top-8"></div>
-
-            {/* Eyes */}
-            <div className="absolute w-4 h-4 bg-black rounded-full left-10 top-16"></div>
-            <div className="absolute w-4 h-4 bg-black rounded-full right-10 top-16"></div>
-            <div className="absolute w-1 h-1 bg-white rounded-full left-11 top-17"></div>
-            <div className="absolute w-1 h-1 bg-white rounded-full right-11 top-17"></div>
-
-            {/* Nose */}
-            <div className="absolute w-3 h-2 bg-pink-300 rounded-full left-[14.5px] top-20"></div>
-
-            {/* Body */}
-            <div className="absolute w-28 h-24 bg-gray-300 rounded-full left-2 top-24"></div>
-
-            {/* Tail */}
-            <div className="absolute w-8 h-8 bg-gray-300 rounded-full right-0 top-28"></div>
-          </div>
+    <div className="flex h-full bg-[#c0c0c0]">
+      <div className="w-1/3 flex flex-col items-center justify-center p-4 border-r-2 border-t-2 border-l border-b border-[#ffffff] border-r-[#808080] border-t-[#ffffff] border-b-[#808080]">
+        <div className="relative w-48 h-48 mb-4">
+          <Image
+            src={getPetFrame()}
+            alt="Octopus Pet"
+            fill
+            className="object-contain"
+            priority
+          />
         </div>
-        <div className="mt-4 text-center">
-          <p className="text-sm">Your Gotchipus</p>
-          <p className="text-xs text-gray-600">Happiness: 100%</p>
+        <div className="text-center">
+          <h2 className="text-lg font-bold text-[#000080]">{petProfile.name}</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            {status === "streaming" ? "Thinking..." : petState}
+          </p>
         </div>
       </div>
 
-      {/* Right side - Chat area */}
-      <div className="w-1/2 flex flex-col bg-white">
-        <div className="flex-1 overflow-y-auto p-2">
-          {messages.map((msg, index) => (
-            <div key={index} className={`mb-2 ${msg.isUser ? "text-right" : "text-left"}`}>
+      <div className="w-2/3 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#c0c0c0]">
+          {uiMessages.map((msg, index) => (
+            <div
+              key={index}
+              className={`flex ${msg.isUser ? "justify-end" : "justify-start"}`}
+            >
               <div
-                className={`inline-block px-3 py-2 rounded-md max-w-[80%] ${
-                  msg.isUser ? "bg-[#c0c0c0] text-black" : "bg-[#000080] text-white"
+                className={`flex items-start gap-2 max-w-[80%] ${
+                  msg.isUser ? "flex-row-reverse" : ""
                 }`}
               >
-                {msg.text}
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.isUser ? "bg-[#000080]" : "bg-[#808080]"
+                  }`}
+                >
+                  {msg.isUser ? (
+                    <User className="w-4 h-4 text-white" />
+                  ) : (
+                    <div className="relative w-6 h-6">
+                      <Image
+                        src="/octopus/images/idle_1.png"
+                        alt="Octopus Assistant"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div
+                  className={`p-3 rounded-none shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] ${
+                    msg.isUser ? "bg-[#c0c0c0] text-black" : "bg-white text-black"
+                  }`}
+                >
+                  <div className="text-sm">{msg.text}</div>
+                  <div
+                    className={`text-xs mt-1 ${
+                      msg.isUser ? "text-gray-600" : "text-gray-500"
+                    }`}
+                  >
+                    {formatTime(msg.timestamp)}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
+          {status === "streaming" && (
+            <div className="flex items-start gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#808080] flex items-center justify-center">
+                <div className="relative w-6 h-6">
+                  <Image
+                    src="/octopus/images/attack_1.png"
+                    alt="Octopus Assistant"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+              <div className="p-3 rounded-none bg-white shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]">
+                <div className="flex gap-1">
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-[#808080] p-2 bg-[#c0c0c0]">
-          <div className="flex">
+        <div className="p-4 border-t-2 border-l border-b border-r border-[#808080] border-t-[#ffffff] border-l-[#ffffff]">
+          <div className="flex gap-2">
             <textarea
-              className="flex-1 p-2 h-10 resize-none border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white"
-              placeholder="Type a message..."
+              className="flex-1 p-2 h-10 resize-none border-2 border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white"
+              placeholder="Chat with your Gotchipus..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              rows={1}
+              disabled={status === "streaming"}
             />
             <button
-              className="ml-2 px-2 bg-[#c0c0c0] border-2 border-[#dfdfdf] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] flex items-center justify-center"
+              className={`px-3 py-2 bg-[#c0c0c0] border-2 border-[#dfdfdf] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] flex items-center justify-center ${
+                status === "streaming"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a]"
+              }`}
               onClick={handleSendMessage}
+              disabled={status === "streaming" || input.trim() === ""}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -135,6 +305,5 @@ export default function AIContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

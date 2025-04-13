@@ -1,8 +1,8 @@
 
 export const WINDOW_SIZE = {
   "pharos": {
-    "width": 900,
-    "height": 750
+    "width": 1000,
+    "height": 800
   },
   "marketplace": {
     "width": 500,
@@ -13,8 +13,8 @@ export const WINDOW_SIZE = {
     "height": 400
   },
   "ai": {
-    "width": 700,
-    "height": 600
+    "width": 900,
+    "height": 700
   },
   "dashboard": {
     "width": 1200,
@@ -44,3 +44,6 @@ export const WINDOW_BG_COLOR = {
   "farm": "#000000",
   "hooks": "#000000"
 };
+
+export const CHAIN_ID = 50002;
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

@@ -5,11 +5,14 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import PharosGenesisPage from "./pharos/PharosGenesisPage";
 import FramerPharos from "@/src/components/window-content/pharos/FramerPharos";
+import { useContractRead } from "@/hooks/useContract";
+import { observer } from "mobx-react-lite";
 
-const MyPharosContent = () => {
+
+const MyPharosContent = observer(() => {
   const [viewState, setViewState] = useState<"list" | "hatching" | "genesis">("list");
   const [selectedPharo, setSelectedPharo] = useState<string | null>(null);
-  const pharos = [{ id: "00001" }, { id: "00002" }, { id: "00003" }, { id: "00004" }, { id: "00005" }];
+  const pharos = [{ id: "0" }];
 
   const floatAnimation = {
     y: [0, -3, 0],
@@ -66,10 +69,10 @@ const MyPharosContent = () => {
       )}
 
       {viewState === "genesis" && (
-        <PharosGenesisPage />
+        <PharosGenesisPage tokenId={selectedPharo as string} />
       )}
     </div>
   );
-};
+});
 
 export default MyPharosContent;
