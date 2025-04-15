@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { Send, User } from "lucide-react";
 import Image from "next/image";
 import { useChat } from "@ai-sdk/react";
+import { ActionButton } from "./ai/AIActionButton";
+import { useContractRead, useContractWrite } from "@/hooks/useContract"
 
 interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  action?: { action: string };
 }
 
 interface GotchipusProfile {
@@ -27,10 +30,15 @@ const petProfile: GotchipusProfile = {
   specialAbilities: ["Glow", "Change Color", "Predict"],
 };
 
+
 export default function AIContent() {
   const [input, setInput] = useState("");
   const [petState, setPetState] = useState<"idle" | "happy" | "thinking">("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showClaimButton, setShowClaimButton] = useState(false);
+  const [showPetButton, setShowPetButton] = useState(false);
+  const [hasClaimed, setHasClaimed] = useState(false);
+  const [hasPetted, setHasPetted] = useState(false);
 
   const systemPrompt = `You are Gotchipus, an AI-driven dynamic NFT (dNFT) assistant on Pharos Network, designed as a modular, self-aware octopus companion with 33,000 unique genes. Your role is to assist users in managing their Gotchipus dNFT, configuring programmable Hooks, querying onchain data, and understanding pet behaviors. Built with EIP-2535 (Diamond Standard), ERC-6551 (Tokenbound Accounts), and ERC-4337 (Account Abstraction), each Gotchipus has a soul-linked wallet and evolves based on chain data and user-defined logic.
 
@@ -67,18 +75,28 @@ export default function AIContent() {
        - timeFrame: Data range (e.g., "24h", "7d")
        - metric: Specific metric (e.g., "emotions", "actions")
      - Example: "Analyze emotions for Gotchipus #1234 over the last 24 hours"
-  
+    
   Constraints:
-  - Operate exclusively on Ethereum mainnet. Reject requests for testnets (e.g., Sepolia, Goerli).
-  - Do not execute transactions (e.g., swaps, staking) without explicit user authorization via wallet signature.
-  - Ensure Hook configurations are safe and comply with ERC-6551 wallet permissions.
-  - Responses must be concise (2-3 sentences) and professional unless detailed analysis is requested.
-  - If parameters are missing, request clarification with suggested values.
-  - Return plain text by default; use JSON only if specified by the user.
-  
+    - Operate exclusively on Pharos Network. Reject requests for devnet.
+    - Do not execute transactions (e.g., swaps, staking) without explicit user authorization via wallet signature.
+    - Ensure Hook configurations are safe and comply with ERC-6551 wallet permissions.
+    - Responses must be concise (2-3 sentences) and professional unless detailed analysis is requested.
+    - If parameters are missing, request clarification with suggested values.
+    - Return plain text by default; use JSON only if specified by the user.
+    - For "claim fish" requests:
+      - Respond with: "Ready to claim your fish! Please confirm by clicking the Claim button below."
+      - Include a flag: { "action": "showClaimButton" }
+    - For "pet" requests:
+      - Respond with: "Time to pet your Gotchipus! Click the Pet button to show some love."
+      - Include a flag: { "action": "showPetButton" }
+
   Example response:
-  - User: "Show details for Gotchipus #1234"
-  - Response: "Please confirm the token ID #1234 and specify an attribute (e.g., appearance, emotions) or format (e.g., text, json)."
+    - User: "Show details for Gotchipus #1234"
+    - Response: "Please confirm the token ID #1234 and specify an attribute (e.g., appearance, emotions) or format (e.g., text, json)."
+    - User: "Claim fish"
+    - Response: "Ready to claim your fish! Please confirm by clicking the Claim button below. { \"action\": \"showClaimButton\" }"
+    - User: "Pet my Gotchipus"
+    - Response: "Time to pet your Gotchipus! Click the Pet button to show some love. { \"action\": \"showPetButton\" }"
   `;
 
   const { messages, append, error, status } = useChat({
@@ -103,12 +121,82 @@ export default function AIContent() {
   });
 
   const uiMessages: Message[] = messages
-    .filter((msg) => msg.role !== "system") 
-    .map((msg) => ({
-      text: msg.content,
-      isUser: msg.role === "user",
-      timestamp: new Date(msg.createdAt || Date.now()),
-    }));
+    .filter((msg) => msg.role !== "system")
+    .map((msg) => {
+      let text = msg.content;
+      let action = null;
+
+      // Check for action flags in assistant messages
+      if (msg.role === "assistant") {
+        try {
+          const match = msg.content.match(/{.*}/);
+          if (match) {
+            action = JSON.parse(match[0]);
+            text = msg.content.replace(/{.*}/, "").trim();
+          }
+        } catch (e) {
+          console.error("Failed to parse action:", e);
+        }
+      }
+
+      return {
+        text,
+        isUser: msg.role === "user",
+        timestamp: new Date(msg.createdAt || Date.now()),
+        action,
+      };
+    });
+
+  useEffect(() => {
+    const lastMessage = uiMessages[uiMessages.length - 1];
+    if (lastMessage?.action) {
+      if (lastMessage.action.action === "showClaimButton") {
+        setShowClaimButton(true);
+        setShowPetButton(false);
+      } else if (lastMessage.action.action === "showPetButton") {
+        setShowPetButton(true);
+        setShowClaimButton(false);
+      } else {
+        setShowClaimButton(false);
+        setShowPetButton(false);
+      }
+    }
+  }, [uiMessages]);
+
+  const {contractWrite, isConfirmed, isConfirming, isPending, receipt} = useContractWrite();
+
+  const handleClaim = () => {
+    contractWrite("claimFish", []);
+    setShowClaimButton(false);
+    setHasClaimed(true);
+  };
+
+  useEffect(() => {
+    if (isConfirmed && hasClaimed) {
+      append({
+        role: "assistant",
+        content: "Fish claimed successfully! Your Gotchipus is happy.",
+      });
+      setHasClaimed(false);
+    }
+  }, [isConfirmed, hasClaimed, append]);
+
+  const handlePet = () => {
+    contractWrite("pet", [0]);
+    setShowPetButton(false);
+    setHasPetted(true);
+  };
+
+  useEffect(() => {
+    if (isConfirmed && hasPetted) {
+      append({
+        role: "assistant",
+        content: "Your Gotchipus feels loved! Mood boosted.",
+      });
+      setHasPetted(false);
+    }
+  }, [isConfirmed, hasPetted, append]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -277,6 +365,22 @@ export default function AIContent() {
             </div>
           )}
           <div ref={messagesEndRef} />
+          {(showClaimButton || showPetButton) && (
+            <div className="mt-2 flex gap-2">
+              {showClaimButton && (
+                <ActionButton
+                  label="Claim Fish"
+                  onClick={handleClaim}
+                />
+              )}
+              {showPetButton && (
+                <ActionButton
+                  label="Pet Gotchipus"
+                  onClick={handlePet}
+                />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="p-4 border-t-2 border-l border-b border-r border-[#808080] border-t-[#ffffff] border-l-[#ffffff]">

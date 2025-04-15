@@ -83,7 +83,6 @@ const DualTokenIcon: React.FC<DualTokenIconProps> = ({ token1, token2, size = 20
         </div>
       </div>
 
-      {/* 边框 */}
       <div
         className="absolute top-0 left-0 w-full h-full border border-[#808080] rounded-full"
       />

@@ -21,11 +21,9 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
   const [isAppearing, setIsAppearing] = useState(true)
   const windowRef = useRef<HTMLDivElement>(null)
   const titleBarRef = useRef<HTMLDivElement>(null)
-  const hasInitializedRef = useRef(false) // 记录是否已经执行过初始化
+  const hasInitializedRef = useRef(false) 
 
-  // 只在组件首次挂载时计算屏幕中心位置
   useEffect(() => {
-    // 确保这段代码只执行一次
     if (!hasInitializedRef.current) {
       hasInitializedRef.current = true
       
@@ -35,19 +33,16 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
       const centerX = Math.max(0, (screenWidth - window.size.width) / 2)
       const centerY = Math.max(0, (screenHeight - window.size.height) / 2)
       
-      // 设置窗口位置
       onMove({ x: centerX, y: centerY })
       
-      // 动画完成后设置 isAppearing 为 false
       const timeout = setTimeout(() => {
         setIsAppearing(false)
       }, 300)
       
       return () => clearTimeout(timeout)
     }
-  }, []) // 空依赖数组，只在挂载时执行一次
+  }, []) 
 
-  // 处理标题栏鼠标按下事件
   const startDrag = (clientX: number, clientY: number) => {
     if (windowRef.current) {
       onActivate()
@@ -60,11 +55,10 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
     }
   }
   
-  // 处理拖拽过程中的鼠标移动
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
-        e.preventDefault() // 防止选择文本
+        e.preventDefault() 
         onMove({
           x: e.clientX - dragOffset.x,
           y: e.clientY - dragOffset.y
@@ -76,12 +70,10 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
       setIsDragging(false)
     }
 
-    // 只有在拖拽状态下才添加事件监听
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
       
-      // 添加样式表明正在拖动
       if (windowRef.current) {
         windowRef.current.style.userSelect = 'none'
       }
@@ -91,7 +83,6 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
       
-      // 移除拖动样式
       if (windowRef.current) {
         windowRef.current.style.userSelect = ''
       }
@@ -120,7 +111,6 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
           isActive ? "bg-uni-bg-02 text-white" : "bg-[#808080] text-[#c0c0c0]"
         }`}
         onMouseDown={(e) => {
-          // 检查是否点击了标题栏而非按钮
           const target = e.target as HTMLElement;
           const clickedOnButton = 
             target.tagName === 'BUTTON' || 
@@ -137,7 +127,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
           <button
             className="w-4 h-4 mr-1 flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
             onClick={(e) => {
-              e.stopPropagation(); // 阻止事件冒泡
+              e.stopPropagation(); 
               onMinimize();
             }}
           >
@@ -146,7 +136,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
           <button
             className="w-4 h-4 flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
             onClick={(e) => {
-              e.stopPropagation(); // 阻止事件冒泡
+              e.stopPropagation(); 
               onClose();
             }}
           >

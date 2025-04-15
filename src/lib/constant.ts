@@ -31,18 +31,23 @@ export const WINDOW_SIZE = {
   "hooks": {
     "width": 800,
     "height": 600
+  },
+  "dna": {
+    "width": 1200,
+    "height": 800
   }
 };
 
 
 export const WINDOW_BG_COLOR = {
   "pharos": "#ffddee",
-  "marketplace": "#000000",
-  "nft": "#000000",
-  "ai": "#000000",
-  "dashboard": "#000000",
-  "farm": "#000000",
-  "hooks": "#000000"
+  "marketplace": "#ffddee",
+  "nft": "#ffddee",
+  "ai": "#ffddee",
+  "dashboard": "#ffddee",
+  "farm": "#ffddee",
+  "hooks": "#ffddee",
+  "dna": "#ffddee"
 };
 
 export const CHAIN_ID = 50002;

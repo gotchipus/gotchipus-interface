@@ -11,6 +11,7 @@ import type { JSX } from "react/jsx-runtime"
 import FarmContent from "@/src/components/window-content/FarmContent"
 import HookContent from "@/src/components/window-content/HookContent"
 import DesktopPet from "@/components/home/DesktopPet"
+import DNAAnalyzerContent from "@/components/window-content/DNAAnalyzerContent"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -48,6 +49,11 @@ const icons = [
     id: "hooks",
     title: "Hooks",
     icon: "/hooks.png",
+  },
+  {
+    id: "dna",
+    title: "DNA Analyzer",
+    icon: "/dna.png",
   }
 ]
 
@@ -88,6 +94,9 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         break
       case "hooks":
         onOpenWindow("hooks", "Hooks", <HookContent />)
+        break
+      case "dna":
+        onOpenWindow("dna", "DNA Analyzer", <DNAAnalyzerContent />)
         break
       default:
         break
