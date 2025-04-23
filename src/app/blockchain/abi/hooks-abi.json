@@ -1,0 +1,1 @@
+[{"type":"function","name":"addHook","inputs":[{"name":"hook","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"getHooks","inputs":[{"name":"sender","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"address[]","internalType":"address[]"}],"stateMutability":"view"}]

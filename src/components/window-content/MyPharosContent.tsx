@@ -8,7 +8,6 @@ import FramerPharos from "@/src/components/window-content/pharos/FramerPharos";
 import { useContractRead } from "@/hooks/useContract";
 import { observer } from "mobx-react-lite";
 
-
 const MyPharosContent = observer(() => {
   const [viewState, setViewState] = useState<"list" | "hatching" | "genesis">("list");
   const [selectedPharo, setSelectedPharo] = useState<string | null>(null);

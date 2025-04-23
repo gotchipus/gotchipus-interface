@@ -8,6 +8,13 @@ const nextConfig = {
     esmExternals: 'loose', 
   },
   // swcMinify: true,
+  output: 'standalone',
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+    responseLimit: '8mb',
+  },
   webpack(config) {
     config.module.rules.push(
       {

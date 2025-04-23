@@ -37,7 +37,8 @@
       "@src/*": ["./src/*"],
       "@assets": ["./assets"],
       "@assets/*": ["./assets/*"],
-      "@providers/*": ["./src/app/providers/*"]
+      "@providers/*": ["./src/app/providers/*"],
+      "@i18n/*": ["./src/i18n/*"]
     }
   },
   "include": [

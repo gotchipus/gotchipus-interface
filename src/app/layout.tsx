@@ -37,8 +37,6 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://gotchipus.com'),
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,9 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className="antialiased font-vt323"
-      >
+      <body className="antialiased font-vt323">
         <Providers>
           {children}
           <Toaster />

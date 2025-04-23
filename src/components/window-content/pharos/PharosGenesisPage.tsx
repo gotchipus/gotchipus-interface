@@ -29,8 +29,8 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const [traitsExpanded, setTraitsExpanded] = useState(true)
   const [selectedTimezone, setSelectedTimezone] = useState(0)
   const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false)
-  const [tokenBoundAccount, setTokenBoundAccount] = useState("")
-  const [dna, setDna] = useState("")
+  const [tokenBoundAccount, setTokenBoundAccount] = useState("0x904b57fA8B2dda8D048e461E726623C5E592CBDd")
+  const [dna, setDna] = useState("100420794452324007740289417880043935369077597111104194087309767408790248852035")
   const { toast } = useToast()
   const { walletStore } = useStores()
 
@@ -42,7 +42,7 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const salt = ethers.keccak256(encodeData);
 
   const accountData = useContractRead("account", [PUS_ADDRESS, salt, CHAIN_ID, PUS_ADDRESS, tokenId]);
-
+  console.log(accountData)
   useEffect(() => {
     if (accountData) {
       setTokenBoundAccount(accountData as string);

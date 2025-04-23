@@ -84,7 +84,7 @@ export const CustomConnectButton = () => {
                 return (
                   <button 
                     onClick={openChainModal}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 w-full"
                   >
                     Wrong Network
                   </button>

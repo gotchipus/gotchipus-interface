@@ -30,7 +30,8 @@ export const useContractWrite = () => {
         address: PUS_ADDRESS,
         abi: PUS_ABI,
         functionName: functionName,
-        args: args
+        args: args,
+        gas: BigInt(1000000)
       });
     } catch (error) {
       resetWrite();

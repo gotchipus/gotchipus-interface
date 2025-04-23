@@ -5,9 +5,18 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import type { WindowType } from "@/lib/types"
-import { Clock } from "lucide-react"
+import { Clock, Globe } from "lucide-react"
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import AboutContent from "@/components/window-content/AboutContent"
+import { Trans, useTranslation } from 'react-i18next'
+import { Locale } from '@i18n/constants'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface TaskbarProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -24,6 +33,7 @@ export default function Taskbar({
   onActivateWindow,
   onRestoreWindow,
 }: TaskbarProps) {
+  const { i18n } = useTranslation()
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [isStartPressed, setIsStartPressed] = useState(false)
   const [pressedButton, setPressedButton] = useState<string | null>(null)
@@ -63,6 +73,10 @@ export default function Taskbar({
     onOpenWindow("about", "About", <AboutContent />)
   }
 
+  const handleLanguageChange = (value: string) => {
+    i18n.changeLanguage(value)
+  }
+
   return (
     <div className="absolute bottom-0 left-0 w-full h-14 bg-[#c0c0c0] border-t-2 border-[#dfdfdf] shadow-win98-outer flex items-center justify-between px-1 z-50">
       <div className="flex items-center h-10">
@@ -78,11 +92,13 @@ export default function Taskbar({
           onMouseLeave={() => setIsStartPressed(false)}
         >
           <Image src="/windows98.svg" alt="Start" width={24} height={24} />
-          <span className="ml-2">Gotchipus</span>
+          <span className="ml-2">
+            Gotchipus
+          </span>
         </button>
 
         <div
-          className="h-10 px-3 text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner"
+          className="h-10 text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner"
         >
           <CustomConnectButton />
         </div>
@@ -107,8 +123,18 @@ export default function Taskbar({
       </div>
 
       <div className="flex items-center h-10">
+        <Select value={i18n.language} onValueChange={handleLanguageChange}>
+          <SelectTrigger className="w-[80px] h-10 bg-[#c0c0c0] border border-[#808080] shadow-win98-inner cursor-pointer rounded-none">
+            <SelectValue placeholder="Language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={Locale.EnglishUnitedStates}>English</SelectItem>
+            <SelectItem value={Locale.ChineseSimplified}>中文</SelectItem>
+          </SelectContent>
+        </Select>
+
         <div
-          className="flex flex-row gap-2 items-center bg-[#c0c0c0] h-10 px-2 mr-2 border border-[#808080] cursor-pointer shadow-win98-inner"
+          className="flex flex-row gap-2 items-center bg-[#c0c0c0] h-10 px-2 m-2 border border-[#808080] cursor-pointer shadow-win98-inner"
         >
           <Link href="https://x.com/gotchipus" target="_blank">
             <Image src="/x.svg" alt="X" width={24} height={24} />
@@ -125,7 +151,7 @@ export default function Taskbar({
         </div>
 
         <div
-          className={`flex items-center bg-[#c0c0c0] h-10 px-3 border border-[#808080] cursor-pointer shadow-win98-inner `}
+          className={`flex items-center bg-[#c0c0c0] h-10 px-3 ml-2 border border-[#808080] cursor-pointer shadow-win98-inner `}
           onMouseDown={() => setClockPressed(true)}
           onMouseUp={() => setClockPressed(false)}
           onMouseLeave={() => setClockPressed(false)}

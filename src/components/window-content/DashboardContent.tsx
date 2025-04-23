@@ -75,29 +75,29 @@ const DashboardContent = observer(() => {
   ]
 
   const equipSlots = [
-    { name: "Background", icon: "🦄", color: "bg-gradient-to-br from-purple-200 to-purple-100" },
-    { name: "Head", icon: "👁️", color: "bg-gradient-to-br from-blue-200 to-blue-100" },
-    { name: "Face", icon: "👄", color: "bg-gradient-to-br from-pink-200 to-pink-100" },
-    { name: "Ears", icon: "👂", color: "bg-gradient-to-br from-yellow-200 to-yellow-100" },
-    { name: "Left Hand", icon: "🎨", color: "bg-gradient-to-br from-green-200 to-green-100" },
-    { name: "Right Hand", icon: "🖼️", color: "bg-gradient-to-br from-indigo-200 to-indigo-100" },
-    { name: "Body", icon: "🐎", color: "bg-gradient-to-br from-orange-200 to-orange-100" },
-    { name: "Companion", icon: "🧬", color: "bg-gradient-to-br from-red-200 to-red-100" },
+    { name: "Background", icon: "🐙", color: "bg-gradient-to-br from-purple-200 to-purple-100" },
+    { name: "Head", icon: "🐙", color: "bg-gradient-to-br from-blue-200 to-blue-100" },
+    { name: "Face", icon: "🐙", color: "bg-gradient-to-br from-pink-200 to-pink-100" },
+    { name: "Ears", icon: "🐙", color: "bg-gradient-to-br from-yellow-200 to-yellow-100" },
+    { name: "Left Hand", icon: "🐙", color: "bg-gradient-to-br from-green-200 to-green-100" },
+    { name: "Right Hand", icon: "🐙", color: "bg-gradient-to-br from-indigo-200 to-indigo-100" },
+    { name: "Body", icon: "🐙", color: "bg-gradient-to-br from-orange-200 to-orange-100" },
+    { name: "Companion", icon: "🐙", color: "bg-gradient-to-br from-red-200 to-red-100" },
   ]
 
   const availableEquipments = [
-    { name: "Crown", icon: "👑" },
-    { name: "Glasses", icon: "👓" },
-    { name: "Hat", icon: "🎩" },
-    { name: "Sword", icon: "⚔️" },
-    { name: "Shield", icon: "🛡️" },
-    { name: "Wand", icon: "🪄" },
-    { name: "Book", icon: "📚" },
-    { name: "Potion", icon: "⚗️" },
-    { name: "Ring", icon: "💍" },
-    { name: "Amulet", icon: "📿" },
-    { name: "Cape", icon: "🧥" },
-    { name: "Boots", icon: "👢" },
+    { name: "Crown", icon: "🐙" },
+    { name: "Glasses", icon: "🐙" },
+    { name: "Hat", icon: "🐙" },
+    { name: "Sword", icon: "🐙" },
+    { name: "Shield", icon: "🐙" },
+    { name: "Wand", icon: "🐙" },
+    { name: "Book", icon: "🐙" },
+    { name: "Potion", icon: "🐙" },
+    { name: "Ring", icon: "🐙" },
+    { name: "Amulet", icon: "🐙" },
+    { name: "Cape", icon: "🐙" },
+    { name: "Boots", icon: "🐙" },
   ]
 
   const handleRename = () => {

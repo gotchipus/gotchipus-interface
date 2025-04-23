@@ -15,6 +15,7 @@ import { CustomJazzicon } from '@/components/footer/Jazzicon'
 import { StoreProvider } from "@stores/context";
 import { WalletProvider } from "@providers/WalletProvider";
 import { ToastProvider } from "@/components/ui/toast"
+import { I18nProvider } from "@providers/i18nProvider";
 
 const queryClient = new QueryClient()
 
@@ -130,7 +131,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <StoreProvider>
             <WalletProvider>
               <ToastProvider>
-                {mounted ? children : null}
+                <I18nProvider>
+                  {mounted ? children : null}
+                </I18nProvider>
               </ToastProvider>
             </WalletProvider>
           </StoreProvider>

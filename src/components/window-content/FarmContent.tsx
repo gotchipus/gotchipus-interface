@@ -26,7 +26,7 @@ const FarmContent = observer(() => {
 
   const handleRelease = useCallback(() => {
     if (!selectedFish) return
-    contractWrite("Breed", [20])
+    contractWrite("breed", [20])
     toast({
       title: "Submited Transaction",
       description: "Transaction submitted successfully",
