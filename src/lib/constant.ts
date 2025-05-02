@@ -21,8 +21,8 @@ export const WINDOW_SIZE = {
     "height": 800
   },
   "about": {
-    "width": 500,
-    "height": 400
+    "width": 800,
+    "height": 800
   },
   "farm": {
     "width": 1200,

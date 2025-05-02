@@ -11,6 +11,7 @@ import { CHAIN_ID, ZERO_ADDRESS } from "@/lib/constant"
 import { useToast } from '@/hooks/use-toast'
 import { useStores } from "@stores/context"
 import { observer } from "mobx-react-lite"
+import { getERC6551AccountSalt } from "@/src/utils/contractHepler";
 
 interface PharosGenesisPageProps {
   tokenId: string
@@ -22,7 +23,6 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const [stakeAmount, setStakeAmount] = useState("")
   const [selectedToken, setSelectedToken] = useState<number | null>(0)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatingProgress, setGeneratingProgress] = useState(0)
   const [positionVersion, setPositionVersion] = useState("token")
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
   const [stakeToken, setStakeToken] = useState("USDC")
@@ -34,12 +34,7 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const { toast } = useToast()
   const { walletStore } = useStores()
 
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
-  const encodeData = abiCoder.encode(
-    ["uint256", "uint256", "address"],
-    [CHAIN_ID, tokenId, PUS_ADDRESS]
-  );
-  const salt = ethers.keccak256(encodeData);
+  const salt = getERC6551AccountSalt(CHAIN_ID, parseInt(tokenId));
 
   const accountData = useContractRead("account", [PUS_ADDRESS, salt, CHAIN_ID, PUS_ADDRESS, tokenId]);
   console.log(accountData)
