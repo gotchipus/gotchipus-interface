@@ -35,6 +35,10 @@ export const WINDOW_SIZE = {
   "dna": {
     "width": 1200,
     "height": 800
+  },
+  "mint": {
+    "width": 1200,
+    "height": 800
   }
 };
 
@@ -47,7 +51,8 @@ export const WINDOW_BG_COLOR = {
   "dashboard": "#ffddee",
   "farm": "#ffddee",
   "hooks": "#ffddee",
-  "dna": "#ffddee"
+  "dna": "#ffddee",
+  "mint": "#ffddee"
 };
 
 export const CHAIN_ID = 50002;
