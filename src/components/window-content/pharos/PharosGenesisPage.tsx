@@ -37,7 +37,7 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const salt = getERC6551AccountSalt(CHAIN_ID, parseInt(tokenId));
 
   const accountData = useContractRead("account", [PUS_ADDRESS, salt, CHAIN_ID, PUS_ADDRESS, tokenId]);
-  console.log(accountData)
+
   useEffect(() => {
     if (accountData) {
       setTokenBoundAccount(accountData as string);

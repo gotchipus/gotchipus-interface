@@ -27,6 +27,11 @@ const icons = [
     icon: "/ai-pus.png",
   },
   {
+    id: "mint",
+    title: "Mint",
+    icon: "/mint.png",
+  },
+  {
     id: "pharos",
     title: "Pharos",
     icon: "/pharos.png",
@@ -46,11 +51,6 @@ const icons = [
     title: "DNA Analyzer",
     icon: "/dna.png",
   },
-  {
-    id: "mint",
-    title: "Mint",
-    icon: "/mint.png",
-  }
 ]
 
 export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
@@ -76,6 +76,9 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
       case "ai":
         onOpenWindow("ai", "AI", <AIContent />)
         break
+      case "mint":
+        onOpenWindow("mint", "Mint", <MintContent />)
+        break
       case "pharos":
         onOpenWindow("pharos", "Pharos", <MyPharosContent />)
         break
@@ -87,9 +90,6 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         break
       case "dna":
         onOpenWindow("dna", "DNA Analyzer", <DNAAnalyzerContent />)
-        break
-      case "mint":
-        onOpenWindow("mint", "Mint", <MintContent />)
         break
       default:
         break

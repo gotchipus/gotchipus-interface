@@ -51,12 +51,21 @@ export const useContractWrite = () => {
   };
 };
 
-export const useContractRead = (functionName: string, args: any[] = []) => {
+export const useContractRead = (
+  functionName: string, 
+  args: any[] = [],
+  options?: {
+    enabled?: boolean
+  }
+) => {
   const { data: result } = useReadContract({
     address: PUS_ADDRESS,
     abi: PUS_ABI,
     functionName: functionName,
-    args: args
+    args: args,
+    query: {
+      enabled: options?.enabled
+    }
   });
 
   return result;
