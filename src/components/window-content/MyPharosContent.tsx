@@ -8,7 +8,6 @@ import { useContractRead } from "@/hooks/useContract";
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/components/ui/button";
 
 const MyPharosContent = observer(() => {
   const [viewState, setViewState] = useState<"list" | "hatching" | "genesis">("list");
@@ -112,22 +111,23 @@ Your task is to:
 
   useEffect(() => {
     if (viewState === "hatching") {
-      console.log("hatching");
-      generateStory("0");
+      generateStory(selectedPharo as string);
     }
-  }, [viewState, generateStory]);
+  }, [viewState, generateStory, selectedPharo]);
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "assistant" && viewState === "hatching") {
-      const story = lastMessage.content;
-      const cleanup = streamStory(story);
-      
-      return () => {
-        if (cleanup) cleanup();
-      };
+      if (status === "ready") {
+        const story = lastMessage.content;
+        const cleanup = streamStory(story);
+        
+        return () => {
+          if (cleanup) cleanup();
+        };
+      }
     }
-  }, [messages, viewState, streamStory]);
+  }, [messages, viewState, streamStory, status]);
 
   const floatAnimation = {
     y: [0, -3, 0],
@@ -152,7 +152,7 @@ Your task is to:
   const renderStoryText = () => (
     <p className="text-slate-700 min-h-[100px] leading-relaxed whitespace-pre-wrap">
       {displayedStory}
-      {!isStoryComplete && status === "streaming" && (
+      {status === "streaming" && !displayedStory && (
         <span className="inline-flex gap-1 ml-1">
           <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" 
                 style={{ animationDelay: "0ms" }} />
@@ -174,19 +174,19 @@ Your task is to:
               <div
                 key={id}
                 className="bg-white flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow-md"
-                onClick={() => handlePharoClick(id)}
+                onClick={() => handlePharoClick(id.toString())}
               >
                 <motion.div
                   className="w-48 h-48 relative flex items-center justify-center"
                   animate={floatAnimation}
                 >
-                  <Image src="/pharos.png" alt="Pharo" width={240} height={240} />
+                  <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
                 </motion.div>
-                <div className="text-center mt-2 text-sm">#{id}</div>
+                <div className="text-center mt-4 text-sm">#{id.toString()}</div>
               </div>
             ))
           ) : (
-            <Button onClick={() => setViewState("hatching")}>Mint</Button>
+            <div>No Pharos</div>
           )}
         </div>
       )}
@@ -195,7 +195,7 @@ Your task is to:
         <div className="flex flex-col items-center justify-center h-full">
           <div className="w-full backdrop-blur-sm p-6">
             <h3 className="text-lg font-medium mb-3 text-center">
-              Pharo #{selectedPharo}'s Story
+              Pharo #{selectedPharo} Story
             </h3>
             {renderStoryText()}
             {isStoryComplete && (
@@ -213,7 +213,7 @@ Your task is to:
       )}
 
       {viewState === "genesis" && (
-        <PharosGenesisPage tokenId={selectedPharo as string} />
+        <PharosGenesisPage tokenId={selectedPharo as string} story={displayedStory} />
       )}
     </div>
   );

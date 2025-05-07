@@ -300,9 +300,10 @@ const DashboardContent = observer(() => {
             <div className="space-y-2">
               <div className="flex items-center justify-between p-3 bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-sm">PUS</span>
+                  <div className="w-8 h-8 flex items-center justify-center mr-3">
+                    <Image src="/tokens/pharos.png" alt="PUS Token" width={24} height={24} />
                   </div>
+                  
                   <div>
                     <div className="font-medium">PUS Token</div>
                     <div className="text-xs text-gray-600">Gotchipus Token</div>

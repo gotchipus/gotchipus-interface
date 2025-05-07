@@ -15,7 +15,7 @@ const pharosDevnetCustomChain = {
   iconBackground: '#fff',
   nativeCurrency: { name: 'Pharos', symbol: 'PTT', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://devnet.dplabs-internal.com'] },
+    default: { http: ['/api/devnet'] },
   },
   blockExplorers: {
     default: { name: 'Pharosscan', url: 'https://pharosscan.xyz/' },

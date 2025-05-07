@@ -14,11 +14,12 @@ import { observer } from "mobx-react-lite"
 import { getERC6551AccountSalt } from "@/src/utils/contractHepler";
 
 interface PharosGenesisPageProps {
-  tokenId: string
+  tokenId: string,
+  story: string
 }
 
 
-const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
+const PharosGenesisPage = observer(({ tokenId, story }: PharosGenesisPageProps) => {
   const [pusName, setPusName] = useState("")
   const [stakeAmount, setStakeAmount] = useState("")
   const [selectedToken, setSelectedToken] = useState<number | null>(0)
@@ -26,11 +27,12 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
   const [positionVersion, setPositionVersion] = useState("token")
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
   const [stakeToken, setStakeToken] = useState("USDC")
-  const [traitsExpanded, setTraitsExpanded] = useState(true)
+  const [traitsExpanded, setTraitsExpanded] = useState(false)
+  const [storyExpanded, setStoryExpanded] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState(0)
   const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false)
-  const [tokenBoundAccount, setTokenBoundAccount] = useState("0x904b57fA8B2dda8D048e461E726623C5E592CBDd")
-  const [dna, setDna] = useState("100420794452324007740289417880043935369077597111104194087309767408790248852035")
+  const [tokenBoundAccount, setTokenBoundAccount] = useState(ZERO_ADDRESS)
+  const [dna, setDna] = useState("0")
   const { toast } = useToast()
   const { walletStore } = useStores()
 
@@ -179,7 +181,27 @@ const PharosGenesisPage = observer(({ tokenId }: PharosGenesisPageProps) => {
               </div>
             </div>
 
-            {/* Traits Section */}
+            {/* Story Section */}
+            <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm mb-2">
+              <div
+                className="flex items-center justify-between p-3 cursor-pointer"
+                onClick={() => setStoryExpanded(!storyExpanded)}
+              >
+                <div className="flex items-center">
+                  <Menu size={18} className="mr-2" />
+                  <span className="font-bold">Story</span>
+                </div>
+                {storyExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
+
+              {storyExpanded && (
+                <div className="p-3 border-t">
+                  {story}
+                </div>
+              )}
+            </div>
+
+            {/* Attributes Section */}
             <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm">
               <div
                 className="flex items-center justify-between p-3 cursor-pointer"

@@ -78,6 +78,14 @@ const nextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/devnet/:path*',
+        destination: 'https://devnet.dplabs-internal.com/:path*',
+      },
+    ]
+  },
 };
 
 if (process.env.NODE_ENV === 'development') {
