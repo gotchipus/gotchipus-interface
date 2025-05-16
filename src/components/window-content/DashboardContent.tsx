@@ -76,29 +76,29 @@ const DashboardContent = observer(() => {
   ]
 
   const equipSlots = [
-    { name: "Background", icon: "🐙", color: "bg-gradient-to-br from-purple-200 to-purple-100" },
-    { name: "Head", icon: "🐙", color: "bg-gradient-to-br from-blue-200 to-blue-100" },
-    { name: "Face", icon: "🐙", color: "bg-gradient-to-br from-pink-200 to-pink-100" },
-    { name: "Ears", icon: "🐙", color: "bg-gradient-to-br from-yellow-200 to-yellow-100" },
-    { name: "Left Hand", icon: "🐙", color: "bg-gradient-to-br from-green-200 to-green-100" },
-    { name: "Right Hand", icon: "🐙", color: "bg-gradient-to-br from-indigo-200 to-indigo-100" },
-    { name: "Body", icon: "🐙", color: "bg-gradient-to-br from-orange-200 to-orange-100" },
-    { name: "Companion", icon: "🐙", color: "bg-gradient-to-br from-red-200 to-red-100" },
+    { name: "Background", icon: "/gotchi/e1.png", color: "bg-gradient-to-br from-purple-200 to-purple-100" },
+    { name: "Head", icon: "/gotchi/e2.png", color: "bg-gradient-to-br from-blue-200 to-blue-100" },
+    { name: "Face", icon: "/gotchi/e3.png", color: "bg-gradient-to-br from-pink-200 to-pink-100" },
+    { name: "Ears", icon: "/gotchi/e4.png", color: "bg-gradient-to-br from-yellow-200 to-yellow-100" },
+    { name: "Left Hand", icon: "/gotchi/e5.png", color: "bg-gradient-to-br from-green-200 to-green-100" },
+    { name: "Right Hand", icon: "/gotchi/e1.png", color: "bg-gradient-to-br from-indigo-200 to-indigo-100" },
+    { name: "Body", icon: "/gotchi/e2.png", color: "bg-gradient-to-br from-orange-200 to-orange-100" },
+    { name: "Companion", icon: "/gotchi/e3.png", color: "bg-gradient-to-br from-red-200 to-red-100" },
   ]
 
   const availableEquipments = [
-    { name: "Crown", icon: "🐙" },
-    { name: "Glasses", icon: "🐙" },
-    { name: "Hat", icon: "🐙" },
-    { name: "Sword", icon: "🐙" },
-    { name: "Shield", icon: "🐙" },
-    { name: "Wand", icon: "🐙" },
-    { name: "Book", icon: "🐙" },
-    { name: "Potion", icon: "🐙" },
-    { name: "Ring", icon: "🐙" },
-    { name: "Amulet", icon: "🐙" },
-    { name: "Cape", icon: "🐙" },
-    { name: "Boots", icon: "🐙" },
+    { name: "Crown", icon: "/gotchi/e1.png" },
+    { name: "Glasses", icon: "/gotchi/e2.png" },
+    { name: "Hat", icon: "/gotchi/e3.png" },
+    { name: "Sword", icon: "/gotchi/e4.png" },
+    { name: "Shield", icon: "/gotchi/e5.png" },
+    { name: "Wand", icon: "/gotchi/e1.png" },
+    { name: "Book", icon: "/gotchi/e2.png" },
+    { name: "Potion", icon: "/gotchi/e3.png" },
+    { name: "Ring", icon: "/gotchi/e4.png" },
+    { name: "Amulet", icon: "/gotchi/e5.png" },
+    { name: "Cape", icon: "/gotchi/e1.png" },
+    { name: "Boots", icon: "/gotchi/e2.png" },
   ]
 
   const handleRename = () => {
@@ -160,7 +160,7 @@ const DashboardContent = observer(() => {
           <div className="flex justify-center items-center h-64 relative">
             <div className="absolute w-48 h-48 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full opacity-30 animate-pulse"></div>
             <Image
-              src="/pus.png"
+              src="/gotchi/preview.png"
               alt="Colorful pixelated gotchipus"
               width={192}
               height={192}
@@ -200,7 +200,7 @@ const DashboardContent = observer(() => {
                 <div
                   className={`h-28 border-2 ${selectedEquipSlot === index ? "border-[#000080]" : "border-[#808080]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] ${slot.color} rounded-t-sm flex items-center justify-center`}
                 >
-                  <span className="text-2xl opacity-40">{slot.icon}</span>
+                  <Image src={slot.icon} alt={slot.name} width={64} height={64} />
                 </div>
                 <div
                   className={`border-2 border-t-0 ${selectedEquipSlot === index ? "border-[#000080] bg-[#e0e0ff]" : "border-[#808080] bg-[#d4d0c8]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-b-sm p-1 text-center font-medium text-sm`}
@@ -301,12 +301,12 @@ const DashboardContent = observer(() => {
               <div className="flex items-center justify-between p-3 bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]">
                 <div className="flex items-center">
                   <div className="w-8 h-8 flex items-center justify-center mr-3">
-                    <Image src="/tokens/pharos.png" alt="PUS Token" width={24} height={24} />
+                    <Image src="/tokens/pharos.png" alt="PTT" width={24} height={24} />
                   </div>
                   
                   <div>
                     <div className="font-medium">PUS Token</div>
-                    <div className="text-xs text-gray-600">Gotchipus Token</div>
+                    <div className="text-xs text-gray-600">Pharos Test Token</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -320,10 +320,10 @@ const DashboardContent = observer(() => {
           {/* NFT Grid */}
           {activeWalletTab === "nfts" && (
             <div className="grid grid-cols-3 gap-3">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
+              {[1, 2, 3, 4, 5].map((item) => (
                 <div key={item} className="aspect-square bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-hidden">
                   <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-4xl">🐙</span>
+                    <Image src={`/gotchi/e${item}.png`} alt="Gotchipus" width={64} height={64} />
                   </div>
                 </div>
               ))}

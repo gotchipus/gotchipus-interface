@@ -1,3 +1,5 @@
+
+import Image from "next/image"
 import { X } from "lucide-react"
 
 interface EquipSelectWindowProps {
@@ -30,7 +32,7 @@ export default function EquipSelectWindow({ onClose, equipments, onSelect }: Equ
               className="flex flex-col cursor-pointer transition-all duration-200 transform hover:scale-105"
             >
               <div className="h-24 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center">
-                <span className="text-4xl">{equip.icon}</span>
+                <Image src={equip.icon} alt={equip.name} width={64} height={64} />
               </div>
               <div className="border-2 border-t-0 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-b-sm p-2">
                 <div className="text-sm font-medium text-center">{equip.name}</div>

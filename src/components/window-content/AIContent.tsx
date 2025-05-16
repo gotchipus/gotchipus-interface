@@ -268,27 +268,23 @@ export default function AIContent() {
   };
 
   return (
-    <div className="flex h-full bg-[#c0c0c0]">
-      <div className="w-1/3 flex flex-col items-center justify-center p-4 border-r-2 border-t-2 border-l border-b border-[#ffffff] border-r-[#808080] border-t-[#ffffff] border-b-[#808080]">
-        <div className="relative w-48 h-48 mb-4">
+    <div className="relative h-full bg-[#c0c0c0]">
+      {/* Map Section - Full container as background */}
+      <div className="absolute inset-0 z-0 mr-98">
+        <div className="relative w-full h-full">
           <Image
-            src={getPetFrame()}
-            alt="Octopus Pet"
+            src="/map.png"
+            alt="Game Map"
             fill
             className="object-contain"
             priority
           />
         </div>
-        <div className="text-center">
-          <h2 className="text-lg font-bold text-[#000080]">{petProfile.name}</h2>
-          <p className="text-sm text-gray-600 mt-1">
-            {status === "streaming" ? "Thinking..." : petState}
-          </p>
-        </div>
       </div>
 
-      <div className="w-2/3 flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#c0c0c0]">
+      {/* Chat Section - Positioned on the right side, higher layer */}
+      <div className="absolute right-0 top-0 bottom-0 w-1/3 z-10 flex flex-col bg-[#c0c0c0] border-l-2 border-t-2 border-b border-r border-[#ffffff] border-l-[#808080] border-t-[#ffffff] border-b-[#808080]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {uiMessages.map((msg, index) => (
             <div
               key={index}
@@ -309,7 +305,7 @@ export default function AIContent() {
                   ) : (
                     <div className="relative w-6 h-6">
                       <Image
-                        src="/octopus/images/idle_1.png"
+                        src="/gotchi/preview.png"
                         alt="Octopus Assistant"
                         fill
                         className="object-contain"

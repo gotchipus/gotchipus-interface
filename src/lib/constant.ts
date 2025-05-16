@@ -13,8 +13,8 @@ export const WINDOW_SIZE = {
     "height": 400
   },
   "ai": {
-    "width": 900,
-    "height": 700
+    "width": 1200,
+    "height": 800
   },
   "dashboard": {
     "width": 1200,
