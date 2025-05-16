@@ -21,8 +21,28 @@ const DashboardContent = observer(() => {
   const [dna, setDna] = useState("")
   const [growth, setGrowth] = useState("")
   const [activeWalletTab, setActiveWalletTab] = useState<"tokens" | "nfts">("tokens")
+  const [balances, setBalances] = useState<number>(0)
+  const [ids, setIds] = useState<string[]>([])
+  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const { walletStore } = useStores()
   const { toast } = useToast()
+
+  const balance = useContractRead("balanceOf", [walletStore.address]);
+  const allIds = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
+
+  useEffect(() => {
+    if (balance !== undefined) {
+      setBalances(balance as number);
+    }
+  }, [balance]);
+
+  useEffect(() => {
+    if (allIds) {
+      setIds(allIds as string[]);
+      setIsLoading(false);
+    }
+  }, [allIds]);
 
   useEffect(() => {
     const abiCoder = ethers.AbiCoder.defaultAbiCoder();
@@ -34,18 +54,26 @@ const DashboardContent = observer(() => {
     setDna(BigInt(salt).toString());
   }, [])
 
-  const tokenGrowth = useContractRead("growth", [0]);
-  const tokenName = useContractRead("getTokenName", [0]);
+  const tokenGrowth = useContractRead("growth", [selectedTokenId || 0]);
+  const tokenName = useContractRead("getTokenName", [selectedTokenId || 0]);
 
   useEffect(() => {
-    setGrowth(tokenGrowth as string);
-    setPusName(tokenName as string);
-  }, [tokenGrowth, tokenName])
+    if (tokenGrowth !== undefined) {
+      setGrowth(tokenGrowth as string);
+    }
+  }, [tokenGrowth]);
+
+  useEffect(() => {
+    if (tokenName !== undefined) {
+      setPusName(tokenName as string);
+    }
+  }, [tokenName]);
 
   const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
 
   const handlePet = () => {
-    contractWrite("pet", [0]);
+    if (!selectedTokenId) return;
+    contractWrite("pet", [selectedTokenId]);
     toast({
       title: "Submited Transaction",
       description: "Transaction submitted successfully",
@@ -102,10 +130,12 @@ const DashboardContent = observer(() => {
   ]
 
   const handleRename = () => {
+    if (!selectedTokenId) return;
+    
     if (isRenaming) {
       if (newName.trim()) {
         setPusName(newName.trim())
-        contractWrite("setName", [newName.trim(), 0]);
+        contractWrite("setName", [newName.trim(), selectedTokenId]);
         toast({
           title: "Submited Transaction",
           description: "Transaction submitted successfully",
@@ -127,6 +157,66 @@ const DashboardContent = observer(() => {
     setShowEquipSelect(false)
   }
 
+  const handleTokenSelect = (tokenId: string) => {
+    setSelectedTokenId(tokenId);
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-[#ececec] h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your NFTs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No NFTs state
+  if (balances === 0) {
+    return (
+      <div className="p-6 bg-[#ececec] h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4">
+            <Image src="/gotchi/preview.png" alt="No NFTs" width={120} height={120} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">No NFTs Found</h3>
+          <p className="text-gray-600 mb-4">You don't have any Gotchipus NFTs yet.</p>
+          <button
+            className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm px-6 py-2 hover:bg-[#c0c0c0]"
+          >
+            Mint a Gotchipus
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // NFT selection view
+  if (!selectedTokenId) {
+    return (
+      <div className="p-6 bg-[#ececec] h-full overflow-auto">
+        <h2 className="text-xl font-bold mb-4">Select a Gotchipus</h2>
+        <div className="grid grid-cols-4 gap-4">
+          {ids.map((id) => (
+            <div
+              key={id}
+              className="bg-white flex flex-col items-center justify-center cursor-pointer transition-colors duration-200 border border-slate-200 rounded-lg p-3 shadow-sm hover:shadow-md"
+              onClick={() => handleTokenSelect(id.toString())}
+            >
+              <div className="w-48 h-48 relative flex items-center justify-center">
+                <Image src="/gotchi/preview.png" alt="Gotchipus" width={150} height={150} />
+              </div>
+              <div className="text-center mt-4 text-sm">#{id.toString()}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Detailed view for selected NFT
   return (
     <div className="p-6 bg-[#ececec] h-full overflow-auto">
       {/* First Row */}
@@ -320,10 +410,14 @@ const DashboardContent = observer(() => {
           {/* NFT Grid */}
           {activeWalletTab === "nfts" && (
             <div className="grid grid-cols-3 gap-3">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className="aspect-square bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-hidden">
+              {ids.map((id) => (
+                <div 
+                  key={id} 
+                  className={`aspect-square bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-hidden cursor-pointer ${selectedTokenId === id.toString() ? 'ring-2 ring-purple-500' : ''}`}
+                  onClick={() => handleTokenSelect(id.toString())}
+                >
                   <div className="w-full h-full flex items-center justify-center">
-                    <Image src={`/gotchi/e${item}.png`} alt="Gotchipus" width={64} height={64} />
+                    <Image src="/gotchi/preview.png" alt="Gotchipus" width={64} height={64} />
                   </div>
                 </div>
               ))}

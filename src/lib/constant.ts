@@ -55,5 +55,5 @@ export const WINDOW_BG_COLOR = {
   "mint": "#ffddee"
 };
 
-export const CHAIN_ID = 50002;
+export const CHAIN_ID = 688688;
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

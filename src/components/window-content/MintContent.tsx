@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useTranslation, Trans } from "react-i18next"
-import { useContractWrite } from "@/src/hooks/useContract"
+import { useContractWrite, useContractRead } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
 
 
