@@ -15,7 +15,7 @@ import { CustomJazzicon } from '@/components/footer/Jazzicon'
 import { StoreProvider } from "@stores/context";
 import { WalletProvider } from "@providers/WalletProvider";
 import { ToastProvider } from "@/components/ui/toast"
-import { I18nProvider } from "@providers/i18nProvider";
+import { I18nProvider } from "@providers/I18nProvider";
 
 const queryClient = new QueryClient()
 

@@ -41,12 +41,12 @@ export const CustomConnectButton = () => {
             }
   
             if (prevConnectedRef.current !== connected) {
-              if (connected) {
+              if (connected && account) {
                 toast({
                   title: "Wallet connected",
                   description: `Connected to wallet ${formatAddress(account.address)}`,
                 })
-              } else {
+              } else if (!connected && prevConnectedRef.current) {
                 toast({
                   title: "Disconnected Wallet",
                   description: "Disconnected",
@@ -58,6 +58,7 @@ export const CustomConnectButton = () => {
 
         return (
           <div
+            className="w-full"
             {...(!ready && {
               'aria-hidden': true,
               style: {
@@ -72,7 +73,7 @@ export const CustomConnectButton = () => {
                 return (
                   <button 
                     onClick={openConnectModal}
-                    className="bg-cook-yellow text-black hover:bg-cook-yellow/80 py-2 px-4 rounded-lg flex items-center gap-2"
+                    className="w-full text-black py-2 px-4 rounded-lg flex items-center justify-center gap-2"
                   >
                     <Image src="/connect.png" alt="Connect Wallet" width={24} height={24} />
                     <span className="text-base">Connect Wallet</span>
@@ -84,7 +85,7 @@ export const CustomConnectButton = () => {
                 return (
                   <button 
                     onClick={openChainModal}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 w-full"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4"
                   >
                     Wrong Network
                   </button>
@@ -92,10 +93,10 @@ export const CustomConnectButton = () => {
               }
 
               return (
-                <div className="flex gap-3">
+                <div className="w-full flex gap-3">
                   <button 
                     onClick={openAccountModal}
-                    className="flex items-center gap-2 text-black text-base py-2 px-4 rounded-lg"
+                    className="w-full flex items-center justify-center gap-2 text-black text-base py-2 px-4 rounded-lg"
                   >
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-600">
                       {account.ensAvatar ? (

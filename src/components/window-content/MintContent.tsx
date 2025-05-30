@@ -5,16 +5,23 @@ import Image from "next/image"
 import { useTranslation, Trans } from "react-i18next"
 import { useContractWrite, useContractRead } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
+import { observer } from "mobx-react-lite"
+import { useStores } from "@stores/context"
+import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
+import { Win98Loading } from "@/components/ui/win98-loading"
 
 
-export default function MintContent() {
+const MintContent = observer(() => {
   const { t } = useTranslation();
   const [mintAmount, setMintAmount] = useState(1);
+  const [isMinting, setIsMinting] = useState(false);
   const { toast } = useToast()
+  const { walletStore } = useStores()
 
   const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
 
   const handleMint = () => {
+    setIsMinting(true);
     contractWrite("freeMint", []);
     toast({
       title: "Submited Transaction",
@@ -24,12 +31,24 @@ export default function MintContent() {
   
   useEffect(() => {
     if (isConfirmed) {
+      setIsMinting(false);
       toast({
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",
       })
     }
   }, [isConfirmed])
+
+  useEffect(() => {
+    if (error) {
+      setIsMinting(false);
+      toast({
+        title: "Transaction Cancelled",
+        description: "Transaction was cancelled or failed",
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   const incrementAmount = () => {
     setMintAmount(1)
@@ -81,13 +100,28 @@ export default function MintContent() {
               </button>
             </div>
             
-            <button 
-              onClick={handleMint}
-              className="w-full py-2 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
-            >
-              <span className="mr-2">🐙</span> 
-              <Trans i18nKey="mint.button">{t("mint.button")}</Trans>
-            </button>
+            {walletStore.isConnected ? (
+              <button 
+                onClick={handleMint}
+                disabled={isMinting}
+                className="w-full py-2 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
+              >
+                {isMinting ? (
+                  <Win98Loading text="Minting in progress..." />
+                ) : (
+                  <>
+                    <span className="mr-2">🐙</span> 
+                    <Trans i18nKey="mint.button">{t("mint.button")}</Trans>
+                  </>
+                )}
+              </button>
+            ) : (
+              <div 
+                className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
+              >
+                <CustomConnectButton />
+              </div>
+            )}
           </div>
           
           <div className="text-center text-sm">
@@ -102,4 +136,6 @@ export default function MintContent() {
       </div>
     </div>
   )
-}
+})
+
+export default MintContent;
