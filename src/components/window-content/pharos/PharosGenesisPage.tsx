@@ -1,8 +1,8 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect, useCallback } from "react"
-import { Zap, Heart, Sparkles, BookOpen, Check, ChevronDown, Atom, Dna, ChevronUp, Menu } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Sparkles, Check, ChevronDown, ChevronUp } from "lucide-react"
 import DualTokenIcon from "@/components/window-content/pharos/DualTokenIcon"
 import { useContractRead, useContractWrite, useERC6551Read } from "@/hooks/useContract"
 import { PUS_ADDRESS } from "@/src/app/blockchain"
@@ -129,31 +129,31 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       { 
         name: "Elemented", 
         displayValue: "Water", 
-        icon: <Atom size={18} className="text-blue-500" />,
+        icon: <Image src="/icons/element.png" alt="Water" width={18} height={18} />,
         bgColor: "bg-blue-50"
       },
       { 
         name: "Bonding", 
         displayValue: "50", 
-        icon: <Heart size={18} className="text-red-500" />,
+        icon: <Image src="/icons/bonding.png" alt="Bonding" width={18} height={18} />,
         bgColor: "bg-red-50"
       },
       { 
         name: "Growth", 
         displayValue: "0", 
-        icon: <Sparkles size={18} className="text-amber-500" />,
+        icon: <Image src="/icons/growth.png" alt="Growth" width={18} height={18} />,
         bgColor: "bg-amber-50"
       },
       { 
         name: "Wisdom", 
         displayValue: "0", 
-        icon: <BookOpen size={18} className="text-emerald-500" />,
+        icon: <Image src="/icons/wisdom.png" alt="Wisdom" width={18} height={18} />,
         bgColor: "bg-emerald-50"
       },
       { 
         name: "Aether", 
         displayValue: getStableAether(Number(stakeAmount)), 
-        icon: <Zap size={18} className="text-cyan-500" />,
+        icon: <Image src="/icons/aether.png" alt="Aether" width={18} height={18} />,
         bgColor: "bg-cyan-50"
       }
     ]
@@ -242,7 +242,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
                 onClick={() => setStoryExpanded(!storyExpanded)}
               >
                 <div className="flex items-center">
-                  <BookOpen size={16} className="mr-2 text-emerald-500" />
+                  <Image src="/icons/story.png" alt="Story" width={18} height={18} className="mr-2" />
                   <span className="text-xs text-gray-600">Click to {storyExpanded ? 'collapse' : 'expand'} story</span>
                 </div>
                 {storyExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -263,7 +263,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
                 onClick={() => setTraitsExpanded(!traitsExpanded)}
               >
                 <div className="flex items-center">
-                  <Menu size={16} className="mr-2 text-gray-600" />
+                  <Image src="/icons/attribute.png" alt="Attributes" width={18} height={18} className="mr-2" />
                   <span className="text-xs text-gray-600">Click to {traitsExpanded ? 'collapse' : 'expand'} attributes</span>
                 </div>
                 {traitsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
