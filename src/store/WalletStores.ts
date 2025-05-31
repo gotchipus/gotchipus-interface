@@ -47,10 +47,10 @@ class WalletStore {
     return this.chainId === 50002 ? 'Pharos Devnet' : 'Unknown Network';
   }
 
-  get formattedPharos() {
+  formattedPharos(point: number = 4) {
     if (!this.balance) return '';
     const formattedBalance = ethers.formatEther(this.balance);
-    return parseFloat(formattedBalance).toFixed(4);
+    return parseFloat(formattedBalance).toFixed(point);
   }
 
   get formattedBalance() {

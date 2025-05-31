@@ -10,12 +10,11 @@ import attributesAbi from './abi/attributes-facet-abi.json';
 import diamondCutAbi from './abi/diamond-cut-abi.json';
 import diamondLoupeAbi from './abi/diamond-loupe-abi.json';
 import diamondAbi from './abi/diamond-abi.json';
+import erc6551FacetAbi from './abi/erc6551-facet-abi.json';
 
 export const PUS_ABI = [
   ...gotchipusAbi,
   ...dnaAbi,
-  ...erc6551AccountAbi,
-  ...erc6551RegistryAbi,
   ...hooksAbi,
   ...ownershipAbi,
   ...simpleErc20Abi,
@@ -24,6 +23,9 @@ export const PUS_ABI = [
   ...diamondCutAbi,
   ...diamondLoupeAbi,
   ...diamondAbi,
+  ...erc6551FacetAbi,
 ];
 
 export const PUS_ADDRESS = '0x0000000038f050528452D6Da1E7AACFA7B3Ec0a8'; 
+export const ERC6551_REGISTRY_ADDRESS = '0x000000E7C8746fdB64D791f6bb387889c5291454';
+export const ERC6551_ABI = erc6551RegistryAbi;

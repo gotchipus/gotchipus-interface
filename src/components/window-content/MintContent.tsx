@@ -23,6 +23,7 @@ const MintContent = observer(() => {
   const handleMint = () => {
     setIsMinting(true);
     contractWrite("freeMint", []);
+    
     toast({
       title: "Submited Transaction",
       description: "Transaction submitted successfully",
@@ -64,7 +65,7 @@ const MintContent = observer(() => {
         <div className="flex flex-col items-center">
           <div className="mb-4 border-2 border-[#dfdfdf] border-t-black border-l-black border-r-[#808080] border-b-[#808080] p-2">
             <Image 
-              src="/pharos.png" 
+              src="/pharos-mint.png" 
               alt="Mint Preview" 
               width={300} 
               height={300} 

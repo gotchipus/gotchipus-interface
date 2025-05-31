@@ -32,12 +32,12 @@ const icons = [
   },
   {
     id: "pharos",
-    title: "Pharos",
+    title: "My Pharos",
     icon: "/pharos.png",
   },
   {
     id: "dashboard",
-    title: "Dashboard",
+    title: "My Gotchipus",
     icon: "/dashboard.png",
   },
   {
@@ -76,10 +76,10 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         onOpenWindow("mint", "Mint", <MintContent />)
         break
       case "pharos":
-        onOpenWindow("pharos", "Pharos", <MyPharosContent />)
+        onOpenWindow("pharos", "My Pharos", <MyPharosContent />)
         break
       case "dashboard":
-        onOpenWindow("dashboard", "Dashboard", <DashboardContent />)
+        onOpenWindow("dashboard", "My Gotchipus", <DashboardContent />)
         break
       case "hooks":
         onOpenWindow("hooks", "Hooks", <HookContent />)

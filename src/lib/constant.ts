@@ -37,8 +37,8 @@ export const WINDOW_SIZE = {
     "height": 800
   },
   "mint": {
-    "width": 1200,
-    "height": 800
+    "width": 800,
+    "height": 700
   }
 };
 

@@ -109,7 +109,118 @@ body {
   }
 }
 
+/* Windows 98 Styles */
+@layer components {
+  .win98-loading {
+    @apply w-[200px] h-5 bg-[#c0c0c0] border-2 border-[#dfdfdf] relative overflow-hidden;
+    box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  }
+  
+  .win98-loading-bar {
+    @apply absolute top-0 left-0 h-full w-[30%] bg-[#000080];
+    animation: win98-loading 1.5s infinite linear;
+  }
+  
+  @keyframes win98-loading {
+    0% {
+      left: -30%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
 
+  .win98-window {
+    @apply bg-[#c0c0c0] border-2 border-[#dfdfdf] flex flex-col overflow-hidden;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .win98-title-bar {
+    @apply text-white py-0.5 px-1 flex items-center font-bold text-xs h-5;
+    background: linear-gradient(90deg, #000080, #1084d0);
+  }
+
+  .win98-title-icon {
+    @apply w-4 h-4 mr-1;
+  }
+
+  .win98-controls {
+    @apply flex ml-auto;
+  }
+
+  .win98-control-button {
+    @apply w-4 h-4 ml-0.5 flex items-center justify-center text-[10px] text-black bg-[#c0c0c0] border border-[#dfdfdf];
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  }
+
+  .win98-menu-bar {
+    @apply bg-[#c0c0c0] border-b border-[#dfdfdf] py-0.5 flex text-xs;
+  }
+
+  .win98-menu-item {
+    @apply py-0.5 px-2 mx-0.5;
+  }
+
+  .win98-menu-item:hover {
+    @apply bg-[#000080] text-white;
+  }
+
+  .win98-content {
+    @apply p-2 flex-grow overflow-auto;
+  }
+
+  .win98-status-bar {
+    @apply bg-[#c0c0c0] border-t border-[#dfdfdf] py-0.5 px-1 flex text-[11px] h-5 items-center;
+  }
+
+  .win98-button {
+    @apply bg-[#c0c0c0] border-2 border-[#dfdfdf] py-1 px-3 text-xs font-bold text-black cursor-pointer inline-flex items-center justify-center;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  }
+
+  .win98-button:active {
+    box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  }
+
+  .win98-button:disabled {
+    @apply text-[#808080] cursor-not-allowed;
+  }
+
+  .win98-text-area {
+    @apply bg-white border-2 border-[#dfdfdf] p-1 text-xs text-black w-full;
+    box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+    font-family: "MS Sans Serif", sans-serif;
+  }
+
+  .win98-group-box {
+    @apply border border-[#808080] p-2 mb-2 relative;
+  }
+
+  .win98-group-title {
+    @apply absolute -top-2 left-2 bg-[#c0c0c0] px-1 text-[11px];
+  }
+
+  .win98-icon {
+    @apply w-8 h-8 mr-2;
+  }
+
+  .win98-toolbar {
+    @apply bg-[#c0c0c0] border-b border-[#dfdfdf] p-0.5 flex;
+  }
+
+  .win98-toolbar-button {
+    @apply w-6 h-6 mx-0.5 flex items-center justify-center bg-[#c0c0c0] border border-[#dfdfdf];
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff;
+  }
+
+  .win98-toolbar-button:active {
+    box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff;
+  }
+
+  .win98-toolbar-separator {
+    @apply w-px h-6 bg-[#808080] mx-1;
+  }
+}
 
 .scrollbar-none::-webkit-scrollbar {
   display: none;

@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { ethers } from 'ethers';
-import { PUS_ABI, SIMPLE_ERC20_ABI, PUS_ADDRESS } from '@/src/app/blockchain';
-import { useWriteContract, useReadContract, useWaitForTransactionReceipt } from "wagmi";
+import { PUS_ABI, PUS_ADDRESS, ERC6551_REGISTRY_ADDRESS, ERC6551_ABI } from '@/src/app/blockchain';
+import { useWriteContract, useReadContract, useReadContracts, useWaitForTransactionReceipt } from "wagmi";
+import type { Abi } from 'viem';
 
 export const useContractWrite = () => {
   const {
@@ -23,7 +24,8 @@ export const useContractWrite = () => {
 
   const contractWrite = useCallback(async (
     functionName: string,
-    args: any[] = []
+    args: any[] = [],
+    value?: bigint
   ) => {
     try {
       writeContract({
@@ -31,7 +33,8 @@ export const useContractWrite = () => {
         abi: PUS_ABI,
         functionName: functionName,
         args: args,
-        gas: BigInt(1000000)
+        gas: BigInt(1000000),
+        value: value
       });
     } catch (error) {
       resetWrite();
@@ -70,3 +73,49 @@ export const useContractRead = (
 
   return result;
 };
+
+export const useContractReads = (
+  functionName: string,
+  argsArray: any[][] = [],
+  options?: {
+    enabled?: boolean
+  }
+) => {
+
+  const contracts = argsArray.map(args => ({
+    address: PUS_ADDRESS as `0x${string}`,
+    abi: PUS_ABI as Abi,
+    functionName: functionName,
+    args: args
+  }));
+
+  const { data: results } = useReadContracts({
+    contracts,
+    query: {
+      enabled: options?.enabled !== false && contracts.length > 0
+    }
+  });
+
+  return results;
+}
+
+
+export const useERC6551Read = (
+  functionName: string,
+  args: any[] = [],
+  options?: {
+    enabled?: boolean
+  }
+) => {
+  const { data: result } = useReadContract({
+    address: ERC6551_REGISTRY_ADDRESS,
+    abi: ERC6551_ABI,
+    functionName: functionName,
+    args: args,
+    query: {
+      enabled: options?.enabled
+    }
+  });
+
+  return result;
+}

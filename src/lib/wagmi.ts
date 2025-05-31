@@ -8,7 +8,7 @@ import { connectors } from './walletConfig'
 
 // const supportedChains: Chain[] = [mainnet, sepolia, base, optimism]
 
-const pharosDevnetCustomChain = {
+const pharosTestnetCustomChain = {
   id: 688688,
   name: 'Pharos Testnet',
   iconUrl: '',
@@ -24,11 +24,11 @@ const pharosDevnetCustomChain = {
 
 
 export const config = createConfig({
-  chains: [pharosDevnetCustomChain],
+  chains: [pharosTestnetCustomChain],
   multiInjectedProviderDiscovery: true,
   connectors,
   transports: {
-    [pharosDevnetCustomChain.id]: http(),
+    [pharosTestnetCustomChain.id]: http(),
   },
   ssr: true 
 })
