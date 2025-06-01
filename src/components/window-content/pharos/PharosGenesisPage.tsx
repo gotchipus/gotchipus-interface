@@ -101,13 +101,43 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       })
       setIsSummoning(false);
       
+      const sendDataToBackend = async () => {
+        try {
+          const data = {
+            base64_img: previewImage,
+            token_id: tokenId,
+            name: pusName,
+            description: story
+          };
+
+          const response = await fetch("http://127.0.0.1:8000/images/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+          
+          if (!response.ok) {
+            throw new Error(`API call failed with status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          console.log("Data sent to backend successfully:", result);
+        } catch (error) {
+          console.error("Error sending data to backend:", error);
+        }
+      };
+      
+      sendDataToBackend();
+      
       if (onClose) {
         setTimeout(() => {
           onClose();
         }, 500);
       }
     }
-  }, [isConfirmed, onClose])
+  }, [isConfirmed, onClose, receipt, previewImage, pusName, story])
 
   useEffect(() => {
     if (error) {

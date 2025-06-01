@@ -93,7 +93,6 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
   
   try {
     const result = rawData.result;
-    console.log(result);
 
     return {
       name: result.name,
