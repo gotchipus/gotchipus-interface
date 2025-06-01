@@ -54,12 +54,12 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="w-[800px] h-[600px] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#c0c0c0] rounded-sm flex flex-col">
+      <div className="w-[800px] h-[600px] border-2 border-[#808080] shadow-win98-outer bg-[#c0c0c0] rounded-sm flex flex-col">
         {/* Title Bar */}
         <div className="bg-[#000080] text-white px-2 py-1 flex items-center justify-between">
           <div className="font-bold pixel-text">Hook Manager</div>
           <button
-            className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] text-black w-5 h-5 flex items-center justify-center"
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-black w-5 h-5 flex items-center justify-center"
             onClick={() => isOpen(false)}
           >
             <X size={12} />
@@ -98,7 +98,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
             <div className="h-full flex flex-col">
               <div className="flex-1 flex gap-4 mb-4">
                 {/* Hook List */}
-                <div className="flex-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3 overflow-hidden flex flex-col">
+                <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3 overflow-hidden flex flex-col">
                   <h3 className="font-bold mb-3 text-center pixel-text">Registered Hooks</h3>
                   <div className="flex-1 overflow-auto">
                     {hooks.length === 0 ? (
@@ -108,7 +108,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
                         {hooks.map((hook) => (
                           <div
                             key={hook}
-                            className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
+                            className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-win98-outer rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
                             onClick={() => selectHook()}
                           >
                             <p className="font-mono pixel-text text-sm">{hook}</p>
@@ -121,7 +121,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
                 </div>
 
                 {/* Hook Details */}
-                <div className="w-1/3 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3">
+                <div className="w-1/3 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3">
                   <h3 className="font-bold mb-3 text-center pixel-text">Hook Details</h3>
                   {selectedHook ? (
                     <div className="space-y-3">
@@ -149,7 +149,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
                 <button
                   onClick={callHarvest}
                   disabled={!selectedHook}
-                  className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm px-4 py-1 flex items-center ${!selectedHook ? "opacity-50 cursor-not-allowed" : "hover:bg-[#c0c0c0]"}`}
+                  className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-4 py-1 flex items-center ${!selectedHook ? "opacity-50 cursor-not-allowed" : "hover:bg-[#c0c0c0]"}`}
                 >
                   <ArrowRight size={14} className="mr-1" />
                   <span className="pixel-text">Call Harvest</span>
@@ -158,7 +158,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
             </div>
           ) : (
             <form onSubmit={() => {}} className="h-full flex flex-col">
-              <div className="flex-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3">
+              <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3">
                 <h3 className="font-bold mb-3 text-center pixel-text">Add New Hook</h3>
                 <div className="space-y-4">
                   <div>
@@ -168,7 +168,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
                       placeholder="0x..."
                       value={newHook.address}
                       onChange={(e) => setNewHook({ ...newHook, address: e.target.value })}
-                      className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
+                      className="w-full p-1 border-2 border-[#808080] shadow-win98-outer bg-white rounded-sm pixel-text"
                     />
                   </div>
                   <div>
@@ -178,7 +178,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
                       placeholder="Enter hook description"
                       value={newHook.description}
                       onChange={(e) => setNewHook({ ...newHook, description: e.target.value })}
-                      className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
+                      className="w-full p-1 border-2 border-[#808080] shadow-win98-outer bg-white rounded-sm pixel-text"
                     />
                   </div>
                 </div>
@@ -186,7 +186,7 @@ const HookManager: React.FC<HookManagerProps> = observer(({ isOpen }) => {
               <div className="mt-4">
                 <button
                   type="submit"
-                  className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm py-1 hover:bg-[#c0c0c0] flex items-center justify-center"
+                  className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm py-1 hover:bg-[#c0c0c0] flex items-center justify-center"
                 >
                   <Plus size={14} className="mr-1" />
                   <span className="pixel-text">Add Hook</span>

@@ -58,6 +58,7 @@ class WalletStore {
     const formattedBalance = ethers.formatUnits(this.balance, 18);
     return `${formattedBalance} ${this.symbol}`;
   }
+
 }
 
 export default WalletStore;

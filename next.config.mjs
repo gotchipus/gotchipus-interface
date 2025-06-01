@@ -57,6 +57,12 @@ const nextConfig = {
         port: '',
         pathname: '/**', 
       },
+      {
+        protocol: 'https',
+        hostname: 'app.gotchipus.com',
+        port: '',
+        pathname: '/**', 
+      },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -81,8 +87,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/devnet/:path*',
-        destination: 'https://devnet.dplabs-internal.com/:path*',
+        source: '/api/testnet/:path*',
+        destination: 'https://testnet.dplabs-internal.com/:path*',
       },
     ]
   },

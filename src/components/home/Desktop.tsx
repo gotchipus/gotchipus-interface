@@ -40,16 +40,16 @@ const icons = [
     title: "My Gotchipus",
     icon: "/dashboard.png",
   },
-  {
-    id: "hooks",
-    title: "Hooks",
-    icon: "/hooks.png",
-  },
-  {
-    id: "dna",
-    title: "DNA Analyzer",
-    icon: "/dna.png",
-  },
+  // {
+  //   id: "hooks",
+  //   title: "Hooks",
+  //   icon: "/hooks.png",
+  // },
+  // {
+  //   id: "dna",
+  //   title: "DNA Analyzer",
+  //   icon: "/dna.png",
+  // },
 ]
 
 export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
@@ -81,12 +81,12 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
       case "dashboard":
         onOpenWindow("dashboard", "My Gotchipus", <DashboardContent />)
         break
-      case "hooks":
-        onOpenWindow("hooks", "Hooks", <HookContent />)
-        break
-      case "dna":
-        onOpenWindow("dna", "DNA Analyzer", <DNAAnalyzerContent />)
-        break
+      // case "hooks":
+      //   onOpenWindow("hooks", "Hooks", <HookContent />)
+      //   break
+      // case "dna":
+      //   onOpenWindow("dna", "DNA Analyzer", <DNAAnalyzerContent />)
+      //   break
       default:
         break
     }

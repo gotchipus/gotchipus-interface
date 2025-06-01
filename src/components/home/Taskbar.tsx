@@ -5,10 +5,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import type { WindowType } from "@/lib/types"
-import { Clock, Globe } from "lucide-react"
+import { Clock } from "lucide-react"
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import AboutContent from "@/components/window-content/AboutContent"
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Locale } from '@i18n/constants'
 import {
   Select,
@@ -110,8 +110,8 @@ export default function Taskbar({
               pressedButton === window.id
                 ? "shadow-win98-inner"
                 : activeWindow === window.id
-                ? "shadow-win98-outer"
-                : "shadow-win98-inner"
+                ? "shadow-win98-inner"
+                : "shadow-win98-outer"
             }`}
             onMouseDown={() => handleButtonMouseDown(window.id)}
             onMouseUp={() => handleButtonMouseUp(window.id)}
@@ -127,9 +127,13 @@ export default function Taskbar({
           <SelectTrigger className="w-[80px] h-10 bg-[#c0c0c0] border border-[#808080] shadow-win98-inner cursor-pointer rounded-none">
             <SelectValue placeholder="Language" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={Locale.EnglishUnitedStates}>English</SelectItem>
-            <SelectItem value={Locale.ChineseSimplified}>中文</SelectItem>
+          <SelectContent className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer rounded-none p-0">
+            <SelectItem value={Locale.EnglishUnitedStates} className="hover:bg-[#000080] hover:text-white focus:bg-[#000080] focus:text-white cursor-pointer px-3 py-1 border-b border-[#808080] last:border-b-0">
+              English
+            </SelectItem>
+            <SelectItem value={Locale.ChineseSimplified} className="hover:bg-[#000080] hover:text-white focus:bg-[#000080] focus:text-white cursor-pointer px-3 py-1 border-b border-[#808080] last:border-b-0">
+              中文
+            </SelectItem>
           </SelectContent>
         </Select>
 
@@ -139,7 +143,7 @@ export default function Taskbar({
           <Link href="https://x.com/gotchipus" target="_blank">
             <Image src="/x.svg" alt="X" width={24} height={24} />
           </Link>
-          <Link href="https://discord.gg/gotchipus" target="_blank">
+          <Link href="https://discord.gg/gotchilabs" target="_blank">
             <Image src="/discord.svg" alt="Discord" width={24} height={24} />
           </Link>
           <Link href="https://github.com/gotchipus" target="_blank">

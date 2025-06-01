@@ -328,7 +328,7 @@ const MyPharosContent = observer(() => {
             ids.map((id) => (
               <div
                 key={id}
-                className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-none p-3 hover:bg-[#c0c0c0]"
+                className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
                 onClick={() => handlePharoClick(id.toString())}
               >
                 <motion.div
@@ -341,7 +341,7 @@ const MyPharosContent = observer(() => {
               </div>
             ))
           ) : (
-            <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf]">
+            <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
               No Pharos NFTs found in your wallet
             </div>
           )}
@@ -351,7 +351,7 @@ const MyPharosContent = observer(() => {
       {viewState === "hatching" && (
         <div className="bg-[#c0c0c0] h-full">
           <div className="p-4">
-            <div className="mb-6 bg-white border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] p-4">
+            <div className="mb-6 bg-white border-2 border-[#808080] shadow-win98-outer p-4">
               <h3 className="text-lg font-bold mb-2">Choose Your Gotchipus</h3>
               <p className="text-sm">
                 Each Pharos can summon multiple Gotchipus personalities. Select the one that resonates with you!
@@ -359,7 +359,7 @@ const MyPharosContent = observer(() => {
             </div>
 
             {isGeneratingPreviews || gotchipusPreviews.length === 0 ? (
-              <div className="flex justify-center items-center h-[300px] bg-white border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf]">
+              <div className="flex justify-center items-center h-[300px] bg-white border-2 border-[#808080] shadow-win98-outer">
                 <div className="text-center">
                   <Win98Loading />
                   <p className="mt-4 text-sm">Summoning Gotchipus variants...</p>
@@ -371,7 +371,7 @@ const MyPharosContent = observer(() => {
                   {gotchipusPreviews.map((preview, index) => (
                     <div 
                       key={preview.id}
-                      className={`bg-[#d4d0c8] border-2 ${selectedPreviewIndex === index ? 'border-[#000080]' : 'border-[#808080]'} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] cursor-pointer ${selectedPreviewIndex === index ? 'bg-[#efefef]' : ''}`}
+                      className={`bg-[#d4d0c8] border-2 ${selectedPreviewIndex === index ? 'border-[#000080]' : 'border-[#808080]'} shadow-win98-outer cursor-pointer ${selectedPreviewIndex === index ? 'bg-[#efefef]' : ''}`}
                       onClick={() => handleSelectPreview(index)}
                     >
                       <div className={`flex items-center justify-between p-1 ${selectedPreviewIndex === index ? 'bg-[#000080] text-white' : 'bg-[#d4d0c8]'}`}>
@@ -384,7 +384,7 @@ const MyPharosContent = observer(() => {
                       </div>
                       
                       <div className="p-3">
-                        <div className="flex justify-center border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white p-2 mb-3">
+                        <div className="flex justify-center border border-[#808080] shadow-win98-inner bg-white p-2 mb-3">
                           <motion.div animate={floatAnimation} className="relative w-32 h-32">
                             <Image 
                               src={preview.image} 
@@ -396,7 +396,7 @@ const MyPharosContent = observer(() => {
                           </motion.div>
                         </div>
                         
-                        <div className="border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white p-2 h-[100px] overflow-y-auto text-sm">
+                        <div className="border border-[#808080] shadow-win98-inner bg-white p-2 h-[100px] overflow-y-auto text-sm">
                           {preview.story}
                         </div>
                       </div>
@@ -405,7 +405,7 @@ const MyPharosContent = observer(() => {
                 </div>
                 
                 {selectedPreviewIndex >= 0 && gotchipusPreviews[selectedPreviewIndex] && (
-                  <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white p-4 mb-4">
+                  <div className="border-2 border-[#808080] shadow-win98-outer bg-white p-4 mb-4">
                     <div className="flex items-center mb-3">
                       <div className="w-10 h-10 relative mr-3">
                         <Image 
@@ -421,7 +421,7 @@ const MyPharosContent = observer(() => {
                       </div>
                     </div>
                     
-                    <div className="border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white p-3 text-sm">
+                    <div className="border border-[#808080] shadow-win98-inner bg-white p-3 text-sm">
                       {gotchipusPreviews[selectedPreviewIndex].story}
                     </div>
                   </div>
@@ -429,14 +429,14 @@ const MyPharosContent = observer(() => {
                 
                 <div className="flex justify-between">
                   <button 
-                    className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0]"
+                    className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0]"
                     onClick={handleBack}
                   >
                     <ChevronLeft size={16} className="mr-1" /> Back
                   </button>
                   
                   <button 
-                    className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0] ${selectedPreviewIndex < 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0] ${selectedPreviewIndex < 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleNext}
                     disabled={selectedPreviewIndex < 0}
                   >

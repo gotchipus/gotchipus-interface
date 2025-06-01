@@ -25,7 +25,7 @@ export const Win98Loading = ({ className = '', text = 'Loading...' }: Win98Loadi
   
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      <div className="w-full h-4 border border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] overflow-hidden">
+      <div className="w-full h-4 border border-[#808080] shadow-win98-outer bg-[#d4d0c8] overflow-hidden">
         <div 
           className="h-full bg-[#000080] transition-all duration-200 ease-linear" 
           style={{ width: `${progress}%` }} 

@@ -86,7 +86,7 @@ const MintContent = observer(() => {
             <div className="flex items-center justify-between mb-4">
               <button 
                 onClick={decrementAmount}
-                className="w-8 h-8 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm flex items-center justify-center font-bold hover:bg-[#c0c0c0]"
+                className="w-8 h-8 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm flex items-center justify-center font-bold hover:bg-[#c0c0c0]"
               >
                 -
               </button>
@@ -95,7 +95,7 @@ const MintContent = observer(() => {
               
               <button 
                 onClick={incrementAmount}
-                className="w-8 h-8 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm flex items-center justify-center font-bold hover:bg-[#c0c0c0]"
+                className="w-8 h-8 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm flex items-center justify-center font-bold hover:bg-[#c0c0c0]"
               >
                 +
               </button>
@@ -105,7 +105,7 @@ const MintContent = observer(() => {
               <button 
                 onClick={handleMint}
                 disabled={isMinting}
-                className="w-full py-2 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
+                className="w-full py-2 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
               >
                 {isMinting ? (
                   <Win98Loading text="Minting in progress..." />
@@ -118,7 +118,7 @@ const MintContent = observer(() => {
               </button>
             ) : (
               <div 
-                className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
+                className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm font-bold hover:bg-[#c0c0c0] flex items-center justify-center"
               >
                 <CustomConnectButton />
               </div>

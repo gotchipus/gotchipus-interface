@@ -208,7 +208,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       <div className="flex flex-col md:flex-row gap-6 scrollbar-none">
         {/* Left Side - Gotchipus Preview */}
         <div className="w-full md:w-2/5 flex flex-col gap-4 scrollbar-none">
-          <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-4 h-80 flex items-center justify-center relative">
+          <div className="border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-4 h-80 flex items-center justify-center relative">
             <motion.div animate={floatAnimation} className="relative w-full h-full">
               <Image src={previewImage} alt="Gotchipus" fill className="object-cover" />
             </motion.div>
@@ -221,7 +221,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             {/* DNA ID Section */}
             <div className="win98-group-box">
               <div className="win98-group-title">{attributes.dna.name}</div>
-              <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-x-auto whitespace-nowrap scrollbar-none">
+              <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
                 {attributes.dna.displayValue}
               </div>
             </div>
@@ -229,7 +229,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             {/* Token Bound Account Section */}
             <div className="win98-group-box">
               <div className="win98-group-title">Token Bound Account</div>
-              <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] overflow-x-auto whitespace-nowrap scrollbar-none">
+              <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
                 {tokenBoundAccount}
               </div>
             </div>
@@ -249,7 +249,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
 
               {storyExpanded && (
-                <div className="mt-2 p-2 bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] text-sm max-h-40 overflow-y-auto">
+                <div className="mt-2 p-2 bg-[#d4d0c8] border border-[#808080] shadow-win98-inner text-sm max-h-40 overflow-y-auto">
                   {story}
                 </div>
               )}
@@ -272,7 +272,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               {traitsExpanded && (
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {attributes.traits.map((attr, index) => (
-                    <div key={index} className="bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] p-2">
+                    <div key={index} className="bg-[#d4d0c8] border border-[#808080] shadow-win98-inner p-2">
                       <div className="flex items-center gap-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${attr.bgColor}`}>
                           {attr.icon}
@@ -299,7 +299,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               <input
                 type="text"
                 placeholder="Enter gotchipus name"
-                className="w-full border-2 border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white rounded-lg p-3"
+                className="w-full border-2 border-[#808080] shadow-win98-inner bg-white rounded-lg p-3"
                 value={pusName}
                 onChange={(e) => setPusName(e.target.value)}
                 disabled={isSummoning}
@@ -320,7 +320,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             <h3 className="text-lg font-bold mb-2">Select Timezone</h3>
             <div className="relative">
               <div 
-                className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-3 flex justify-between items-center cursor-pointer ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-3 flex justify-between items-center cursor-pointer ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={() => !isSummoning && setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
               >
                 <span>UTC{selectedTimezone >= 0 ? '+' : ''}{selectedTimezone}</span>
@@ -328,7 +328,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
               
               {isTimezoneDropdownOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-win98-outer rounded-lg max-h-60 overflow-y-auto">
                   {Array.from({ length: 27 }, (_, i) => {
                     const offset = i - 12;
                     return (
@@ -353,7 +353,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
           <div className="mt-2">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold">Stake {stakeToken} Token </h3>
-              <span className="text-sm bg-[#d4d0c8] border border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] px-2 py-1">
+              <span className="text-sm bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1">
                 Balance: {walletStore.formattedPharos()} {stakeToken}
               </span>
             </div>
@@ -362,7 +362,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               <input
                 type="text"
                 placeholder="0.0"
-                className={`w-full border-2 ${isInsufficientBalance ? 'border-[#ff0000]' : 'border-[#808080]'} shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white rounded-lg p-3`}
+                className={`w-full border-2 ${isInsufficientBalance ? 'border-[#ff0000]' : 'border-[#808080]'} shadow-win98-inner bg-white rounded-lg p-3`}
                 value={stakeAmount}
                 onChange={(e) => handleStakeAmountChange(e.target.value)}
                 disabled={isSummoning}
@@ -399,7 +399,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               <h4 className="font-bold mb-2">Select Stake Position:</h4>
               <div className="relative">
                 <div 
-                  className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-3 flex justify-between items-center cursor-pointer ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-3 flex justify-between items-center cursor-pointer ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={() => !isSummoning && setIsVersionDropdownOpen(!isVersionDropdownOpen)}
                 >
                   <span>{positionVersion} position</span>
@@ -407,7 +407,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
                 </div>
                 
                 {isVersionDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-lg">
+                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-win98-outer rounded-lg">
                     {positionVersions.map((version, index) => (
                       <div
                         key={index}
@@ -429,7 +429,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
                 {tokens[positionVersion as keyof typeof tokens].map((token, index) => (
                   <div
                     key={index}
-                    className={`border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-lg p-2 flex items-center cursor-pointer ${
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-2 flex items-center cursor-pointer ${
                       selectedToken === index ? "bg-[#d4d0c8]" : ""
                     } ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={() => !isSummoning && handleLpTokenChange(positionVersion, index)}
@@ -457,7 +457,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             {/* Confirm Button */}
             {walletStore.isConnected ? (
               <button
-                className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-lg p-3 mt-6 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center ${
+                className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-lg p-3 mt-6 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center ${
                   !pusName || !stakeAmount || selectedToken === null || isSummoning || isInsufficientBalance
                     ? "opacity-50 cursor-not-allowed"
                     : ""
@@ -475,7 +475,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
                 )}
               </button>
             ) : (
-              <div className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-lg p-3 mt-6 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center">
+              <div className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-lg p-3 mt-6 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center">
                 <CustomConnectButton />
               </div>
             )}

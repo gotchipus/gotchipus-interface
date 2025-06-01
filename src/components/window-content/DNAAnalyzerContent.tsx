@@ -79,7 +79,7 @@ const DNAAnalyzerContent = () => {
     if (!traits) return null;
 
     return (
-      <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#000000] p-4 mb-4 flex items-center justify-center">
+      <div className="border-2 border-[#808080] shadow-win98-outer bg-[#000000] p-4 mb-4 flex items-center justify-center">
         <div className="w-32 h-32 relative">
           {/* Body */}
           <div className={`absolute inset-0 flex items-center justify-center`}>
@@ -139,7 +139,7 @@ const DNAAnalyzerContent = () => {
     const rarityColor = getRarityColor(trait.rarity);
     
     return (
-      <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm">
+      <div className="border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm">
         <div className="p-2 border-b-2 border-[#808080] flex justify-between items-center">
           <h3 className="text-sm font-bold text-[#000080]">{title}</h3>
           {trait.dominance && (
@@ -174,7 +174,7 @@ const DNAAnalyzerContent = () => {
 
   return (
     <div className="p-4 bg-[#c0c0c0] h-full overflow-auto">
-      <div className="mb-4 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm">
+      <div className="mb-4 border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-sm">
         <div className="p-3 border-b-2 border-[#808080]">
           <h2 className="text-lg font-bold text-[#000080]">DNA Analyzer</h2>
           <p className="text-sm text-gray-600">Enter a DNA ID to analyze genetic traits</p>
@@ -186,7 +186,7 @@ const DNAAnalyzerContent = () => {
               placeholder="Enter DNA ID (hex format)"
               value={dnaId}
               onChange={(e) => setDnaId(e.target.value)}
-              className="flex-1 p-2 border-2 border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white"
+              className="flex-1 p-2 border-2 border-[#808080] shadow-win98-inner bg-white"
             />
             <button
               onClick={handleAnalyze}
@@ -216,7 +216,7 @@ const DNAAnalyzerContent = () => {
 
       {traits && (
         <>
-          <div className="mb-4 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3">
+          <div className="mb-4 border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold text-[#000080]">DNA ID: {traits.id}</h3>
               <div className="flex items-center">
@@ -238,7 +238,7 @@ const DNAAnalyzerContent = () => {
             <div className="w-2/3 pl-4">
               {renderDNAVisualization()}
               
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3">
                 <div className="flex flex-wrap">
                   <div className="mr-4 mb-2">
                     <span className="text-xs">Body: </span>
@@ -264,7 +264,7 @@ const DNAAnalyzerContent = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
-            <TabsList className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8]">
+            <TabsList className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8]">
               <TabsTrigger value="traits">Traits</TabsTrigger>
               <TabsTrigger value="genetic">Genetic</TabsTrigger>
               <TabsTrigger value="breeding">Breeding</TabsTrigger>
@@ -301,14 +301,14 @@ const DNAAnalyzerContent = () => {
             </TabsContent>
             
             <TabsContent value="genetic" className="mt-4">
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3">
                 <h3 className="text-sm font-bold mb-2">DNA Sequence</h3>
                 <div className="font-mono text-xs bg-black text-green-500 p-2 overflow-x-auto">
                   {traits.rawSequence.match(/.{1,4}/g)?.join(' ')}
                 </div>
               </div>
               
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3 mt-4">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3 mt-4">
                 <h3 className="text-sm font-bold mb-2">Gene Segments</h3>
                 <div className="space-y-2">
                   {traits.sequence.map((segment, index) => (
@@ -326,7 +326,7 @@ const DNAAnalyzerContent = () => {
             </TabsContent>
             
             <TabsContent value="breeding" className="mt-4">
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3">
                 <h3 className="text-sm font-bold mb-2">Breeding Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -344,7 +344,7 @@ const DNAAnalyzerContent = () => {
                 </div>
               </div>
               
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3 mt-4">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3 mt-4">
                 <h3 className="text-sm font-bold mb-2">Breeding Potential</h3>
                 <div className="flex items-center mb-2">
                   <div className="w-full bg-[#d4d0c8] border border-[#808080] h-4 mr-2">
@@ -368,7 +368,7 @@ const DNAAnalyzerContent = () => {
                 </p>
               </div>
               
-              <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#f5f5f5] p-3 mt-4">
+              <div className="border-2 border-[#808080] shadow-win98-outer bg-[#f5f5f5] p-3 mt-4">
                 <h3 className="text-sm font-bold mb-2">Cooldown Time</h3>
                 <div className="text-sm">
                   {[

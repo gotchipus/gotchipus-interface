@@ -314,7 +314,7 @@ export default function AIContent() {
                   )}
                 </div>
                 <div
-                  className={`p-3 rounded-none shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] ${
+                  className={`p-3 rounded-none shadow-win98-inner ${
                     msg.isUser ? "bg-[#c0c0c0] text-black" : "bg-white text-black"
                   }`}
                 >
@@ -342,7 +342,7 @@ export default function AIContent() {
                   />
                 </div>
               </div>
-              <div className="p-3 rounded-none bg-white shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]">
+              <div className="p-3 rounded-none bg-white shadow-win98-inner">
                 <div className="flex gap-1">
                   <div
                     className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
@@ -382,7 +382,7 @@ export default function AIContent() {
         <div className="p-4 border-t-2 border-l border-b border-r border-[#808080] border-t-[#ffffff] border-l-[#ffffff]">
           <div className="flex gap-2">
             <textarea
-              className="flex-1 p-2 h-10 resize-none border-2 border-[#808080] shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] bg-white"
+              className="flex-1 p-2 h-10 resize-none border-2 border-[#808080] shadow-win98-inner bg-white"
               placeholder="Chat with your Gotchipus..."
               value={input}
               onChange={(e) => setInput(e.target.value)}

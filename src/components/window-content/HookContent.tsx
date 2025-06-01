@@ -87,7 +87,7 @@ const HookContent = observer(() => {
           {activeTab === 'select' ? (
             <div className="h-full flex gap-4">
               {/* Hook List */}
-              <div className="flex-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3 overflow-hidden flex flex-col">
+              <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3 overflow-hidden flex flex-col">
                 <h3 className="font-bold mb-3 text-center pixel-text">Your Hooks</h3>
                 <div className="flex-1 overflow-auto">
                   {hooks.length === 0 ? (
@@ -97,7 +97,7 @@ const HookContent = observer(() => {
                       {hooks.map((hook) => (
                         <div
                           key={hook}
-                          className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
+                          className={`border-2 ${selectedHook? "border-[#000080] bg-[#d0d0ff]" : "border-[#808080] bg-[#c0c0c0]"} shadow-win98-outer rounded-sm p-3 cursor-pointer hover:bg-[#d4d0c8]`}
                           onClick={() => selectHook()}
                         >
                           <p className="font-mono pixel-text text-sm">{hook}</p>
@@ -110,7 +110,7 @@ const HookContent = observer(() => {
               </div>
 
               {/* Hook Details */}
-              <div className="w-1/3 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3">
+              <div className="w-1/3 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3">
                 <h3 className="font-bold mb-3 text-center pixel-text">Hook Details</h3>
                 {selectedHook ? (
                   <div className="space-y-3">
@@ -134,7 +134,7 @@ const HookContent = observer(() => {
             </div>
           ) : (
             <form onSubmit={addHook} className="h-full flex flex-col">
-              <div className="flex-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm p-3">
+              <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3">
                 <h3 className="font-bold mb-3 text-center pixel-text">Add New Hook</h3>
                 <div className="space-y-4">
                   <div>
@@ -144,7 +144,7 @@ const HookContent = observer(() => {
                       placeholder="0x..."
                       value={newHook.address}
                       onChange={(e) => setNewHook({ ...newHook, address: e.target.value })}
-                      className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
+                      className="w-full p-1 border-2 border-[#808080] shadow-win98-outer bg-white rounded-sm pixel-text"
                     />
                   </div>
                   <div>
@@ -154,7 +154,7 @@ const HookContent = observer(() => {
                       placeholder="Enter hook description"
                       value={newHook.description}
                       onChange={(e) => setNewHook({ ...newHook, description: e.target.value })}
-                      className="w-full p-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-white rounded-sm pixel-text"
+                      className="w-full p-1 border-2 border-[#808080] shadow-win98-outer bg-white rounded-sm pixel-text"
                     />
                   </div>
                 </div>
@@ -162,7 +162,7 @@ const HookContent = observer(() => {
               <div className="mt-4">
                 <button
                   type="submit"
-                  className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#d4d0c8] rounded-sm py-1 hover:bg-[#c0c0c0] flex items-center justify-center"
+                  className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm py-1 hover:bg-[#c0c0c0] flex items-center justify-center"
                 >
                   <Plus size={14} className="mr-1" />
                   <span className="pixel-text">Add Hook</span>

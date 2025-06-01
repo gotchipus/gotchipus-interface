@@ -19,6 +19,20 @@ export interface DesktopIconProps {
   isActive: boolean
 }
 
+export interface TokenInfo {
+  aether?: number;
+  bonding?: number;
+  growth?: number;
+  element?: number;
+  wisdom?: number;
+  status?: number;
+  dna?: {
+    geneSeed: string;
+    ruleVersion: string;
+  };
+}
+
+
 export interface GotchipusInfo {
   name: string;
   uri: string;

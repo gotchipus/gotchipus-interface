@@ -92,7 +92,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
   return (
     <div
       ref={windowRef}
-      className={`absolute border-2 border-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff,inset_-2px_-2px_#808080,inset_2px_2px_#dfdfdf] bg-[#c0c0c0] overflow-hidden ${
+      className={`absolute border-2 border-[#c0c0c0] shadow-win98-outer bg-[#c0c0c0] overflow-hidden ${
         isAppearing ? "animate-window-appear origin-center" : ""
       }`}
       style={{
