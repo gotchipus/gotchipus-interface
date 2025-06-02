@@ -31,6 +31,9 @@ const DashboardContent = observer(() => {
   const [activeTab, setActiveTab] = useState<"dashboard" | "equip" | "stats" | "wallet">("dashboard")
   const [tokenInfoMap, setTokenInfoMap] = useState<Record<string, TokenInfo>>({})
   const [tbaAddress, setTbaAddress] = useState("")
+  const [queryIds, setQueryIds] = useState<string[]>([])
+  const [accValidIds, setAccValidIds] = useState<string[]>([])
+  const [oneCheckInfo, setOneCheckInfo] = useState<boolean>(false)
   const { walletStore } = useStores()
   const { toast } = useToast()
 
@@ -40,10 +43,10 @@ const DashboardContent = observer(() => {
 
   const tokenInfos = useContractReads(
     "ownedTokenInfo",
-    ids.map(id => [walletStore.address, id]),
-    { enabled: ids.length > 0 }
+    queryIds.map(id => [walletStore.address, id]),
+    { enabled: queryIds.length > 0 && !oneCheckInfo }
   );
-
+  
   useEffect(() => {
     if (balance !== undefined) {
       setBalances(balance as number);
@@ -52,40 +55,71 @@ const DashboardContent = observer(() => {
 
   useEffect(() => {
     if (allIds) {
-      setIds(allIds as string[]);
+      const fetchedIds = allIds as string[];
+      setIds(fetchedIds);
+      setQueryIds(fetchedIds);
+
+      setAccValidIds([]);
+      setOneCheckInfo(false);
       setIsLoading(false);
     }
   }, [allIds]);
 
   useEffect(() => {
-    if (tokenInfos) {
-      const parseResults = tokenInfos.map(info => parseGotchipusInfo(info))
-        .filter(Boolean);
+    if (!oneCheckInfo && tokenInfos) {
 
-      const newIds: string[] = [];
+      const failedIds: string[] = [];
+      const updatedAcc: string[] = [...accValidIds];
       const newTokenInfoMap: Record<string, TokenInfo> = {};
-      
-      parseResults.forEach((gotchi, index) => {
-        const id = ids[index];
-        
-        if (gotchi?.status === 1) {
-          newIds.push(id);
-          newTokenInfoMap[id] = gotchi as TokenInfo;
-        }
-      });
 
-      setIds(newIds);
+      for (let idx = 0; idx < tokenInfos.length; idx++) {
+        const raw = tokenInfos[idx];
+        const thisId = queryIds[idx];
+
+        if (!raw || raw.result === undefined) {
+          failedIds.push(thisId);
+          continue;
+        }
+
+        let parsed;
+        try {
+          parsed = parseGotchipusInfo(raw);
+        } catch (err) {
+          failedIds.push(thisId);
+          continue;
+        }
+
+        if (!parsed) {
+          failedIds.push(thisId);
+          continue;
+        }
+
+        if (parsed.status === 1) {
+          if (!updatedAcc.includes(thisId)) {
+            updatedAcc.push(thisId);
+            newTokenInfoMap[thisId] = parsed;
+          }
+        }
+      }
+
+      setAccValidIds(updatedAcc);
       setTokenInfoMap(newTokenInfoMap);
+
+      if (failedIds.length > 0) {
+        setQueryIds(failedIds);
+        return;
+      }
+
+      setIds(updatedAcc);
+      setOneCheckInfo(true);
     }
-  }, [tokenInfos]);
+  }, [tokenInfos, queryIds, oneCheckInfo, accValidIds]);
 
   useEffect(() => {
     if (tokenBoundAccount !== undefined) {
       setTbaAddress(tokenBoundAccount as string);
     }
   }, [tokenBoundAccount]);
-
-
 
   const tokenGrowth = useContractRead("growth", [selectedTokenId || 0]);
   const tokenName = useContractRead("getTokenName", [selectedTokenId || 0]);

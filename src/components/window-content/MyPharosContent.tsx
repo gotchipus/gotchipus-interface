@@ -25,12 +25,16 @@ const MyPharosContent = observer(() => {
   const [selectedPharos, setSelectedPharos] = useState<string | null>(null);
   const [balances, setBalances] = useState<number>(0);
   const [ids, setIds] = useState<string[]>([]);
+  const [queryIds, setQueryIds] = useState<string[]>([]);
+  const [accValidIds, setAccValidIds] = useState<string[]>([]);
+
   const [displayedStory, setDisplayedStory] = useState<string>("");
   const [isStoryComplete, setIsStoryComplete] = useState<boolean>(false);
   const [pharoName, setPharoName] = useState<string>("");
   const [gotchipusPreviews, setGotchipusPreviews] = useState<GotchipusPreview[]>([]);
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(-1);
   const [isGeneratingPreviews, setIsGeneratingPreviews] = useState<boolean>(false);
+  const [oneCheckInfo, setOneCheckInfo] = useState<boolean>(false);
   const { walletStore } = useStores();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -99,8 +103,8 @@ const MyPharosContent = observer(() => {
 
   const tokenInfos = useContractReads(
     "ownedTokenInfo",
-    ids.map(id => [walletStore.address, id]),
-    { enabled: ids.length > 0 }
+    queryIds.map(id => [walletStore.address, id]),
+    { enabled: queryIds.length > 0 && !oneCheckInfo }
   );
 
   useEffect(() => {
@@ -111,27 +115,62 @@ const MyPharosContent = observer(() => {
 
   useEffect(() => {
     if (allIds) {
-      setIds(allIds as string[]);
+      const fetchedIds = allIds as string[];
+      setIds(fetchedIds);
+      setQueryIds(fetchedIds);
+
+      setAccValidIds([]);
+      setOneCheckInfo(false);
     }
   }, [allIds]);
 
   useEffect(() => {
-    if (tokenInfos) {
-      const parseResults = tokenInfos.map(info => parseGotchipusInfo(info))
-        .filter(Boolean);
+    if (!oneCheckInfo && tokenInfos) {
 
-      const newIds: string[] = [];
-      parseResults.forEach((gotchi, index) => {
-        const id = ids[index];
-        
-        if (gotchi?.status === 0) {
-          newIds.push(id);
+      const failedIds: string[] = [];
+      const updatedAcc: string[] = [...accValidIds];
+
+      for (let idx = 0; idx < tokenInfos.length; idx++) {
+        const raw = tokenInfos[idx];
+        const thisId = queryIds[idx];
+
+        if (!raw || raw.result === undefined) {
+          failedIds.push(thisId);
+          continue;
         }
-      });
 
-      setIds(newIds);
+        let parsed;
+        try {
+          parsed = parseGotchipusInfo(raw);
+        } catch (err) {
+          failedIds.push(thisId);
+          continue;
+        }
+
+        if (!parsed) {
+          failedIds.push(thisId);
+          continue;
+        }
+
+        if (parsed.status === 0) {
+          if (!updatedAcc.includes(thisId)) {
+            updatedAcc.push(thisId);
+          }
+        }
+      }
+
+      setAccValidIds(updatedAcc);
+
+      if (failedIds.length > 0) {
+        setQueryIds(failedIds);
+        return;
+      }
+
+      setIds(updatedAcc);
+      setOneCheckInfo(true);
     }
-  }, [tokenInfos]);
+  }, [tokenInfos, queryIds, oneCheckInfo, accValidIds]);
+
 
   const processStories = useCallback(async (content: string) => {
     try {
@@ -155,7 +194,7 @@ const MyPharosContent = observer(() => {
 
         let imageBase64Array: string[] = [];
         try {
-          const imgResponse = await fetch("http://127.0.0.1:8000/images/draw");
+          const imgResponse = await fetch("/api/images/draw");
           if (!imgResponse.ok) {
             throw new Error(`Get image failed: ${imgResponse.status}`);
           }
@@ -201,7 +240,7 @@ const MyPharosContent = observer(() => {
   const createDefaultPreviews = async (pharoId: string): Promise<GotchipusPreview[]> => {
     let imageBase64Array: string[] = [];
     try {
-      const imgResponse = await fetch("http://127.0.0.1:8000/images/draw");
+      const imgResponse = await fetch("/api/images/draw");
       if (imgResponse.ok) {
         const imgData = await imgResponse.json();
         if (imgData && Array.isArray(imgData.img)) {
@@ -293,23 +332,9 @@ const MyPharosContent = observer(() => {
 
   const handleBack = useCallback(() => {
     setViewState("list");
-    
-    if (tokenInfos) {
-      const parseResults = tokenInfos.map(info => parseGotchipusInfo(info))
-        .filter(Boolean);
-
-      const newIds: string[] = [];
-      parseResults.forEach((gotchi, index) => {
-        const id = ids[index];
-        
-        if (gotchi?.status === 0) {
-          newIds.push(id);
-        }
-      });
-
-      setIds(newIds);
-    }
-  }, [tokenInfos, ids]);
+    setOneCheckInfo(false);
+    setQueryIds(ids);
+  }, []);
 
   const floatAnimation = {
     y: [0, -3, 0],
@@ -325,24 +350,37 @@ const MyPharosContent = observer(() => {
       {viewState === "list" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
           {balances > 0 || walletStore.isConnected ? (
-            ids.map((id) => (
-              <div
-                key={id}
-                className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
-                onClick={() => handlePharoClick(id.toString())}
-              >
-                <motion.div
-                  className="w-48 h-48 relative flex items-center justify-center"
-                  animate={floatAnimation}
+            ids && ids.length > 0 ? (
+              ids.map((id) => (
+                <div
+                  key={id}
+                  className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
+                  onClick={() => handlePharoClick(id.toString())}
                 >
-                  <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
-                </motion.div>
-                <div className="text-center mt-4 font-bold">Pharos #{id.toString()}</div>
+                  <motion.div
+                    className="w-48 h-48 relative flex items-center justify-center"
+                    animate={floatAnimation}
+                  >
+                    <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
+                  </motion.div>
+                  <div className="text-center mt-4 font-bold">Pharos #{id.toString()}</div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
+                {isGeneratingPreviews ? (
+                  <div className="text-center">
+                    <Win98Loading />
+                    <p className="mt-4 text-sm">Loading your Pharos NFTs...</p>
+                  </div>
+                ) : (
+                  "No Pharos NFTs found in your wallet"
+                )}
               </div>
-            ))
+            )
           ) : (
             <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-              No Pharos NFTs found in your wallet
+              No Pharos NFTs found in your wallet.
             </div>
           )}
         </div>

@@ -110,7 +110,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             description: story
           };
 
-          const response = await fetch("http://127.0.0.1:8000/images/upload", {
+          const response = await fetch("/api/images/upload", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

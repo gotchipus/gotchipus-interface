@@ -92,27 +92,35 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
   if (!rawData) return undefined;
   
   try {
+    if (!rawData.result) {
+      return undefined;
+    }
+    
     const result = rawData.result;
+    
+    if (result.name === undefined || result.status === undefined) {
+      return undefined;
+    }
 
     return {
-      name: result.name,
-      uri: result.uri,
-      story: result.story,
-      owner: result.owner,
-      collateral: result.collateral,
+      name: result.name || "",
+      uri: result.uri || "",
+      story: result.story || "",
+      owner: result.owner || "",
+      collateral: result.collateral || "",
       collateralAmount: BigInt(result.collateralAmount || 0),
-      level: Number(result.level),
-      status: Number(result.status),
-      evolution: Number(result.evolution),
+      level: Number(result.level || 0),
+      status: Number(result.status || 0),
+      evolution: Number(result.evolution || 0),
       locked: Boolean(result.locked),
-      epoch: Number(result.epoch),
-      utc: Number(result.utc),
-      dna: result.dna,
-      bonding: Number(result.bonding),
-      growth: Number(result.growth),
-      wisdom: Number(result.wisdom),
-      aether: Number(result.aether),
-      singer: result.singer,
+      epoch: Number(result.epoch || 0),
+      utc: Number(result.utc || 0),
+      dna: result.dna || {},
+      bonding: Number(result.bonding || 0),
+      growth: Number(result.growth || 0),
+      wisdom: Number(result.wisdom || 0),
+      aether: Number(result.aether || 0),
+      singer: result.singer || "",
       nonces: BigInt(result.nonces || 0)
     };
   } catch (error) {
