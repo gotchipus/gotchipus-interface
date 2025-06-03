@@ -7,7 +7,6 @@ import PharosGenesisPage from "./pharos/PharosGenesisPage";
 import { useContractRead, useContractReads } from "@/hooks/useContract";
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
-import { useChat } from "@ai-sdk/react";
 import { Win98Loading } from "@/components/ui/win98-loading";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { parseGotchipusInfo } from "@/lib/types";
@@ -27,6 +26,13 @@ const MyPharosContent = observer(() => {
   const [ids, setIds] = useState<string[]>([]);
   const [queryIds, setQueryIds] = useState<string[]>([]);
   const [accValidIds, setAccValidIds] = useState<string[]>([]);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage] = useState<number>(12);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   const [displayedStory, setDisplayedStory] = useState<string>("");
   const [isStoryComplete, setIsStoryComplete] = useState<boolean>(false);
@@ -46,57 +52,6 @@ const MyPharosContent = observer(() => {
       }
     };
   }, []);
-
-  const { messages, append, status } = useChat({
-    api: "/api/chat",
-    body: {
-      modelName: "XAI",
-      temperature: 0.8, 
-      maxTokens: 1000, 
-    },
-    initialMessages: [
-      {
-        role: "system",
-        content: `
-          You are creating unique personalities for Gotchipus NFTs. Each Gotchipus should speak directly to their owner in FIRST PERSON, with a distinct personality and voice.
-          
-          When prompted with a Pharos NFT ID, generate FIVE completely different Gotchipus personalities. Each one must have a unique name, personality, appearance, and story.
-          
-          Follow these guidelines for EACH Gotchipus:
-          1. Write in FIRST PERSON as the Gotchipus speaking to its owner
-          2. Keep each story SHORT (40-70 words maximum)
-          3. Include a fun GREETING or sound effect
-          4. Make the Gotchipus INTRODUCE ITSELF with its name
-          5. Add ONE specific personality trait or quirk
-          6. Include ONE brief anecdote or skill that shows character
-          7. End with a direct comment to the owner/player
-          8. Make sure each of the five Gotchipus has a COMPLETELY DIFFERENT personality from the others
-          9. Make them all FUN, QUIRKY and MEMORABLE
-          
-          Examples of writing style to follow:
-          "*Bubble pop* Hey there! I'm Inkspot, the inkiest Gotchipus this side of the Rift! I collect shiny human things that sink to the bottom—got 47 spoons so far! Wanna help me find number 48? I bet you have good taste in treasures."
-          
-          "*Gentle hum* Greetings, light-dweller. I am Lumina. My tentacles can weave patterns that predict tomorrow's currents. Once saved an entire reef by forecasting a sudden cold front. I sense you and I will navigate many challenges together. Are you ready to see what lies beyond?"
-          
-          Output format must be strictly a JSON array containing exactly 5 objects:
-          [
-            {
-              "name": "[Unique Name 1]",
-              "story": "[First-person introduction 1]"
-            },
-            {
-              "name": "[Unique Name 2]",
-              "story": "[First-person introduction 2]"
-            },
-            ...and so on for all 5
-          ]
-          
-          Ensure each name and personality is completely different. No additional text before or after the JSON.
-        `,
-        id: "system",
-      },
-    ],
-  });
 
   const balance = useContractRead("balanceOf", [walletStore.address]);
   const allIds = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
@@ -171,71 +126,54 @@ const MyPharosContent = observer(() => {
     }
   }, [tokenInfos, queryIds, oneCheckInfo, accValidIds]);
 
+  const getCurrentPageItems = useCallback(() => {
+    const startIndex = 0;
+    const endIndex = currentPage * itemsPerPage;
+    return ids.slice(startIndex, endIndex);
+  }, [ids, currentPage, itemsPerPage]);
 
-  const processStories = useCallback(async (content: string) => {
-    try {
-      if (!content || typeof content !== 'string') {
-        console.error('Invalid content input');
-        return [];
-      }
+  const loadMoreItems = useCallback(() => {
+    if (isLoadingMore || !hasMore) return;
+    
+    setIsLoadingMore(true);
+    
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const totalPages = Math.ceil(ids.length / itemsPerPage);
+      
+      setCurrentPage(nextPage);
+      setHasMore(nextPage < totalPages);
+      setIsLoadingMore(false);
+    }, 500);
+  }, [currentPage, hasMore, ids.length, itemsPerPage, isLoadingMore]);
 
-      let cleanedContent = content.trim();
-      cleanedContent = cleanedContent.replace(/undefined/g, '');
-      
-      const jsonStartIndex = cleanedContent.indexOf('[');
-      const jsonEndIndex = cleanedContent.lastIndexOf(']') + 1;
-      
-      if (jsonStartIndex >= 0 && jsonEndIndex > jsonStartIndex) {
-        cleanedContent = cleanedContent.substring(jsonStartIndex, jsonEndIndex);
-      }
-      
-      try {
-        const storiesData = JSON.parse(cleanedContent);
-
-        let imageBase64Array: string[] = [];
-        try {
-          const imgResponse = await fetch("/api/images/draw");
-          if (!imgResponse.ok) {
-            throw new Error(`Get image failed: ${imgResponse.status}`);
-          }
-          
-          const imgData = await imgResponse.json();
-          
-          if (imgData && Array.isArray(imgData.img)) {
-            imageBase64Array = imgData.img;
-          } else {
-            console.warn("Image data format is incorrect:", imgData);
-            imageBase64Array = Array(5).fill("/pharos.png");
-          }
-        } catch (imgError) {
-          console.error("Get image error:", imgError);
-          imageBase64Array = Array(5).fill("/pharos.png");
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMoreItems();
         }
+      },
+      { threshold: 0.1 }
+    );
 
-        if (Array.isArray(storiesData) && storiesData.length > 0) {
-          return storiesData.map((item, index) => {
-            const imageData = index < imageBase64Array.length 
-              ? `data:image/png;base64,${imageBase64Array[index]}`
-              : `/pharos.png`;
-              
-            return {
-              id: `preview-${index}`,
-              name: item.name || `Gotchipus #${index+1}`,
-              story: String(item.story || "").replace(/undefined/g, '').trim(),
-              image: imageData
-            };
-          });
-        }
-      } catch (jsonError) {
-        console.error('Error parsing JSON:', jsonError);
-      }
-      
-      return [];
-    } catch (error) {
-      console.error('Error in processStories:', error);
-      return [];
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
     }
-  }, []);
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isLoadingMore, loadMoreItems]);
+
+  useEffect(() => {
+    if (ids.length > 0) {
+      setCurrentPage(1);
+      setHasMore(ids.length > itemsPerPage);
+    }
+  }, [ids, itemsPerPage]);
 
   const createDefaultPreviews = async (pharoId: string): Promise<GotchipusPreview[]> => {
     let imageBase64Array: string[] = [];
@@ -268,36 +206,56 @@ const MyPharosContent = observer(() => {
   const generateGotchipusPreviews = useCallback(async (pharoId: string) => {
     setIsGeneratingPreviews(true);
     try {
-      await append({
-        role: "user",
-        content: `Generate five unique Gotchipus personalities for Pharos NFT #${pharoId}. Make each one completely different in personality, traits, and story.`
-      });
+      const storyResponse = await fetch(`/api/story`);
+      if (!storyResponse.ok) {
+        throw new Error(`Get story failed: ${storyResponse.status}`);
+      }
+      
+      const storyData = await storyResponse.json();
+      
+      let imageBase64Array: string[] = [];
+      try {
+        const imgResponse = await fetch(`/api/images/draw`);
+        if (!imgResponse.ok) {
+          throw new Error(`Get image failed: ${imgResponse.status}`);
+        }
+        const imgData = await imgResponse.json();
+        if (imgData && Array.isArray(imgData.img)) {
+          imageBase64Array = imgData.img;
+        } else {
+          imageBase64Array = Array(5).fill("/pharos.png");
+        }
+      } catch (imgError) {
+        console.error("Get image error:", imgError);
+        imageBase64Array = Array(5).fill("/pharos.png");
+      }
+      
+      if (Array.isArray(storyData) && storyData.length > 0) {
+        const previews = storyData.map((item, index) => {
+          const imageData = index < imageBase64Array.length 
+            ? `data:image/png;base64,${imageBase64Array[index]}`
+            : `/pharos.png`;
+          return {
+            id: `${pharoId}-${index}`,
+            name: item.name || `Gotchipus #${index+1}`,
+            story: String(item.story || "").replace(/undefined/g, '').trim(),
+            image: imageData
+          };
+        });
+        
+        setGotchipusPreviews(previews);
+      } else {
+        const defaultPreviews = await createDefaultPreviews(pharoId);
+        setGotchipusPreviews(defaultPreviews);
+      }
     } catch (err) {
       console.error("Failed to generate previews:", err);
       const defaultPreviews = await createDefaultPreviews(pharoId);
       setGotchipusPreviews(defaultPreviews);
+    } finally {
       setIsGeneratingPreviews(false);
     }
-  }, [append]);
-
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === "assistant" && viewState === "hatching") {
-      if (status === "ready") {
-        const content = lastMessage.content;
-        
-        processStories(content).then(async previews => {
-          if (previews && previews.length > 0) {
-            setGotchipusPreviews(previews);
-          } else {
-            const defaultPreviews = await createDefaultPreviews(selectedPharos || "0");
-            setGotchipusPreviews(defaultPreviews);
-          }
-          setIsGeneratingPreviews(false);
-        });
-      }
-    }
-  }, [messages, viewState, status, processStories, selectedPharos]);
+  }, []);
 
   useEffect(() => {
     if (viewState === "hatching" && selectedPharos) {
@@ -348,39 +306,58 @@ const MyPharosContent = observer(() => {
   return (
     <div className="p-4 h-full scrollbar-none">
       {viewState === "list" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
-          {balances > 0 || walletStore.isConnected ? (
-            ids && ids.length > 0 ? (
-              ids.map((id) => (
-                <div
-                  key={id}
-                  className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
-                  onClick={() => handlePharoClick(id.toString())}
-                >
-                  <motion.div
-                    className="w-48 h-48 relative flex items-center justify-center"
-                    animate={floatAnimation}
+        <div className="flex flex-col h-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
+            {balances > 0 || walletStore.isConnected ? (
+              getCurrentPageItems().length > 0 ? (
+                getCurrentPageItems().map((id) => (
+                  <div
+                    key={id}
+                    className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
+                    onClick={() => handlePharoClick(id.toString())}
                   >
-                    <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
-                  </motion.div>
-                  <div className="text-center mt-4 font-bold">Pharos #{id.toString()}</div>
+                    <motion.div
+                      className="w-48 h-48 relative flex items-center justify-center"
+                      animate={floatAnimation}
+                    >
+                      <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
+                    </motion.div>
+                    <div className="text-center mt-4 font-bold">Pharos #{id.toString()}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
+                  {isGeneratingPreviews ? (
+                    <div className="text-center">
+                      <Win98Loading />
+                      <p className="mt-4 text-sm">Loading your Pharos NFTs...</p>
+                    </div>
+                  ) : (
+                    "No Pharos NFTs found in your wallet"
+                  )}
                 </div>
-              ))
+              )
             ) : (
               <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-                {isGeneratingPreviews ? (
-                  <div className="text-center">
-                    <Win98Loading />
-                    <p className="mt-4 text-sm">Loading your Pharos NFTs...</p>
-                  </div>
-                ) : (
-                  "No Pharos NFTs found in your wallet"
-                )}
+                No Pharos NFTs found in your wallet.
               </div>
-            )
-          ) : (
-            <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-              No Pharos NFTs found in your wallet.
+            )}
+          </div>
+          
+          {/* Loading indicator and observer target */}
+          {hasMore && getCurrentPageItems().length > 0 && (
+            <div 
+              ref={observerTarget} 
+              className="flex justify-center items-center p-4 mt-4"
+            >
+              {isLoadingMore ? (
+                <div className="text-center">
+                  <Win98Loading text="Loading..."/>
+                  <p className="mt-2 text-sm">Stories generated in 15 seconds.</p>
+                </div>
+              ) : (
+                <div className="h-8"></div> 
+              )}
             </div>
           )}
         </div>
