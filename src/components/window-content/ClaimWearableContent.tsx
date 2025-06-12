@@ -25,37 +25,37 @@ const CATEGORIES = [
 
 const WEARABLE_ITEMS = {
   head: [
-    { name: "Brain Dome", image: "Transparent Brain Dome Mini Lighthouse.png" },
-    { name: "Shark Hoodie", image: "Shark Hoodie.png" },
-    { name: "Space Helmet", image: "Space Helmet.png" },
-    { name: "Lighthouse Hat", image: "Lightthouse Hat Pharos Network.png" },
-    { name: "Logo Hat", image: "Logo Hat.png" },
-    { name: "Pirate Hat", image: "Pirate Hat.png" },
-    { name: "Rocket Helmet", image: "Rocket Booster Helmet.png" },
-    { name: "Royal Crown", image: "Royal Crown Gem Encrusted.png" },
-    { name: "Diver Helmet", image: "Diver Helmet.png" }
+    { name: "Brain Dome", image: "transparent-brain-dome-mini-lighthouse.png" },
+    { name: "Shark Hoodie", image: "shark-hoodie.png" },
+    { name: "Space Helmet", image: "space-helmet.png" },
+    { name: "Lighthouse Hat", image: "lightthouse-hat-pharos-network.png" },
+    { name: "Logo Hat", image: "logo-hat.png" },
+    { name: "Pirate Hat", image: "pirate-hat.png" },
+    { name: "Rocket Helmet", image: "rocket-booster-helmet.png" },
+    { name: "Royal Crown", image: "royal-crown-gem-encrusted.png" },
+    { name: "Diver Helmet", image: "diver-helmet.png" }
   ],
   hands: [
-    { name: "Starfish Gloves", image: "Starfish Gloves.png" },
-    { name: "Water Bubbles", image: "Water Bubbles.png" },
-    { name: "Fire Fist", image: "Fire Fist.png" },
-    { name: "Harpoon Trident", image: "Harpoon Trident.png" },
-    { name: "Ice Shards", image: "Ice Shards.png" },
-    { name: "Crystal Magic", image: "Crystal Magic Hands.png" },
-    { name: "Electric Claws", image: "Electric Claws.png" },
-    { name: "Crab Claws", image: "Crab Claws.png" },
-    { name: "Boxing Gloves", image: "Boxing Gloves.png" }
+    { name: "Starfish Gloves", image: "starfish-gloves.png" },
+    { name: "Water Bubbles", image: "water-bubbles.png" },
+    { name: "Fire Fist", image: "fire-fist.png" },
+    { name: "Harpoon Trident", image: "harpoon-trident.png" },
+    { name: "Ice Shards", image: "ice-shards.png" },
+    { name: "Crystal Magic", image: "crystal-magic-hands.png" },
+    { name: "Electric Claws", image: "electric-claws.png" },
+    { name: "Crab Claws", image: "crab-claws.png" },
+    { name: "Boxing Gloves", image: "boxing-gloves.png" }
   ],
   clothes: [
-    { name: "Seaweed Scarf", image: "Seaweed Scarf.png" },
-    { name: "Swimmer Outfit", image: "Swimmer Outfit.png" },
-    { name: "Traveller", image: "Traveller.png" },
-    { name: "Explorer Harness", image: "Explorer Harness.png" },
-    { name: "Futuristic Armor", image: "Futuristic Chest Armor.png" },
-    { name: "Jellyfish Cape", image: "Jellyfish Cape.png" },
-    { name: "Lighthouse Backpack", image: "Lighthouse Mini Backpack.png" },
-    { name: "Sailor Uniform", image: "Sailor Uniform.png" },
-    { name: "Energy Backpack", image: "Energy Backpack.png" }
+    { name: "Seaweed Scarf", image: "seaweed-scarf.png" },
+    { name: "Swimmer Outfit", image: "swimmer-outfit.png" },
+    { name: "Traveller", image: "traveller.png" },
+    { name: "Explorer Harness", image: "explorer-harness.png" },
+    { name: "Futuristic Armor", image: "futuristic-chest-armor.png" },
+    { name: "Jellyfish Cape", image: "jellyfish-cape.png" },
+    { name: "Lighthouse Backpack", image: "lighthouse-mini-backpack.png" },
+    { name: "Sailor Uniform", image: "sailor-uniform.png" },
+    { name: "Energy Backpack", image: "energy-backpack.png" }
   ]
 };
 

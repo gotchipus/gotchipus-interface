@@ -128,3 +128,18 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
     return undefined;
   }
 }
+
+export interface NftParts {
+  background?: number;
+  body?: number;
+  clothes?: number;
+  head?: number;
+  eye?: number;
+  hand?: number;
+}
+
+export interface EquipWearableType {
+  wearableType: string;
+  wearableId: number;
+  equiped: boolean;
+}

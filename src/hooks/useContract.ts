@@ -61,7 +61,7 @@ export const useContractRead = (
     enabled?: boolean
   }
 ) => {
-  const { data: result } = useReadContract({
+  const { data, isLoading, error, isError, ...rest } = useReadContract({
     address: PUS_ADDRESS,
     abi: PUS_ABI,
     functionName: functionName,
@@ -71,7 +71,7 @@ export const useContractRead = (
     }
   });
 
-  return result;
+  return { data, isLoading, error, isError, ...rest };
 };
 
 export const useContractReads = (

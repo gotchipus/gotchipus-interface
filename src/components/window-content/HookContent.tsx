@@ -15,11 +15,11 @@ const HookContent = observer(() => {
   const { toast } = useToast()
   const { walletStore } = useStores()
 
-  const hookAddresses: any = useContractRead("getHooks", [walletStore.address])
+  const {data: hookAddresses} = useContractRead("getHooks", [walletStore.address])
 
   useEffect(() => {
     if (hookAddresses) {
-      setHooks(hookAddresses)
+      setHooks(hookAddresses as [])
     }
   }, [hookAddresses])
 

@@ -17,7 +17,7 @@ const FarmContent = observer(() => {
   const [selectedFish, setSelectedFish] = useState(false)
   const [fishCount, setFishCount] = useState("")
 
-  const fishData = useContractRead("getFishs", [walletStore.address])
+  const {data: fishData} = useContractRead("getFishs", [walletStore.address])
   const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
 
   useEffect(() => {

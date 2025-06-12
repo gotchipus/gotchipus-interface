@@ -52,8 +52,8 @@ const MyPharosContent = observer(() => {
     };
   }, []);
 
-  const balance = useContractRead("balanceOf", [walletStore.address]);
-  const allIds = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
+  const {data: balance} = useContractRead("balanceOf", [walletStore.address]);
+  const {data: allIds} = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
 
   const tokenInfos = useContractReads(
     "ownedTokenInfo",

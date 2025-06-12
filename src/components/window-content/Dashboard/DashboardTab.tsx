@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { TokenInfo } from "@/lib/types"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
+import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
 
 interface DashboardTabProps {
   selectedTokenId: string | null
@@ -76,13 +77,7 @@ const DashboardTab = observer(({
             className="w-48 h-48 relative flex items-center justify-center"
             animate={floatAnimation}
           >
-            <Image
-              src={`https://app.gotchipus.com/metadata/gotchipus/${selectedTokenId}.png?v=${wearableStore.imageVersion}`}
-              alt="Colorful pixelated gotchipus"
-              width={192}
-              height={192}
-              key={`${selectedTokenId}-${wearableStore.imageVersion}`}
-            />
+            <SvgComposer tokenId={selectedTokenId || "0"} />
           </motion.div>
         </div>
 

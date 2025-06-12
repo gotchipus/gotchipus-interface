@@ -81,7 +81,7 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
   const { wearableStore } = useStores();
   const [hasShownSuccessToast, setHasShownSuccessToast] = useState<boolean>(false);
 
-  const wearableTypeInfos = useContractRead("getAllEquipWearableType", [selectedTokenId], { 
+  const {data: wearableTypeInfos} = useContractRead("getAllEquipWearableType", [selectedTokenId], { 
     enabled: isConfirmed && wearableStore.isRefreshing 
   });
 

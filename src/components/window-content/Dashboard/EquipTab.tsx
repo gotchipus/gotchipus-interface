@@ -2,22 +2,17 @@
 
 import Image from "next/image"
 import { useEffect } from "react"
-import { useContractRead, useContractWrite } from "@/hooks/useContract"
+import { useContractRead } from "@/hooks/useContract"
 import { useStores } from "@stores/context"
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant"
 import { observer } from "mobx-react-lite"
+import { EquipWearableType } from "@/lib/types"
 
 interface EquipTabProps {
   tokenId: number;
   selectedEquipSlot: number | null
   handleEquipSlotClick: (index: number) => void
   handleEquipWearable: (ids: string[]) => void
-}
-
-interface EquipWearableType {
-  wearableType: string;
-  wearableId: number;
-  equiped: boolean;
 }
 
 const WEARABLE_ICON_MAP = {
@@ -102,8 +97,8 @@ const EquipTab = observer(({ tokenId, selectedEquipSlot, handleEquipSlotClick, h
 
   const owners = new Array(54).fill(walletStore.address);
   const tokenIds = Array.from({ length: 54 }, (_, i) => i);
-  const balances = useContractRead("wearableBalanceOfBatch", [owners, tokenIds], { enabled: wearableStore.isRefreshing });
-  const wearableTypeInfos = useContractRead("getAllEquipWearableType", [tokenId], { enabled: wearableStore.isRefreshing });
+  const {data: balances} = useContractRead("wearableBalanceOfBatch", [owners, tokenIds], { enabled: wearableStore.isRefreshing });
+  const {data: wearableTypeInfos} = useContractRead("getAllEquipWearableType", [tokenId], { enabled: wearableStore.isRefreshing });
 
   useEffect(() => {
     if (!wearableStore.isRefreshing) {

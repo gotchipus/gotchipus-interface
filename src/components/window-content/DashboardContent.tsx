@@ -13,7 +13,7 @@ import { parseGotchipusInfo, TokenInfo } from "@/lib/types";
 import { motion } from "framer-motion";
 import { DashboardTab, EquipTab, StatsTab, WalletTab } from "./Dashboard";
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
-
+import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
 
 const EQUIPMENT_TYPES = {
   0: BG_BYTES32,
@@ -54,9 +54,9 @@ const DashboardContent = observer(() => {
   const { walletStore, wearableStore } = useStores()
   const { toast } = useToast()
 
-  const balance = useContractRead("balanceOf", [walletStore.address]);
-  const allIds = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
-  const tokenBoundAccount = useContractRead("account", [selectedTokenId || 0], { enabled: !!selectedTokenId });
+  const {data: balance} = useContractRead("balanceOf", [walletStore.address]);
+  const {data: allIds} = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
+  const {data: tokenBoundAccount} = useContractRead("account", [selectedTokenId || 0], { enabled: !!selectedTokenId });
 
   const tokenInfos = useContractReads(
     "ownedTokenInfo",
@@ -138,7 +138,7 @@ const DashboardContent = observer(() => {
     }
   }, [tokenBoundAccount]);
 
-  const tokenName = useContractRead("getTokenName", [selectedTokenId || 0]);
+  const {data: tokenName} = useContractRead("getTokenName", [selectedTokenId || 0]);
 
   useEffect(() => {
     if (tokenName !== undefined) {
@@ -333,13 +333,7 @@ const DashboardContent = observer(() => {
                   className="w-48 h-48 relative flex items-center justify-center"
                   animate={floatAnimation}
                 >
-                  <Image 
-                    src={`https://app.gotchipus.com/metadata/gotchipus/${id}.png?v=${wearableStore.imageVersion}`} 
-                    alt={`Gotchipus ${id}`} 
-                    width={150} 
-                    height={150} 
-                    key={`${id}-${wearableStore.imageVersion}`} 
-                  />
+                  <SvgComposer tokenId={id} />
                 </motion.div>
               
                 <div className="text-center mt-4 font-bold">#{id.toString()}</div>
@@ -359,7 +353,7 @@ const DashboardContent = observer(() => {
                   <p className="mt-2 text-sm">Loading more Gotchipus NFTs...</p>
                 </div>
               ) : (
-                <div className="h-8"></div> // Invisible element for observer
+                <div className="h-8"></div> 
               )}
             </div>
           )}
