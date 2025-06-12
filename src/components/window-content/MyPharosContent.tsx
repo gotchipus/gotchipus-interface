@@ -27,7 +27,6 @@ const MyPharosContent = observer(() => {
   const [queryIds, setQueryIds] = useState<string[]>([]);
   const [accValidIds, setAccValidIds] = useState<string[]>([]);
   
-  // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(12);
   const [hasMore, setHasMore] = useState<boolean>(true);
@@ -353,7 +352,7 @@ const MyPharosContent = observer(() => {
               {isLoadingMore ? (
                 <div className="text-center">
                   <Win98Loading text="Loading..."/>
-                  <p className="mt-2 text-sm">Stories generated in 15 seconds.</p>
+                  <p className="mt-2 text-sm">Loading more Gotchipus NFTs...</p>
                 </div>
               ) : (
                 <div className="h-8"></div> 
@@ -377,7 +376,7 @@ const MyPharosContent = observer(() => {
               <div className="flex justify-center items-center h-[300px] bg-white border-2 border-[#808080] shadow-win98-outer">
                 <div className="text-center">
                   <Win98Loading />
-                  <p className="mt-4 text-sm">Summoning Gotchipus variants...</p>
+                  <p className="mt-4 text-sm">Summoning Gotchipus variants, stories generated in 15 seconds...</p>
                 </div>
               </div>
             ) : (

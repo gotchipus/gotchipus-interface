@@ -11,6 +11,8 @@ import diamondCutAbi from './abi/diamond-cut-abi.json';
 import diamondLoupeAbi from './abi/diamond-loupe-abi.json';
 import diamondAbi from './abi/diamond-abi.json';
 import erc6551FacetAbi from './abi/erc6551-facet-abi.json';
+import svgFacetAbi from './abi/svg-facet-abi.json';
+import wearableFacetAbi from './abi/wearable-facet-abi.json';
 
 export const PUS_ABI = [
   ...gotchipusAbi,
@@ -24,6 +26,8 @@ export const PUS_ABI = [
   ...diamondLoupeAbi,
   ...diamondAbi,
   ...erc6551FacetAbi,
+  ...svgFacetAbi,
+  ...wearableFacetAbi,
 ];
 
 export const PUS_ADDRESS = '0x0000000038f050528452D6Da1E7AACFA7B3Ec0a8'; 

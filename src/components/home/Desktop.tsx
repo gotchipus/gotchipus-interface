@@ -12,6 +12,7 @@ import FarmContent from "@/src/components/window-content/FarmContent"
 import HookContent from "@/src/components/window-content/HookContent"
 import DNAAnalyzerContent from "@/components/window-content/DNAAnalyzerContent"
 import MintContent from "@/components/window-content/MintContent" 
+import ClaimWearableContent from "@/src/components/window-content/ClaimWearableContent"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -40,6 +41,12 @@ const icons = [
     title: "My Gotchipus",
     icon: "/dashboard.png",
   },
+  {
+    id: "wearable",
+    title: "Claim Wearable",
+    icon: "/claim-wearable.svg",
+  },
+
   // {
   //   id: "hooks",
   //   title: "Hooks",
@@ -80,6 +87,9 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         break
       case "dashboard":
         onOpenWindow("dashboard", "My Gotchipus", <DashboardContent />)
+        break
+      case "wearable":
+        onOpenWindow("wearable", "Claim Wearable", <ClaimWearableContent />)
         break
       // case "hooks":
       //   onOpenWindow("hooks", "Hooks", <HookContent />)

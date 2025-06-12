@@ -12,7 +12,17 @@ import { Win98Loading } from "@/components/ui/win98-loading";
 import { parseGotchipusInfo, TokenInfo } from "@/lib/types";
 import { motion } from "framer-motion";
 import { DashboardTab, EquipTab, StatsTab, WalletTab } from "./Dashboard";
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
 
+
+const EQUIPMENT_TYPES = {
+  0: BG_BYTES32,
+  1: BODY_BYTES32,
+  2: EYE_BYTES32,
+  3: HAND_BYTES32,
+  4: HEAD_BYTES32,
+  5: CLOTHES_BYTES32,
+};
 
 const DashboardContent = observer(() => {
   const [pusName, setPusName] = useState("")
@@ -21,8 +31,6 @@ const DashboardContent = observer(() => {
   const [newName, setNewName] = useState("")
   const [selectedEquipSlot, setSelectedEquipSlot] = useState<number | null>(null)
   const [showEquipSelect, setShowEquipSelect] = useState(false)
-  const [dna, setDna] = useState("")
-  const [growth, setGrowth] = useState("")
   const [activeWalletTab, setActiveWalletTab] = useState<"tokens" | "nfts">("tokens")
   const [balances, setBalances] = useState<number>(0)
   const [ids, setIds] = useState<string[]>([])
@@ -35,14 +43,15 @@ const DashboardContent = observer(() => {
   const [accValidIds, setAccValidIds] = useState<string[]>([])
   const [oneCheckInfo, setOneCheckInfo] = useState<boolean>(false)
   
-  // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [itemsPerPage] = useState<number>(12)
   const [hasMore, setHasMore] = useState<boolean>(true)
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
   const observerTarget = useRef<HTMLDivElement>(null)
-  
-  const { walletStore } = useStores()
+  const [wearableBalances, setWearableBalances] = useState<string[]>([])
+  const [selectedType, setSelectedType] = useState<string>("")
+
+  const { walletStore, wearableStore } = useStores()
   const { toast } = useToast()
 
   const balance = useContractRead("balanceOf", [walletStore.address]);
@@ -129,14 +138,7 @@ const DashboardContent = observer(() => {
     }
   }, [tokenBoundAccount]);
 
-  const tokenGrowth = useContractRead("growth", [selectedTokenId || 0]);
   const tokenName = useContractRead("getTokenName", [selectedTokenId || 0]);
-
-  useEffect(() => {
-    if (tokenGrowth !== undefined) {
-      setGrowth(tokenGrowth as string);
-    }
-  }, [tokenGrowth]);
 
   useEffect(() => {
     if (tokenName !== undefined) {
@@ -203,17 +205,17 @@ const DashboardContent = observer(() => {
 
   const handleEquipSlotClick = (index: number) => {
     setSelectedEquipSlot(index === selectedEquipSlot ? null : index)
+    setSelectedType(EQUIPMENT_TYPES[index as keyof typeof EQUIPMENT_TYPES])
     setShowEquipSelect(true)
-  };
-
-  const handleEquipSelect = (equipment: { name: string; icon: string }) => {
-    console.log("Selected equipment:", equipment)
-    setShowEquipSelect(false)
   };
   
   const handleEquipSelectClose = () => {
     setShowEquipSelect(false);
     setSelectedEquipSlot(null);
+  };
+
+  const handleEquipWearable = (ids: string[]) => {
+    setWearableBalances(ids);
   };
 
   const handleTokenSelect = (tokenId: string) => {
@@ -236,20 +238,17 @@ const DashboardContent = observer(() => {
     }
   };
 
-  // Calculate the current page items
   const getCurrentPageItems = useCallback(() => {
     const startIndex = 0;
     const endIndex = currentPage * itemsPerPage;
     return ids.slice(startIndex, endIndex);
   }, [ids, currentPage, itemsPerPage]);
 
-  // Load more items when scrolling
   const loadMoreItems = useCallback(() => {
     if (isLoadingMore || !hasMore) return;
     
     setIsLoadingMore(true);
     
-    // Simulate loading delay
     setTimeout(() => {
       const nextPage = currentPage + 1;
       const totalPages = Math.ceil(ids.length / itemsPerPage);
@@ -260,7 +259,6 @@ const DashboardContent = observer(() => {
     }, 500);
   }, [currentPage, hasMore, ids.length, itemsPerPage, isLoadingMore]);
 
-  // Set up intersection observer for infinite scrolling
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -282,7 +280,6 @@ const DashboardContent = observer(() => {
     };
   }, [hasMore, isLoadingMore, loadMoreItems]);
 
-  // Reset pagination when ids change
   useEffect(() => {
     if (ids.length > 0) {
       setCurrentPage(1);
@@ -336,7 +333,13 @@ const DashboardContent = observer(() => {
                   className="w-48 h-48 relative flex items-center justify-center"
                   animate={floatAnimation}
                 >
-                  <Image src={`https://app.gotchipus.com/metadata/gotchipus/${id}.png`} alt={`Gotchipus ${id}`} width={150} height={150} />
+                  <Image 
+                    src={`https://app.gotchipus.com/metadata/gotchipus/${id}.png?v=${wearableStore.imageVersion}`} 
+                    alt={`Gotchipus ${id}`} 
+                    width={150} 
+                    height={150} 
+                    key={`${id}-${wearableStore.imageVersion}`} 
+                  />
                 </motion.div>
               
                 <div className="text-center mt-4 font-bold">#{id.toString()}</div>
@@ -448,8 +451,10 @@ const DashboardContent = observer(() => {
       {/* Equip Tab */}
       {activeTab === "equip" && (
         <EquipTab 
+          tokenId={parseInt(selectedTokenId)}
           selectedEquipSlot={selectedEquipSlot}
           handleEquipSlotClick={handleEquipSlotClick}
+          handleEquipWearable={handleEquipWearable}
         />
       )}
 
@@ -477,7 +482,9 @@ const DashboardContent = observer(() => {
       {showEquipSelect && (
         <EquipSelectWindow
           onClose={handleEquipSelectClose}
-          onSelect={handleEquipSelect}
+          wearableBalances={wearableBalances}
+          selectedType={selectedType}
+          selectedTokenId={selectedTokenId}
         />
       )}
     </div>

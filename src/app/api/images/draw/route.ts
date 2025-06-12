@@ -4,7 +4,7 @@ export const runtime = 'edge';
 
 export async function GET() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/images/draw', {
+    const response = await fetch('https://api.gotchipus.com/images/draw', {
       headers: {
         'Content-Type': 'application/json',
       },

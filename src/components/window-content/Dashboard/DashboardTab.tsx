@@ -1,7 +1,10 @@
+'use client'
+
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { TokenInfo } from "@/lib/types"
-
+import { observer } from "mobx-react-lite"
+import { useStores } from "@stores/context"
 
 interface DashboardTabProps {
   selectedTokenId: string | null
@@ -16,7 +19,7 @@ interface DashboardTabProps {
   floatAnimation: any
 }
 
-const DashboardTab = ({
+const DashboardTab = observer(({
   selectedTokenId,
   pusName,
   isRenaming,
@@ -30,6 +33,7 @@ const DashboardTab = ({
 }: DashboardTabProps) => {
   const tokenId = selectedTokenId || "";
   const tokenInfo = tokenInfoMap[tokenId] || {} as TokenInfo;
+  const { wearableStore } = useStores()
 
   const attributes = [
     { name: "Aether", value: tokenInfo.aether || 0, icon: "aether" },
@@ -73,10 +77,11 @@ const DashboardTab = ({
             animate={floatAnimation}
           >
             <Image
-              src={`https://app.gotchipus.com/metadata/gotchipus/${selectedTokenId}.png`}
+              src={`https://app.gotchipus.com/metadata/gotchipus/${selectedTokenId}.png?v=${wearableStore.imageVersion}`}
               alt="Colorful pixelated gotchipus"
               width={192}
               height={192}
+              key={`${selectedTokenId}-${wearableStore.imageVersion}`}
             />
           </motion.div>
         </div>
@@ -159,6 +164,6 @@ const DashboardTab = ({
       </div>
     </div>
   )
-}
+})
 
 export default DashboardTab
