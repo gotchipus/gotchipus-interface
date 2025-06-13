@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { useTranslation } from "react-i18next"
 import { useContractWrite } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
@@ -9,55 +8,22 @@ import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import { Win98Loading } from "@/components/ui/win98-loading"
+import SvgIcon from "@/components/gotchiSvg/SvgIcon"
+import { ALL_WEARABLE_SVG } from "@/components/gotchiSvg/svgs"
+import { HEAD_BYTES32, HAND_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant"
 
 interface WearableItem {
   id: number;
   name: string;
-  image: string;
+  svg: string;
   category: 'head' | 'hands' | 'clothes';
 }
 
 const CATEGORIES = [
-  { id: 'head', name: 'Head Wearables', path: '/gotchi/Head' },
-  { id: 'hands', name: 'Hands Wearables', path: '/gotchi/Hands' },
-  { id: 'clothes', name: 'Clothes Wearables', path: '/gotchi/Clothes' }
+  { id: 'head', name: 'Head Wearables', type: HEAD_BYTES32 },
+  { id: 'hands', name: 'Hands Wearables', type: HAND_BYTES32 },
+  { id: 'clothes', name: 'Clothes Wearables', type: CLOTHES_BYTES32 }
 ];
-
-const WEARABLE_ITEMS = {
-  head: [
-    { name: "Brain Dome", image: "transparent-brain-dome-mini-lighthouse.png" },
-    { name: "Shark Hoodie", image: "shark-hoodie.png" },
-    { name: "Space Helmet", image: "space-helmet.png" },
-    { name: "Lighthouse Hat", image: "lightthouse-hat-pharos-network.png" },
-    { name: "Logo Hat", image: "logo-hat.png" },
-    { name: "Pirate Hat", image: "pirate-hat.png" },
-    { name: "Rocket Helmet", image: "rocket-booster-helmet.png" },
-    { name: "Royal Crown", image: "royal-crown-gem-encrusted.png" },
-    { name: "Diver Helmet", image: "diver-helmet.png" }
-  ],
-  hands: [
-    { name: "Starfish Gloves", image: "starfish-gloves.png" },
-    { name: "Water Bubbles", image: "water-bubbles.png" },
-    { name: "Fire Fist", image: "fire-fist.png" },
-    { name: "Harpoon Trident", image: "harpoon-trident.png" },
-    { name: "Ice Shards", image: "ice-shards.png" },
-    { name: "Crystal Magic", image: "crystal-magic-hands.png" },
-    { name: "Electric Claws", image: "electric-claws.png" },
-    { name: "Crab Claws", image: "crab-claws.png" },
-    { name: "Boxing Gloves", image: "boxing-gloves.png" }
-  ],
-  clothes: [
-    { name: "Seaweed Scarf", image: "seaweed-scarf.png" },
-    { name: "Swimmer Outfit", image: "swimmer-outfit.png" },
-    { name: "Traveller", image: "traveller.png" },
-    { name: "Explorer Harness", image: "explorer-harness.png" },
-    { name: "Futuristic Armor", image: "futuristic-chest-armor.png" },
-    { name: "Jellyfish Cape", image: "jellyfish-cape.png" },
-    { name: "Lighthouse Backpack", image: "lighthouse-mini-backpack.png" },
-    { name: "Sailor Uniform", image: "sailor-uniform.png" },
-    { name: "Energy Backpack", image: "energy-backpack.png" }
-  ]
-};
 
 const ClaimWearableContent = observer(() => {
   const { t } = useTranslation();
@@ -72,15 +38,17 @@ const ClaimWearableContent = observer(() => {
     let id = 1;
     
     CATEGORIES.forEach(category => {
-      const categoryItems = WEARABLE_ITEMS[category.id as keyof typeof WEARABLE_ITEMS];
+      const categoryItems = ALL_WEARABLE_SVG[category.type as keyof typeof ALL_WEARABLE_SVG] || [];
       
-      categoryItems.forEach(item => {
-        items.push({
-          id: id++,
-          name: item.name,
-          image: `${category.path}/${item.image}`,
-          category: category.id as 'head' | 'hands' | 'clothes'
-        });
+      categoryItems.forEach((item, index) => {
+        if (item && item.svg) {
+          items.push({
+            id: id++,
+            name: item.name,
+            svg: item.svg,
+            category: category.id as 'head' | 'hands' | 'clothes'
+          });
+        }
       });
     });
     
@@ -137,12 +105,12 @@ const ClaimWearableContent = observer(() => {
               className="border border-[#808080] p-1 shadow-win98-inner"
             >
               <div className="aspect-square bg-[#d4d0c8] flex items-center justify-center mb-1">
-                <Image 
-                src={item.image} 
-                alt={item.name} 
-                width={60} 
-                height={60} 
-                className="object-contain"
+                <SvgIcon
+                  svgString={item.svg}
+                  alt={item.name}
+                  width={60}
+                  height={60}
+                  className="object-contain"
                 />
               </div>
               <p className="shadow-win98-outer text-center text-xs font-bold truncate" title={item.name}>{item.name}</p>

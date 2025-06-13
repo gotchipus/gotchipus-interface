@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import { X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useContractRead, useContractWrite } from "@/hooks/useContract"
@@ -8,6 +7,9 @@ import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOT
 import { useToast } from '@/hooks/use-toast'
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
+import { ALL_WEARABLE_SVG } from "@/components/gotchiSvg/svgs";
+import SvgIcon from "@/components/gotchiSvg/SvgIcon"; 
+import { WearableDefinition } from "@/lib/types";
 
 interface EquipSelectWindowProps {
   onClose: () => void
@@ -15,42 +17,6 @@ interface EquipSelectWindowProps {
   selectedType?: string
   selectedTokenId?: string
 }
-
-const EQUIPMENT_DATA = {
-  [HAND_BYTES32]: [
-    { id: 27, name: "Boxing Gloves", icon: "/gotchi/Hands/Boxing Gloves.png" },
-    { id: 28, name: "Crab Claws", icon: "/gotchi/Hands/Crab Claws.png" },
-    { id: 29, name: "Crystal Magic Hands", icon: "/gotchi/Hands/Crystal Magic Hands.png" },
-    { id: 30, name: "Electric Claws", icon: "/gotchi/Hands/Electric Claws.png" },
-    { id: 31, name: "Fire Fist", icon: "/gotchi/Hands/Fire Fist.png" },
-    { id: 32, name: "Harpoon Trident", icon: "/gotchi/Hands/Harpoon Trident.png" },
-    { id: 33, name: "Ice Shards", icon: "/gotchi/Hands/Ice Shards.png" },
-    { id: 34, name: "Starfish Gloves", icon: "/gotchi/Hands/Starfish Gloves.png" },
-    { id: 35, name: "Water Bubbles", icon: "/gotchi/Hands/Water Bubbles.png" },
-  ],
-  [HEAD_BYTES32]: [
-    { id: 36, name: "Diver Helmet", icon: "/gotchi/Head/Diver Helmet.png" },
-    { id: 37, name: "Lightthouse Hat", icon: "/gotchi/Head/Lightthouse Hat Pharos Network.png" },
-    { id: 38, name: "Logo Hat", icon: "/gotchi/Head/Logo Hat.png" },
-    { id: 39, name: "Pirate Hat", icon: "/gotchi/Head/Pirate Hat.png" },
-    { id: 40, name: "Rocket Booster Helmet", icon: "/gotchi/Head/Rocket Booster Helmet.png" },
-    { id: 41, name: "Royal Crown", icon: "/gotchi/Head/Royal Crown Gem Encrusted.png" },
-    { id: 42, name: "Shark Hoodie", icon: "/gotchi/Head/Shark Hoodie.png" },
-    { id: 43, name: "Space Helmet", icon: "/gotchi/Head/Space Helmet.png" },
-    { id: 44, name: "Transparent Brain Dome", icon: "/gotchi/Head/Transparent Brain Dome Mini Lighthouse.png" },
-  ],
-  [CLOTHES_BYTES32]: [
-    { id: 45, name: "Energy Backpack", icon: "/gotchi/Clothes/Energy Backpack.png" },
-    { id: 46, name: "Explorer Harness", icon: "/gotchi/Clothes/Explorer Harness.png" },
-    { id: 47, name: "Futuristic Chest Armor", icon: "/gotchi/Clothes/Futuristic Chest Armor.png" },
-    { id: 48, name: "Jellyfish Cape", icon: "/gotchi/Clothes/Jellyfish Cape.png" },
-    { id: 49, name: "Lighthouse Mini Backpack", icon: "/gotchi/Clothes/Lighthouse Mini Backpack.png" },
-    { id: 50, name: "Sailor Uniform", icon: "/gotchi/Clothes/Sailor Uniform.png" },
-    { id: 51, name: "Seaweed Scarf", icon: "/gotchi/Clothes/Seaweed Scarf.png" },
-    { id: 52, name: "Swimmer Outfit", icon: "/gotchi/Clothes/Swimmer Outfit.png" },
-    { id: 53, name: "Traveller", icon: "/gotchi/Clothes/Traveller.png" },
-  ]
-};
 
 const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, selectedTokenId }: EquipSelectWindowProps) => {
   const getTypeFromIndex = (type?: string) => {
@@ -65,12 +31,15 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
   }, [selectedType]);
 
   const getAvailableEquipments = (type: string) => {
-    const equipments = EQUIPMENT_DATA[type as keyof typeof EQUIPMENT_DATA] || [];
-    return equipments.filter((equip: { id: number }) => {
+    const equipments = (ALL_WEARABLE_SVG[type as keyof typeof ALL_WEARABLE_SVG] || []) as (WearableDefinition | null)[];
+    
+    return equipments.filter((equip): equip is WearableDefinition => {
+      if (!equip) return false;
       const balance = parseInt(wearableBalances[equip.id] || "0");
       return balance > 0;
     });
   };
+
 
   const availableEquipments = getAvailableEquipments(activeTab);
     
@@ -204,44 +173,38 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
         {/* Equipment Grid */}
         <div className="p-4 grid grid-cols-4 gap-4 overflow-y-auto flex-1">
           {availableEquipments.map((equip) => {
-            const isSelected = equip.id === equipIndex;
-            const isDisabled = isEquiping && !isSelected;
-            
-            return (
-              <div
-                key={equip.id}
-                onClick={() => !isDisabled && handleEquipWearable(equip.id)}
-                className={`flex flex-col transition-all duration-200 transform hover:scale-105 ${
-                  isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-                } ${isSelected && isEquiping ? 'scale-105' : ''}`}
-              >
-                <div className={`h-24 border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center ${
-                  isSelected && isEquiping ? 'bg-blue-50' : ''
-                }`}>
-                  <Image 
-                    src={equip.icon} 
-                    alt={equip.name} 
-                    width={64} 
-                    height={64} 
-                    className={isDisabled ? 'grayscale' : ''}
-                  />
-                </div>
-                <div className={`border-2 border-t-0 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-b-sm p-2 ${
-                  isSelected && isEquiping ? 'bg-blue-50' : ''
-                }`}>
-                  <div className="text-sm font-medium text-center">{equip.name}</div>
-                  <div className="text-xs text-center text-gray-600">
-                    Balance: {parseInt(wearableBalances[equip.id]) || 0}
+              const isSelected = equip.id === equipIndex;
+              const isDisabled = isConfirming && !isSelected;
+              
+              return (
+                <div
+                  key={equip.id}
+                  onClick={() => !isDisabled && handleEquipWearable(equip.id)}
+                  className={`flex flex-col transition-all duration-200 transform hover:scale-105 ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'} ${isSelected && isConfirming ? 'scale-105' : ''}`}
+                >
+                  <div className={`h-24 border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center p-2`}>
+                    <SvgIcon
+                      svgString={equip.svg}
+                      alt={equip.name}
+                      width={64}
+                      height={64}
+                      className={isDisabled ? 'grayscale' : ''}
+                    />
                   </div>
-                  {isSelected && isEquiping && (
-                    <div className="text-xs text-center text-blue-600 mt-1 font-medium">
-                      Equipping...
+                  <div className={`border-2 border-t-0 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-b-sm p-2`}>
+                    <div className="text-sm font-medium text-center">{equip.name}</div>
+                    <div className="text-xs text-center text-gray-600">
+                      Balance: {parseInt(wearableBalances[equip.id]) || 0}
                     </div>
-                  )}
+                    {isSelected && isConfirming && (
+                      <div className="text-xs text-center text-blue-600 mt-1 font-medium">
+                        Equipping...
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>

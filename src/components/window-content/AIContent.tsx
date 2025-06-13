@@ -256,16 +256,7 @@ export default function AIContent() {
   const formatTime = (date: Date) =>
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const getPetFrame = () => {
-    switch (petState) {
-      case "thinking":
-        return "/octopus/images/attack_1.png";
-      case "happy":
-        return "/octopus/images/jump_1.png";
-      default:
-        return "/octopus/images/idle_1.png";
-    }
-  };
+
 
   return (
     <div className="relative h-full bg-[#c0c0c0]">
@@ -305,7 +296,7 @@ export default function AIContent() {
                   ) : (
                     <div className="relative w-6 h-6">
                       <Image
-                        src="/gotchi/preview.png"
+                        src="not-any.png"
                         alt="Octopus Assistant"
                         fill
                         className="object-contain"
@@ -335,7 +326,7 @@ export default function AIContent() {
               <div className="w-8 h-8 rounded-full bg-[#808080] flex items-center justify-center">
                 <div className="relative w-6 h-6">
                   <Image
-                    src="/octopus/images/attack_1.png"
+                    src=""
                     alt="Octopus Assistant"
                     fill
                     className="object-contain"

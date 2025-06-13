@@ -143,3 +143,9 @@ export interface EquipWearableType {
   wearableId: number;
   equiped: boolean;
 }
+
+export interface WearableDefinition {
+  id: number;
+  name: string;
+  svg: string;
+}

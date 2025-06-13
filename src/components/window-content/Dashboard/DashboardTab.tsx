@@ -6,6 +6,7 @@ import { TokenInfo } from "@/lib/types"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
 import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
+import { useSvgLayers } from "@/hooks/useSvgLayers"
 
 interface DashboardTabProps {
   selectedTokenId: string | null
@@ -35,6 +36,17 @@ const DashboardTab = observer(({
   const tokenId = selectedTokenId || "";
   const tokenInfo = tokenInfoMap[tokenId] || {} as TokenInfo;
   const { wearableStore } = useStores()
+  const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
+
+  const viewBox = "0 0 80 80"; 
+
+  const completeBackgroundSvg = backgroundSvg 
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${backgroundSvg}</svg>`
+    : null;
+
+  const backgroundStyle = completeBackgroundSvg
+    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(completeBackgroundSvg)}")` } 
+    : {};
 
   const attributes = [
     { name: "Aether", value: tokenInfo.aether || 0, icon: "aether" },
@@ -53,7 +65,7 @@ const DashboardTab = observer(({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Left Column - Pet Display */}
-      <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-4">
+      <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-4" style={backgroundStyle}>
         <div className="text-center mb-4 flex justify-center items-center">
           {isRenaming ? (
             <input
@@ -71,17 +83,24 @@ const DashboardTab = observer(({
           )}
         </div>
 
-        <div className="flex justify-center items-center h-64 relative">
-          <div className="absolute w-48 h-48 bg-[#d4d0c8] rounded-full opacity-30"></div>
-          <motion.div
-            className="w-48 h-48 relative flex items-center justify-center"
-            animate={floatAnimation}
-          >
-            <SvgComposer tokenId={selectedTokenId || "0"} />
-          </motion.div>
+        <div className="flex justify-center items-center h-64 relative mt-12">
+          {isLoading && <div className="text-sm">Loading Character...</div>}
+            {error && <div className="text-sm text-red-500">Could not load character</div>}
+            
+            {!isLoading && !error && (
+              <>
+                <div className="absolute w-48 h-48 bg-[#d4d0c8] rounded-full opacity-30"></div>
+                <motion.div
+                  className="w-full h-full relative flex items-center justify-center"
+                  animate={floatAnimation}
+                >
+                  <SvgComposer layers={layers} width={300} height={300} />
+                </motion.div>
+              </>
+            )}
         </div>
 
-        <div className="flex justify-center gap-4 mt-4">
+        <div className="flex justify-center gap-4 mt-10">
           {!isRenaming ? (
             <>
               <button

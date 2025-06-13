@@ -10,10 +10,9 @@ import { useStores } from "@stores/context"
 import { useToast } from "@/hooks/use-toast"
 import { Win98Loading } from "@/components/ui/win98-loading";
 import { parseGotchipusInfo, TokenInfo } from "@/lib/types";
-import { motion } from "framer-motion";
 import { DashboardTab, EquipTab, StatsTab, WalletTab } from "./Dashboard";
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
+import { NftCard } from "@/components/gotchiSvg/NftCard";
 
 const EQUIPMENT_TYPES = {
   0: BG_BYTES32,
@@ -303,7 +302,7 @@ const DashboardContent = observer(() => {
       <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
         <div className="text-center">
           <div className="mb-4">
-            <Image src="/gotchi/preview.png" alt="No NFTs" width={120} height={120} />
+            <Image src="not-any.png" alt="No NFTs" width={120} height={120} />
           </div>
           <h3 className="text-xl font-bold mb-2">No NFTs Found</h3>
           <p className="text-[#000080] mb-4">You don't have any Gotchipus NFTs yet.</p>
@@ -324,20 +323,11 @@ const DashboardContent = observer(() => {
         <div className="flex flex-col h-full">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {getCurrentPageItems().map((id) => (
-              <div
-                key={id}
-                className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-inner rounded-sm p-3 hover:bg-[#c0c0c0]"
-                onClick={() => handleTokenSelect(id.toString())}
-              >
-                <motion.div
-                  className="w-48 h-48 relative flex items-center justify-center"
-                  animate={floatAnimation}
-                >
-                  <SvgComposer tokenId={id} />
-                </motion.div>
-              
-                <div className="text-center mt-4 font-bold">#{id.toString()}</div>
-              </div>
+              <NftCard 
+                key={id} 
+                id={id} 
+                onSelect={handleTokenSelect} 
+              />
             ))}
           </div>
           
