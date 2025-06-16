@@ -43,6 +43,10 @@ export const WINDOW_SIZE = {
   "wearable": {
     "width": 1000,
     "height": 800
+  },
+  "daily-task-hall": {
+    "width": 1000,
+    "height": 800
   }
 };
 
@@ -56,7 +60,9 @@ export const WINDOW_BG_COLOR = {
   "farm": "#ffddee",
   "hooks": "#ffddee",
   "dna": "#ffddee",
-  "mint": "#ffddee"
+  "mint": "#ffddee",
+  "wearable": "#ffddee",
+  "daily-task-hall": "#ffddee"
 };
 
 export const CHAIN_ID = 688688;

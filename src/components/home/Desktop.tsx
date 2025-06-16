@@ -13,6 +13,7 @@ import HookContent from "@/src/components/window-content/HookContent"
 import DNAAnalyzerContent from "@/components/window-content/DNAAnalyzerContent"
 import MintContent from "@/components/window-content/MintContent" 
 import ClaimWearableContent from "@/src/components/window-content/ClaimWearableContent"
+import DailyTaskHallContent from "@/src/components/window-content/DailyTaskHallContent"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -45,6 +46,11 @@ const icons = [
     id: "wearable",
     title: "Claim Wearable",
     icon: "/claim-wearable.svg",
+  },
+  {
+    id: "daily-task-hall",
+    title: "Daily Task Hall",
+    icon: "/icons/pharos-proof.png",
   },
 
   // {
@@ -90,6 +96,9 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         break
       case "wearable":
         onOpenWindow("wearable", "Claim Wearable", <ClaimWearableContent />)
+        break
+      case "daily-task-hall":
+        onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent />)
         break
       // case "hooks":
       //   onOpenWindow("hooks", "Hooks", <HookContent />)

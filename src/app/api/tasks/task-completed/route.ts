@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch('https://api.gotchipus.com/images/update', {
+    const response = await fetch('http://127.0.0.1:8000/task/get_completed_task', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error updating image:', error);
+    console.error('Error getting completed task:', error);
     return NextResponse.json(
-      { error: 'Failed to update image' },
+      { error: 'Failed to get completed task' },
       { status: 500 }
     );
   }

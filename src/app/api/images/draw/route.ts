@@ -17,9 +17,9 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching images:', error);
+    console.error('Error drawing images:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch images' },
+      { error: 'Failed to draw images' },
       { status: 500 }
     );
   }

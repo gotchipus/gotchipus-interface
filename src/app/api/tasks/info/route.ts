@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-export async function GET() {
+export async function POST(request: NextRequest) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/ollama/story', {
+    const body = await request.json();
+    
+    const response = await fetch('http://127.0.0.1:8000/account/get_info', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      cache: 'no-store',
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -18,9 +21,9 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching story:', error);
+    console.error('Error getting info:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch story' },
+      { error: 'Failed to get info' },
       { status: 500 }
     );
   }
