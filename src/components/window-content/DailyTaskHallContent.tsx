@@ -1,10 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Win98Loading } from "@/components/ui/win98-loading"
 import { useStores } from "@stores/context"
 import { useCheckIn } from '@/hooks/useSign'
+import TaskList from './tasks/Task'
+import { useSearchParams } from 'next/navigation'
 
 interface Task {
   task_id: number
@@ -19,13 +21,6 @@ interface Task {
   completed?: boolean
 }
 
-const taskTypes = [
-  {id: 'all', name: 'All'},
-  {id: 'social', name: 'Social'},
-  {id: 'onChain', name: 'On-Chain'},
-  {id: 'community', name: 'Community'},
-  {id: 'specialEvent', name: 'Special Event'}
-]
 
 const DailyTaskHallContent = () => {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -39,8 +34,9 @@ const DailyTaskHallContent = () => {
     latest_check_in_at: 0,
     badges: [] as any[]
   });
-  
+
   const { walletStore } = useStores()
+  const searchParams = useSearchParams()
 
   const experienceToNextLevel = 100 * (userInfo.level ** 1.5) || 100;
   const timeNow = Math.floor(Date.now() / 1000);
@@ -66,7 +62,8 @@ const DailyTaskHallContent = () => {
       const infoResponse = await fetch("/api/tasks/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "address": walletStore.address })
+        body: JSON.stringify({ "address": walletStore.address }),
+        cache: 'no-store'
       });
 
       if (infoResponse.ok) {
@@ -78,7 +75,8 @@ const DailyTaskHallContent = () => {
           const completedTasksResponse = await fetch("/api/tasks/task-completed", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "user_id": userData.id })
+            body: JSON.stringify({ "user_id": userData.id }),
+            cache: 'no-store'
           });
 
           if (completedTasksResponse.ok) {
@@ -90,7 +88,11 @@ const DailyTaskHallContent = () => {
         }
       }
 
-      const allTasksResponse = await fetch("/api/tasks/allTasks");
+      const allTasksResponse = await fetch("/api/tasks/allTasks", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: 'no-store'
+      });
       if (!allTasksResponse.ok) {
         throw new Error('Failed to fetch the main task list.');
       }
@@ -114,6 +116,16 @@ const DailyTaskHallContent = () => {
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    const refreshParam = searchParams.get('refresh');
+    
+    if (viewParam === 'daily-task-hall' || refreshParam) {
+      setLoading(true);
+      fetchAllData();
+    }
+  }, [searchParams, fetchAllData]);
 
 
   const { checkIn, isCheckingIn, error: checkInError } = useCheckIn({
@@ -146,14 +158,6 @@ const DailyTaskHallContent = () => {
     }
   });
 
-
-  const filteredTasks = useMemo(() => {
-    if (selectedTaskType === 'all') {
-      return tasks;
-    }
-    return tasks?.filter(task => task.task_type === selectedTaskType);
-  }, [tasks, selectedTaskType]);
-  
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -161,7 +165,7 @@ const DailyTaskHallContent = () => {
       </div>
     )
   }
-  
+
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex gap-4 flex-1">
@@ -184,10 +188,12 @@ const DailyTaskHallContent = () => {
             
             <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2">
               <div className="text-xs mb-1">Honor Badges:</div>
-              {userInfo.badges.length > 0 ? (
-                userInfo.badges.map((badge) => (
-                  <Image src={badge.url} key={badge.name} alt="Honor Badge" width={50} height={50} />
-                ))
+              {userInfo.badges && userInfo.badges.length > 0 ? (
+                <div className="grid grid-cols-6 gap-1">
+                  {userInfo.badges.map((badge) => (
+                    <Image src={badge.url} key={badge.name} alt="Honor Badge" width={50} height={50} />
+                  ))}
+                </div>
               ) : (
                 <div className="text-xs">No badges yet</div>
               )}
@@ -235,82 +241,11 @@ const DailyTaskHallContent = () => {
           </div>
         </div>
         
-        <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-3">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-black font-bold">Available Tasks</h2>
-            
-            <div className="flex gap-1">
-              {taskTypes.map(type => (
-                <button 
-                  className={`px-2 py-1 border-2 border-[#808080] shadow-win98-outer text-xs ${
-                  selectedTaskType === type.id ? 'bg-[#000080] text-white' : 'bg-[#d4d0c8] hover:bg-[#c0c0c0] hover:text-black'
-                }`}
-                onClick={() => setSelectedTaskType(type.id)}
-                key={type.id}
-              >
-                {type.name}
-              </button>
-                ))}
-              </div>
-            </div>
-          
-          <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 h-5/6 overflow-y-auto">
-            {filteredTasks?.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-sm">
-                No tasks available in this category
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredTasks?.map(task => (
-                  <div 
-                    key={task.task_id} 
-                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-2 ${
-                      task.completed ? 'opacity-70' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <div className="flex items-center">
-                        <div 
-                          className={`w-4 h-4 border border-[#808080] shadow-win98-inner mr-2 flex items-center justify-center ${
-                            task.completed ? 'bg-[#000080]' : 'bg-white'
-                          }`}
-                        >
-                          {task.completed && (
-                            <span className="text-white text-xs">✓</span>
-                          )}
-                        </div>
-                        <div className="flex items-center">
-                          <span className="font-bold">{task.task_title}</span>
-                        </div>
-                      </div>
-                      <span className="text-xs bg-[#000080] text-white px-2 py-0.5">
-                        +{task.xp_reward} XP
-                      </span>
-                    </div>
-                    
-                    <p className="text-xs mb-2 ml-6">{task.task_description}</p>
-                    
-                    <div className="flex justify-between items-center ml-6">
-                      <span className="text-xs text-[#808080]">
-                        {task.task_type.charAt(0).toUpperCase() + task.task_type.slice(1)} Task
-                      </span>
-                      
-                      <button 
-                        className={`px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0] ${
-                          task.completed ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        onClick={() => {}}
-                        disabled={task.completed}
-                      >
-                        {task.completed ? 'Completed' : 'Complete'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <TaskList 
+          tasks={tasks} 
+          selectedTaskType={selectedTaskType} 
+          onTaskTypeChange={setSelectedTaskType} 
+        />
       </div>
     </div>
   )

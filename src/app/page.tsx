@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Desktop from "@/components/home/Desktop"
 import Taskbar from "@/components/home/Taskbar"
@@ -13,10 +14,10 @@ export default function Home() {
   const [activeWindow, setActiveWindow] = useState<string | null>(null)
   const [zIndexCounter, setZIndexCounter] = useState(100)
 
+  const router = useRouter() 
+
   const handleOpenWindow = (windowId: string, title: string, content: JSX.Element) => {
-    // Check if window is already open
     if (openWindows.some((w) => w.id === windowId)) {
-      // Make it active instead
       handleActivateWindow(windowId)
       return
     }
@@ -42,6 +43,8 @@ export default function Home() {
       const remainingWindows = openWindows.filter((w) => w.id !== windowId)
       setActiveWindow(remainingWindows.length > 0 ? remainingWindows[remainingWindows.length - 1].id : null)
     }
+
+    router.push('/', { scroll: false });
   }
 
   const handleMinimizeWindow = (windowId: string) => {

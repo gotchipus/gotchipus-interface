@@ -1,7 +1,8 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import DesktopIcon from "@/components/home/DesktopIcon"
 import AIContent from "@/src/components/window-content/AIContent"
 import ComingSoonContent from "@/components/window-content/SoonContent"
@@ -67,6 +68,8 @@ const icons = [
 
 export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
   const [activeIcon, setActiveIcon] = useState<string | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
   
   const MAX_ICONS_PER_COLUMN = 6
   
@@ -78,13 +81,15 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
     return icons.slice(columnStart, columnEnd)
   })
 
-  const handleIconClick = (iconId: string) => {
-    setActiveIcon(iconId)
+  useEffect(() => {
+    const viewParam = searchParams.get('view')
+    if (viewParam && !activeWindow) {
+      openWindowByView(viewParam)
+    }
+  }, [searchParams])
 
-    switch (iconId) {
-      // case "ai":
-      //   onOpenWindow("ai", "AI", <AIContent />)
-      //   break
+  const openWindowByView = (view: string) => {
+    switch (view) {
       case "mint":
         onOpenWindow("mint", "Mint", <MintContent />)
         break
@@ -100,15 +105,17 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
       case "daily-task-hall":
         onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent />)
         break
-      // case "hooks":
-      //   onOpenWindow("hooks", "Hooks", <HookContent />)
-      //   break
-      // case "dna":
-      //   onOpenWindow("dna", "DNA Analyzer", <DNAAnalyzerContent />)
-      //   break
       default:
         break
     }
+  }
+
+  const handleIconClick = (iconId: string) => {
+    setActiveIcon(iconId)
+    
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('view', iconId)
+    router.push(`/?${params.toString()}`)
   }
 
   return (
