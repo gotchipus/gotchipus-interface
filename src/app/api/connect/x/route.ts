@@ -1,14 +1,31 @@
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
+import * as jose from 'jose';
 
-export function GET(request: Request) {
-  const state = crypto.randomBytes(32).toString('hex');
-  const codeVerifier = crypto.randomBytes(32).toString('base64url');
-  const codeChallenge = crypto
-    .createHash('sha256')
-    .update(codeVerifier)
-    .digest('base64url');
+export const runtime = 'edge';
+
+export async function GET(request: Request) {
+  const generateRandomBytes = (size: number) => {
+    const arr = new Uint8Array(size);
+    crypto.getRandomValues(arr);
+    return Array.from(arr)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  };
+
+  async function sha256(text: string) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    
+    return btoa(String.fromCharCode(...Array.from(new Uint8Array(hashBuffer))))
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+  }
+
+  const state = generateRandomBytes(32);
+  const codeVerifier = generateRandomBytes(32);
+  const codeChallenge = await sha256(codeVerifier);
   
   const { searchParams } = new URL(request.url);
   const address = searchParams.get('address');
@@ -17,11 +34,15 @@ export function GET(request: Request) {
     return NextResponse.json({ error: 'Address is required' }, { status: 400 });
   }
 
-  const payload = { address };
-  const token = jwt.sign(payload, process.env.NEXT_PUBLIC_JWT_SECRET!, { expiresIn: '5m' });
+  const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET!);
+  
+  const token = await new jose.SignJWT({ address })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('5m')
+    .sign(secret);
 
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/connect/x/callback`;
-  
   const twitterAuthUrl = new URL('https://x.com/i/oauth2/authorize');
   twitterAuthUrl.searchParams.set('response_type', 'code');
   twitterAuthUrl.searchParams.set('client_id', process.env.NEXT_PUBLIC_X_DEV_CLIENT_ID!);
@@ -32,9 +53,22 @@ export function GET(request: Request) {
   twitterAuthUrl.searchParams.set('code_challenge_method', 'S256');
 
   const response = NextResponse.redirect(twitterAuthUrl.toString());
-  response.cookies.set('x_auth_jwt', token, { path: '/', httpOnly: true, secure: process.env.NEXT_PUBLIC_NODE_ENV === 'development', maxAge: 300 });
-  response.cookies.set('x_oauth_state', state, { path: '/', httpOnly: true, maxAge: 3600 });
-  response.cookies.set('x_oauth_code_verifier', codeVerifier, { path: '/', httpOnly: true, maxAge: 3600 });
+  response.cookies.set('x_auth_jwt', token, { 
+    path: '/', 
+    httpOnly: true, 
+    secure: process.env.NEXT_PUBLIC_NODE_ENV === 'development', 
+    maxAge: 300 
+  });
+  response.cookies.set('x_oauth_state', state, { 
+    path: '/', 
+    httpOnly: true, 
+    maxAge: 3600 
+  });
+  response.cookies.set('x_oauth_code_verifier', codeVerifier, { 
+    path: '/', 
+    httpOnly: true, 
+    maxAge: 3600 
+  });
 
   return response;
 }

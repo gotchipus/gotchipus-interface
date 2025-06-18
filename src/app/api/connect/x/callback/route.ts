@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import * as jose from 'jose';
 
+export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -14,7 +15,9 @@ export async function GET(request: NextRequest) {
 
   let decodedToken: any;
   try {
-    decodedToken = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET!);
+    const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET!);
+    const { payload } = await jose.jwtVerify(token, secret);
+    decodedToken = payload;
   } catch (err) {
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
   }
@@ -32,7 +35,7 @@ export async function GET(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_X_DEV_CLIENT_ID}:${process.env.NEXT_PUBLIC_X_DEV_CLIENT_SECRET}`).toString('base64')}`
+        'Authorization': `Basic ${btoa(`${process.env.NEXT_PUBLIC_X_DEV_CLIENT_ID}:${process.env.NEXT_PUBLIC_X_DEV_CLIENT_SECRET}`)}`
       },
       body: new URLSearchParams({
         code: code!,
@@ -59,12 +62,12 @@ export async function GET(request: NextRequest) {
     const upsertResponse = await fetch('http://127.0.0.1:8000/account/upsert_x', {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(upsertBody),
-      });
+    });
 
-      if (!upsertResponse.ok) {
+    if (!upsertResponse.ok) {
       throw new Error(`API responded with status: ${upsertResponse.status}`);
     }
 

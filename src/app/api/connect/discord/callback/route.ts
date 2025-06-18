@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import * as jose from 'jose';
 
+export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
 
   let decodedToken: any;
   try {
-    decodedToken = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET!);
+    const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET!);
+    const { payload } = await jose.jwtVerify(token, secret);
+    decodedToken = payload;
   } catch (err) {
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
   }
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest) {
     });
     const tokenData = await tokenResponse.json();
     if (!tokenData.access_token) throw new Error('Failed to get discord access token');
-    
+
     const userResponse = await fetch('https://discord.com/api/users/@me', {
       headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
     });
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     const guildId = process.env.NEXT_PUBLIC_DISCORD_GUILD_ID!; 
     const botToken = process.env.NEXT_PUBLIC_DISCORD_BOT_TOKEN!;
-    
+
     await fetch(`https://discord.com/api/guilds/${guildId}/members/${discordUserId}`, {
       method: 'PUT',
       headers: {
@@ -56,29 +59,28 @@ export async function GET(request: NextRequest) {
       },
       body: JSON.stringify({ access_token: tokenData.access_token })
     });
-    
+
     const memberCheck = await fetch(`https://discord.com/api/guilds/${guildId}/members/${discordUserId}`, {
-        headers: { 'Authorization': `Bot ${botToken}` }
+      headers: { 'Authorization': `Bot ${botToken}` }
     });
     if (!memberCheck.ok) {
-        throw new Error('Failed to verify user in guild.');
+      throw new Error('Failed to verify user in guild.');
     }
 
     const upsertBody = {
       "address": walletAddress,
       "discord_id": discordUserId
     };
-  
     const upsertResponse = await fetch('http://127.0.0.1:8000/account/upsert_discord', {
-    method: 'POST',
-    headers: {
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(upsertBody),
+      },
+      body: JSON.stringify(upsertBody),
     });
 
     if (!upsertResponse.ok) {
-    throw new Error(`API responded with status: ${upsertResponse.status}`);
+      throw new Error(`API responded with status: ${upsertResponse.status}`);
     }
 
     console.log(`User ${discordUsername} (${discordUserId}) has successfully joined the Discord server.`);
