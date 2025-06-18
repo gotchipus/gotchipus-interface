@@ -41,7 +41,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   const { walletStore } = useStores()
   const searchParams = useSearchParams()
 
-  const experienceToNextLevel = 100 * (userInfo.level ** 1.5) || 100;
+  const experienceToNextLevel = Math.floor(100 * ((userInfo.level + 1) ** 1.5));
   const timeNow = Math.floor(Date.now() / 1000);
   const checkedInToday = timeNow < userInfo.latest_check_in_at + 86400;
 
