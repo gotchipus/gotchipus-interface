@@ -21,8 +21,11 @@ interface Task {
   completed?: boolean
 }
 
+interface DailyTaskHallContentProps {
+  openWindow: (view: string) => void;
+}
 
-const DailyTaskHallContent = () => {
+const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTaskType, setSelectedTaskType] = useState<string>('all')
@@ -54,11 +57,9 @@ const DailyTaskHallContent = () => {
     if (!walletStore.address) {
       setLoading(false);
       return;
-    } 
-    
-    try {
-      let completedTaskIds = new Set<number>();
+    }
 
+    try {
       const infoResponse = await fetch("/api/tasks/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,26 +67,17 @@ const DailyTaskHallContent = () => {
         cache: 'no-store'
       });
 
+      let userData = null;
       if (infoResponse.ok) {
         const infoResult = await infoResponse.json();
         if (infoResult.code === 0 && infoResult.data) {
-          const userData = infoResult.data;
+          userData = infoResult.data;
           setUserInfo(userData);
-
-          const completedTasksResponse = await fetch("/api/tasks/task-completed", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "user_id": userData.id }),
-            cache: 'no-store'
-          });
-
-          if (completedTasksResponse.ok) {
-            const completedTasksResult = await completedTasksResponse.json();
-            if (completedTasksResult.code === 0 && completedTasksResult.data) {
-              completedTaskIds = new Set(completedTasksResult.data.map((task: Task) => task.task_id));
-            }
-          }
         }
+      }
+      if (!userData) {
+        setLoading(false);
+        return;
       }
 
       const allTasksResponse = await fetch("/api/tasks/allTasks", {
@@ -98,16 +90,33 @@ const DailyTaskHallContent = () => {
       }
       const allTasksResult = await allTasksResponse.json();
       if (allTasksResult.code !== 0) {
-          throw new Error(`Task list API returned an error: ${allTasksResult.status}`);
+        throw new Error(`Task list API returned an error: ${allTasksResult.status}`);
       }
+      const allTasks: Task[] = allTasksResult.data;
 
-      const finalTasks = allTasksResult.data.map((task: Task) => ({
+      const completedStatus = await Promise.all(
+        allTasks.map(async (task) => {
+          try {
+            const res = await fetch("/api/tasks/task-completed", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ "user_id": userData.id, "task_id": task.task_id }),
+              cache: 'no-store'
+            });
+            if (!res.ok) return false;
+            const result = await res.json();
+            return result.code === 0 && Array.isArray(result.data) && result.data.length > 0;
+          } catch {
+            return false;
+          }
+        })
+      );
+
+      const finalTasks = allTasks.map((task, idx) => ({
         ...task,
-        completed: completedTaskIds.has(task.task_id)
+        completed: completedStatus[idx]
       }));
-
       setTasks(finalTasks);
-
     } catch (error) {
       console.error("An error occurred during data fetching:", error);
     }
@@ -245,6 +254,7 @@ const DailyTaskHallContent = () => {
           tasks={tasks} 
           selectedTaskType={selectedTaskType} 
           onTaskTypeChange={setSelectedTaskType} 
+          openWindow={openWindow}
         />
       </div>
     </div>

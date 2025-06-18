@@ -83,8 +83,11 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
 
   useEffect(() => {
     const viewParam = searchParams.get('view')
-    if (viewParam && !activeWindow) {
-      openWindowByView(viewParam)
+    if (viewParam) {
+      const views = viewParam.split(',')
+      views.forEach(view => {
+        openWindowByView(view)
+      })
     }
   }, [searchParams])
 
@@ -103,7 +106,7 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
         onOpenWindow("wearable", "Claim Wearable", <ClaimWearableContent />)
         break
       case "daily-task-hall":
-        onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent />)
+        onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent openWindow={handleIconClick} />)
         break
       default:
         break

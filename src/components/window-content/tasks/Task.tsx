@@ -22,6 +22,7 @@ interface TaskListProps {
   tasks: Task[]
   selectedTaskType: string
   onTaskTypeChange: (type: string) => void
+  openWindow: (view: string) => void
 }
 
 const taskTypes = [
@@ -60,7 +61,7 @@ const taskTypeIcons: Record<string, string> = {
   'specialEvent': '/icons/pharos-proof.png'
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskTypeChange }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskTypeChange, openWindow }) => {
   const [fixedTasksState, setFixedTasksState] = useState(fixedTasks)
   const { walletStore } = useStores()
   const router = useRouter()
@@ -126,26 +127,45 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
   }
 
   const filteredTasks = React.useMemo(() => {
-    if (selectedTaskType === 'all') {
-      return tasks
-    }
-    return tasks?.filter(task => task.task_type === selectedTaskType)
+    let filtered = selectedTaskType === 'all' ? tasks : tasks?.filter(task => task.task_type === selectedTaskType)
+    return filtered || []
   }, [tasks, selectedTaskType])
 
   const filteredFixedTasks = React.useMemo(() => {
-    if (selectedTaskType === 'all') {
-      return fixedTasksState
-    }
-    return fixedTasksState.filter(task => task.type === selectedTaskType)
+    let filtered = selectedTaskType === 'all' ? fixedTasksState : fixedTasksState.filter(task => task.type === selectedTaskType)
+    return filtered
   }, [fixedTasksState, selectedTaskType])
+
+  const mergedTasks = React.useMemo(() => {
+    const fixed = filteredFixedTasks.map(task => ({ ...task, _isFixedTask: true }))
+    const normal = filteredTasks.map(task => ({ ...task, _isFixedTask: false }))
+    return [...fixed, ...normal].sort((a, b) => Number(!!a.completed) - Number(!!b.completed))
+  }, [filteredFixedTasks, filteredTasks])
 
   const getTaskIcon = (taskType: string, isFixedTask: boolean, taskId?: string): string => {
     if (isFixedTask && taskId) {
       if (taskId === 'follow-x') return '/icons/x-icon.png'
       if (taskId === 'join-discord') return '/icons/discord-icon.png'
     }
-    return taskTypeIcons[taskType] || '/icons/default-task-icon.png'
+    return taskTypeIcons[taskType] || '/icons/pharos-proof.png'
   }
+
+  const handleCompleteTask = (taskId: number) => {
+    if (!walletStore.address) {
+      return;
+    }
+
+    const taskViewMap: { [key: number]: string } = {
+      4: 'mint',
+      5: 'dashboard',
+    };
+
+    const viewToOpen = taskViewMap[taskId];
+
+    if (viewToOpen) {
+      openWindow(viewToOpen);
+    }
+  };
 
   const renderTaskItem = (task: any, isFixedTask: boolean = false): JSX.Element => {
     const taskId = isFixedTask ? task.id : task.task_id
@@ -188,7 +208,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
             </div>
           </div>
           <span className="text-xs bg-[#000080] text-white px-2 py-0.5">
-            +{taskXpReward} XP
+              +{taskXpReward} XP
           </span>
         </div>
         
@@ -247,7 +267,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
               className={`px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0] ${
                 isCompleted ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              onClick={() => {}}
+              onClick={() => handleCompleteTask(taskId)}
               disabled={isCompleted}
             >
               {isCompleted ? 'Completed' : 'Complete'}
@@ -279,14 +299,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
       </div>
     
       <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 h-5/6 overflow-y-auto">
-        {filteredTasks?.length === 0 && filteredFixedTasks.length === 0 ? (
+        {mergedTasks.length === 0 ? (
           <div className="flex items-center justify-center h-full text-sm">
             No tasks available in this category
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredFixedTasks.map(task => renderTaskItem(task, true))}
-            {filteredTasks?.map(task => renderTaskItem(task, false))}
+            {mergedTasks.map(task => renderTaskItem(task, task._isFixedTask))}
           </div>
         )}
       </div>

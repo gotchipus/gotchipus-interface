@@ -37,6 +37,48 @@ const MintContent = observer(() => {
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",
       })
+
+      const upsertData = async () => {
+        const taskBody = {
+          "address": walletStore.address,
+          "task_id": 4 
+        };
+
+        const isCompleted = await fetch('/api/tasks/is_task_completed', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(taskBody),
+        });
+
+        const isCompletedData = await isCompleted.json();
+
+        if (isCompletedData.data === true && isCompletedData.code === 0) {
+          return;
+        }
+
+        const body = {
+          "address": walletStore.address,
+          "task_id": 4 
+        };
+
+        const response = await fetch('/api/tasks/complete-select-task', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+      }
+
+      upsertData();
     }
   }, [isConfirmed])
 

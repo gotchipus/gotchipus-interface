@@ -49,7 +49,6 @@ export default function Taskbar({
     return () => clearInterval(timer)
   }, [])
 
-  // Windows 98 button press effect helpers
   const handleButtonMouseDown = (id: string) => {
     setPressedButton(id);
   };

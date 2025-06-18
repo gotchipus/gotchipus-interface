@@ -49,6 +49,7 @@ const DashboardContent = observer(() => {
   const observerTarget = useRef<HTMLDivElement>(null)
   const [wearableBalances, setWearableBalances] = useState<string[]>([])
   const [selectedType, setSelectedType] = useState<string>("")
+  const [isPetWriting, setIsPetWriting] = useState<boolean>(false)
 
   const { walletStore, wearableStore } = useStores()
   const { toast } = useToast()
@@ -149,6 +150,7 @@ const DashboardContent = observer(() => {
 
   const handlePet = () => {
     if (!selectedTokenId) return;
+    setIsPetWriting(true);
     contractWrite("pet", [selectedTokenId]);
     toast({
       title: "Submited Transaction",
@@ -162,6 +164,52 @@ const DashboardContent = observer(() => {
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",
       })
+
+      if (isPetWriting) {
+        setIsPetWriting(false);
+
+        const upsertData = async () => {
+          const taskBody = {
+            "address": walletStore.address,
+            "task_id": 5
+          };
+  
+          const isCompleted = await fetch('/api/tasks/is_task_completed', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(taskBody),
+          });
+  
+          const isCompletedData = await isCompleted.json();
+  
+          if (isCompletedData.data === true && isCompletedData.code === 0) {
+            return;
+          }
+  
+          const body = {
+            "address": walletStore.address,
+            "task_id": 5 
+          };
+  
+          const response = await fetch('/api/tasks/complete-select-task', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+  
+          if (!response.ok) {
+            throw new Error(`API responded with status: ${response.status}`);
+          }
+  
+          await response.json();
+        }
+  
+        upsertData();
+      }
     }
   }, [isConfirmed]);
 
