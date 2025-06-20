@@ -149,3 +149,13 @@ export interface WearableDefinition {
   name: string;
   svg: string;
 }
+
+export interface Token {
+  name: string;
+  icon: string;
+  symbol: string;
+  contract: string;
+  balance?: string;
+  decimals: number;
+  popular?: boolean;
+}

@@ -30,7 +30,7 @@ const DashboardContent = observer(() => {
   const [newName, setNewName] = useState("")
   const [selectedEquipSlot, setSelectedEquipSlot] = useState<number | null>(null)
   const [showEquipSelect, setShowEquipSelect] = useState(false)
-  const [activeWalletTab, setActiveWalletTab] = useState<"tokens" | "nfts">("tokens")
+  const [activeWalletTab, setActiveWalletTab] = useState<"tokens" | "nfts" | "call">("tokens")
   const [balances, setBalances] = useState<number>(0)
   const [ids, setIds] = useState<string[]>([])
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)

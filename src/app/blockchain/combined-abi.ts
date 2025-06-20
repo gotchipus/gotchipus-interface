@@ -33,3 +33,4 @@ export const PUS_ABI = [
 export const PUS_ADDRESS = '0x0000000038f050528452D6Da1E7AACFA7B3Ec0a8'; 
 export const ERC6551_REGISTRY_ADDRESS = '0x000000E7C8746fdB64D791f6bb387889c5291454';
 export const ERC6551_ABI = erc6551RegistryAbi;
+export const ERC20_ABI = simpleErc20Abi;

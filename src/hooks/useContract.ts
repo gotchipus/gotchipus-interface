@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ethers } from 'ethers';
-import { PUS_ABI, PUS_ADDRESS, ERC6551_REGISTRY_ADDRESS, ERC6551_ABI } from '@/src/app/blockchain';
+import { PUS_ABI, PUS_ADDRESS, ERC6551_REGISTRY_ADDRESS, ERC6551_ABI, ERC20_ABI } from '@/src/app/blockchain';
 import { useWriteContract, useReadContract, useReadContracts, useWaitForTransactionReceipt } from "wagmi";
 import type { Abi } from 'viem';
 
@@ -119,3 +119,26 @@ export const useERC6551Read = (
 
   return result;
 }
+
+
+export const useERC20Read = (
+  address: string,
+  functionName: string,
+  args: any[] = [],
+  options?: {
+    enabled?: boolean
+  }
+) => {
+  const { data, isLoading, error, isError, ...rest } = useReadContract({
+    address: address as `0x${string}`,
+    abi: ERC20_ABI,
+    functionName: functionName,
+    args: args,
+    query: {
+      enabled: options?.enabled
+    }
+  });
+
+  return { data, isLoading, error, isError, ...rest };
+}
+
