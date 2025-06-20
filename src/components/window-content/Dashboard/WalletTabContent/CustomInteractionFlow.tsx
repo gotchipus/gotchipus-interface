@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react"
 import { ethers } from "ethers"
 import TransactionPreview from "./TransactionPreview"
+import { useContractWrite } from "@/src/hooks/useContract"
+import { useToast } from '@/hooks/use-toast'
 
 interface CustomInteractionFlowProps {
   onBack: () => void;
-  onComplete: (result: string) => void;
+  tbaAddress: string;
+  tokenId: string;
 }
 
-const CustomInteractionFlow = ({ onBack, onComplete }: CustomInteractionFlowProps) => {
+const CustomInteractionFlow = ({ onBack, tbaAddress, tokenId }: CustomInteractionFlowProps) => {
   const [contractAddress, setContractAddress] = useState("");
   const [payableValue, setPayableValue] = useState("0");
   const [functionSignature, setFunctionSignature] = useState(""); 
@@ -18,7 +21,8 @@ const CustomInteractionFlow = ({ onBack, onComplete }: CustomInteractionFlowProp
   const [encodedData, setEncodedData] = useState<{ data: string; error: string | null }>({ data: "0x", error: null });
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-
+  const { toast } = useToast()
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       const match = functionSignature.match(/^\s*(\w+)\s*\((.*)\)\s*$/);
@@ -58,20 +62,50 @@ const CustomInteractionFlow = ({ onBack, onComplete }: CustomInteractionFlowProp
     setArgs(newArgs);
   };
 
+  const {contractWrite, isConfirmed, error} = useContractWrite();
+
   const handleConfirm = async () => {
     setLoading(true);
-    setTimeout(() => {
-        setLoading(false);
-        onComplete(`Transaction constructed (To: ${contractAddress}, Value: ${payableValue} ETH, Data: ${encodedData.data.substring(0, 30)}...)`);
-    }, 1500);
+    contractWrite("executeAccount", [tbaAddress, tokenId, contractAddress, BigInt(payableValue), encodedData.data]);
+    toast({
+      title: "Transaction Submitted",
+      description: "Transaction submitted successfully",
+    });
   };
-  
+
+  useEffect(() => {
+    if (isConfirmed) {
+      setLoading(false);
+      setShowPreview(false);
+      setFunctionSignature("");
+      setArgs([]);
+      setEncodedData({ data: "0x", error: null });
+      setContractAddress("");
+      setPayableValue("0");
+      toast({
+        title: "Transaction Confirmed",
+        description: "Transaction confirmed successfully",
+      })
+    }
+  }, [isConfirmed])
+
+  useEffect(() => {
+    if (error) {
+      setLoading(false);
+      toast({
+        title: "Transaction Cancelled",
+        description: "Transaction was cancelled or failed",
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
+
   const finalPreviewSummary = {
     title: "Transaction Details: Custom Call",
     details: {
       "Operation": `Call ${parsedFunction?.name || ''}`,
       "Target Contract": contractAddress,
-      "Value": `${payableValue || '0'} ETH`,
+      "Value": `${payableValue || '0'} PHRS`,
       "Calldata": encodedData.data,
     }
   };
@@ -108,9 +142,9 @@ const CustomInteractionFlow = ({ onBack, onComplete }: CustomInteractionFlowProp
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2 text-[#000080]">Value (ETH)</label>
+          <label className="block text-sm font-medium mb-2 text-[#000080]">Value (PHRS)</label>
           <input 
-            type="number" 
+            type="text" 
             value={payableValue} 
             onChange={e => setPayableValue(e.target.value)} 
             className="w-full px-2 py-1 border-2 border-[#808080] bg-white text-sm shadow-win98-inner focus:outline-none focus:border-[#000080]" 

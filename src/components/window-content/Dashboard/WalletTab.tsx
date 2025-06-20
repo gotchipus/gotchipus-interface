@@ -73,7 +73,7 @@ const WalletTab = ({ activeWalletTab, setActiveWalletTab, tbaAddress, ids, selec
       case 'sendNft':
         return <div className="p-4"><button onClick={() => setActiveFlow('home')}>←</button> NFT Flow is under construction.</div>;
       case 'custom':
-        return <CustomInteractionFlow onBack={() => setActiveFlow('home')} onComplete={handleFlowComplete} />;
+        return <CustomInteractionFlow onBack={() => setActiveFlow('home')} tbaAddress={tbaAddress} tokenId={selectedTokenId} />;
       case 'home':
       default:
         return <CallHome setActiveFlow={setActiveFlow} />;
