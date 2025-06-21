@@ -45,7 +45,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
   const [isSummoning, setIsSummoning] = useState(false)
   const [positionVersion, setPositionVersion] = useState("token")
   const [isVersionDropdownOpen, setIsVersionDropdownOpen] = useState(false)
-  const [stakeToken, setStakeToken] = useState("USDC")
+  const [stakeToken, setStakeToken] = useState("PHRS")
   const [traitsExpanded, setTraitsExpanded] = useState(false)
   const [storyExpanded, setStoryExpanded] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState(0)
@@ -84,7 +84,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
     ];
 
     const value = ethers.parseEther(stakeAmount);
-    
     contractWrite("summonGotchipus", [args], value);
     
     toast({
