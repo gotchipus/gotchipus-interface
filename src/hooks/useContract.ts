@@ -33,7 +33,6 @@ export const useContractWrite = () => {
         abi: PUS_ABI,
         functionName: functionName,
         args: args,
-        gas: BigInt(1000000),
         value: value
       });
     } catch (error) {

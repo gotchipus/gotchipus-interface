@@ -75,14 +75,14 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
     setIsSummoning(true);
 
     const args = [
-      BigInt(tokenId),
+      Number(tokenId),
       pusName,
       ZERO_ADDRESS,
-      ethers.parseEther(stakeAmount).toString(),
-      selectedTimezone.toString(),
+      ethers.parseEther(stakeAmount),
+      selectedTimezone,
       ethers.hexlify(ethers.toUtf8Bytes(story))
     ];
-
+    console.log("args", args);
     const value = ethers.parseEther(stakeAmount);
     contractWrite("summonGotchipus", [args], value);
     
@@ -189,7 +189,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
   }
 
   const tokens = {
-    "token": ["PHAROS"]
+    "token": ["PHRS"]
   };
 
   const positionVersions = ["token"];
