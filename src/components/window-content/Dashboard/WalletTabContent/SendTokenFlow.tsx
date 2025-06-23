@@ -8,6 +8,8 @@ import { Token } from "@/lib/types"
 import { ethers } from "ethers"
 import { useERC20Read, useContractWrite } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
+import { checkAndCompleteTask } from "@/src/utils/taskUtils"
+import { useStores } from "@stores/context"
 
 const Tokens: Token[] = [
   { name: "Pharos", symbol: "PHRS", icon: "/tokens/pharos.png", contract: "0x0000000000000000000000000000000000000000", balance: "0", decimals: 18, popular: false },
@@ -36,7 +38,9 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
   const [isRecipientValid, setIsRecipientValid] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showTokenSelector, setShowTokenSelector] = useState(false);
+  const [isTransfering, setIsTransfering] = useState(false);
   const { toast } = useToast()
+  const { walletStore } = useStores()
 
   const { data: erc20Balance, isLoading: isBalanceLoading } = useERC20Read(
     selectedToken.contract, 
@@ -105,6 +109,7 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
       const calldata = selector.encodeFunctionData("transfer", [recipient, ethers.parseUnits(amount, selectedToken.decimals)]);
       contractWrite("executeAccount", [tbaAddress, tokenId, selectedToken.contract, 0, calldata]);
     }
+    setIsTransfering(true);
     toast({
       title: "Transaction Submitted",
       description: "Transaction submitted successfully",
@@ -115,6 +120,15 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
     if (isConfirmed) {
       setLoading(false);
       setStep(1);
+
+      if (isTransfering) {
+        setIsTransfering(false);
+        const updateTask = async () => {
+          await checkAndCompleteTask(walletStore.address!, 6);
+        }
+        updateTask();
+      }
+
       toast({
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",

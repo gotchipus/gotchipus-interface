@@ -13,6 +13,7 @@ import { parseGotchipusInfo, TokenInfo } from "@/lib/types";
 import { DashboardTab, EquipTab, StatsTab, WalletTab } from "./Dashboard";
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
 import { NftCard } from "@/components/gotchiSvg/NftCard";
+import { checkAndCompleteTask } from "@/src/utils/taskUtils";
 
 const EQUIPMENT_TYPES = {
   0: BG_BYTES32,
@@ -146,7 +147,7 @@ const DashboardContent = observer(() => {
     }
   }, [tokenName]);
 
-  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+  const {contractWrite, isConfirmed, error} = useContractWrite();
 
   const handlePet = () => {
     if (!selectedTokenId) return;
@@ -168,47 +169,10 @@ const DashboardContent = observer(() => {
       if (isPetWriting) {
         setIsPetWriting(false);
 
-        const upsertData = async () => {
-          const taskBody = {
-            "address": walletStore.address,
-            "task_id": 5
-          };
-  
-          const isCompleted = await fetch('/api/tasks/is_task_completed', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(taskBody),
-          });
-  
-          const isCompletedData = await isCompleted.json();
-  
-          if (isCompletedData.data === true && isCompletedData.code === 0) {
-            return;
-          }
-  
-          const body = {
-            "address": walletStore.address,
-            "task_id": 5 
-          };
-  
-          const response = await fetch('/api/tasks/complete-select-task', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-          });
-  
-          if (!response.ok) {
-            throw new Error(`API responded with status: ${response.status}`);
-          }
-  
-          await response.json();
-        }
-  
-        upsertData();
+        const updateTask = async () => {
+          await checkAndCompleteTask(walletStore.address!, 5);
+        };
+        updateTask();
       }
     }
   }, [isConfirmed]);

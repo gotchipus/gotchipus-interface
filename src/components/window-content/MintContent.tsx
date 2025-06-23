@@ -9,7 +9,7 @@ import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import { Win98Loading } from "@/components/ui/win98-loading"
-
+import { checkAndCompleteTask } from "@/src/utils/taskUtils"
 
 const MintContent = observer(() => {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ const MintContent = observer(() => {
   const { toast } = useToast()
   const { walletStore } = useStores()
 
-  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+  const {contractWrite, isConfirmed, error} = useContractWrite();
 
   const handleMint = () => {
     setIsMinting(true);
@@ -39,43 +39,7 @@ const MintContent = observer(() => {
       })
 
       const upsertData = async () => {
-        const taskBody = {
-          "address": walletStore.address,
-          "task_id": 4 
-        };
-
-        const isCompleted = await fetch('/api/tasks/is_task_completed', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(taskBody),
-        });
-
-        const isCompletedData = await isCompleted.json();
-
-        if (isCompletedData.data === true && isCompletedData.code === 0) {
-          return;
-        }
-
-        const body = {
-          "address": walletStore.address,
-          "task_id": 4 
-        };
-
-        const response = await fetch('/api/tasks/complete-select-task', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-
-        if (!response.ok) {
-          throw new Error(`API responded with status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        await checkAndCompleteTask(walletStore.address!, 4);
       }
 
       upsertData();

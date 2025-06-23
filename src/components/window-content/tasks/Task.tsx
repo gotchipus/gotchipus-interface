@@ -158,6 +158,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
     const taskViewMap: { [key: number]: string } = {
       4: 'mint',
       5: 'dashboard',
+      6: 'dashboard',
     };
 
     const viewToOpen = taskViewMap[taskId];
