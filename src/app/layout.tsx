@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@providers/providers";
 import { Toaster } from "@/components/ui/toaster";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased font-vt323">
+        <GoogleAnalytics />
         <Providers>
           {children}
           <Toaster />
