@@ -122,6 +122,7 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
       setStep(1);
 
       if (isTransfering) {
+        console.log("isTransfering", isTransfering);
         setIsTransfering(false);
         const updateTask = async () => {
           await checkAndCompleteTask(walletStore.address!, 6);

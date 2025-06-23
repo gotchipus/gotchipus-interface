@@ -229,8 +229,8 @@ const MyPharosContent = observer(() => {
         imageBase64Array = Array(5).fill("/pharos.png");
       }
       
-      if (Array.isArray(storyData.data) && storyData.data.length > 0) {
-        const previews = storyData.data.map((item: any, index: number) => {
+      if (Array.isArray(storyData.data.storys) && storyData.data.storys.length > 0) {
+        const previews = storyData.data.storys.map((item: any, index: number) => {
           const imageData = index < imageBase64Array.length 
             ? `data:image/png;base64,${imageBase64Array[index]}`
             : `/pharos.png`;
