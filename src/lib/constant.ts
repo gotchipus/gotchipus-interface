@@ -47,6 +47,10 @@ export const WINDOW_SIZE = {
   "daily-task-hall": {
     "width": 1000,
     "height": 800
+  },
+  "wallet-connect-tba": {
+    "width": 600,
+    "height": 800
   }
 };
 
@@ -62,7 +66,8 @@ export const WINDOW_BG_COLOR = {
   "dna": "#ffddee",
   "mint": "#ffddee",
   "wearable": "#ffddee",
-  "daily-task-hall": "#ffddee"
+  "daily-task-hall": "#ffddee",
+  "wallet-connect-tba": "#ffddee"
 };
 
 export const CHAIN_ID = 688688;

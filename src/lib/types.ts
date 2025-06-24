@@ -53,6 +53,7 @@ export interface GotchipusInfo {
   aether: number;
   singer: string;
   nonces: bigint;
+  element?: number;
 }
 
 

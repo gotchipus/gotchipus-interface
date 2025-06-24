@@ -1,10 +1,9 @@
 import Image from "next/image"
-import { Award } from "lucide-react"
-import { TokenInfo } from "@/lib/types"
+import { GotchipusInfo } from "@/lib/types"
 
 interface StatsTabProps {
   selectedTokenId: string
-  tokenInfoMap: Record<string, TokenInfo>
+  tokenInfoMap: GotchipusInfo
   tbaAddress: string
 }
 
@@ -14,7 +13,7 @@ const StatsTab = ({
   tbaAddress
 }: StatsTabProps) => {
   const tokenId = selectedTokenId || "";
-  const tokenInfo = tokenInfoMap[tokenId] || {} as TokenInfo;
+  const tokenInfo = tokenInfoMap;
 
   const dnaData = {
     name: "Genes",

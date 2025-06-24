@@ -4,14 +4,9 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import DesktopIcon from "@/components/home/DesktopIcon"
-import AIContent from "@/src/components/window-content/AIContent"
-import ComingSoonContent from "@/components/window-content/SoonContent"
 import MyPharosContent from "@/src/components/window-content/MyPharosContent"
 import DashboardContent from "@/components/window-content/DashboardContent"
 import type { JSX } from "react/jsx-runtime"
-import FarmContent from "@/src/components/window-content/FarmContent"
-import HookContent from "@/src/components/window-content/HookContent"
-import DNAAnalyzerContent from "@/components/window-content/DNAAnalyzerContent"
 import MintContent from "@/components/window-content/MintContent" 
 import ClaimWearableContent from "@/src/components/window-content/ClaimWearableContent"
 import DailyTaskHallContent from "@/src/components/window-content/DailyTaskHallContent"
@@ -21,13 +16,7 @@ interface DesktopProps {
   activeWindow: string | null
 }
 
-// Desktop icons configuration
 const icons = [
-  // {
-  //   id: "ai",
-  //   title: "AI",
-  //   icon: "/ai-pus.png",
-  // },
   {
     id: "mint",
     title: "Mint",
@@ -54,16 +43,6 @@ const icons = [
     icon: "/icons/pharos-proof.png",
   },
 
-  // {
-  //   id: "hooks",
-  //   title: "Hooks",
-  //   icon: "/hooks.png",
-  // },
-  // {
-  //   id: "dna",
-  //   title: "DNA Analyzer",
-  //   icon: "/dna.png",
-  // },
 ]
 
 export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {

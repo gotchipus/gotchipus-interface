@@ -4,13 +4,11 @@ import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import PharosGenesisPage from "./pharos/PharosGenesisPage";
-import { useContractRead, useContractReads } from "@/hooks/useContract";
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
 import { Win98Loading } from "@/components/ui/win98-loading";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { parseGotchipusInfo } from "@/lib/types";
-
+import useSWR from 'swr';
 
 interface GotchipusPreview {
   id: string;
@@ -19,13 +17,17 @@ interface GotchipusPreview {
   image: string;
 }
 
+const fetcher = (url: string) => fetch(url).then(res => {
+  if (!res.ok) {
+    throw new Error('An error occurred while fetching the data.');
+  }
+  return res.json();
+});
+
 const MyPharosContent = observer(() => {
   const [viewState, setViewState] = useState<"list" | "hatching" | "genesis">("list");
   const [selectedPharos, setSelectedPharos] = useState<string | null>(null);
-  const [balances, setBalances] = useState<number>(0);
   const [ids, setIds] = useState<string[]>([]);
-  const [queryIds, setQueryIds] = useState<string[]>([]);
-  const [accValidIds, setAccValidIds] = useState<string[]>([]);
   
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(12);
@@ -35,11 +37,9 @@ const MyPharosContent = observer(() => {
 
   const [displayedStory, setDisplayedStory] = useState<string>("");
   const [isStoryComplete, setIsStoryComplete] = useState<boolean>(false);
-  const [pharoName, setPharoName] = useState<string>("");
   const [gotchipusPreviews, setGotchipusPreviews] = useState<GotchipusPreview[]>([]);
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(-1);
   const [isGeneratingPreviews, setIsGeneratingPreviews] = useState<boolean>(false);
-  const [oneCheckInfo, setOneCheckInfo] = useState<boolean>(false);
   const { walletStore } = useStores();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -52,78 +52,25 @@ const MyPharosContent = observer(() => {
     };
   }, []);
 
-  const {data: balance} = useContractRead("balanceOf", [walletStore.address]);
-  const {data: allIds} = useContractRead("allTokensOfOwner", [walletStore.address], { enabled: !!balance });
+  const apiUrl = walletStore.isConnected && walletStore.address 
+    ? `/api/tokens/pharos?owner=${walletStore.address}` 
+    : null;
 
-  const tokenInfos = useContractReads(
-    "ownedTokenInfo",
-    queryIds.map(id => [walletStore.address, id]),
-    { enabled: queryIds.length > 0 && !oneCheckInfo }
-  );
-
-  useEffect(() => {
-    if (balance !== undefined) {
-      setBalances(balance as number);
-    }
-  }, [balance]);
+  const { data: filteredIds, error, isLoading: isInitialLoading, mutate } = useSWR<string[]>(apiUrl, fetcher, {
+    refreshInterval: viewState === 'list' ? 3000 : 0,
+    revalidateOnMount: true,
+    revalidateIfStale: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 0,
+  });
 
   useEffect(() => {
-    if (allIds) {
-      const fetchedIds = allIds as string[];
-      setIds(fetchedIds);
-      setQueryIds(fetchedIds);
-
-      setAccValidIds([]);
-      setOneCheckInfo(false);
+    if (filteredIds) {
+      setIds(filteredIds);
     }
-  }, [allIds]);
+  }, [filteredIds]);
 
-  useEffect(() => {
-    if (!oneCheckInfo && tokenInfos) {
-
-      const failedIds: string[] = [];
-      const updatedAcc: string[] = [...accValidIds];
-
-      for (let idx = 0; idx < tokenInfos.length; idx++) {
-        const raw = tokenInfos[idx];
-        const thisId = queryIds[idx];
-
-        if (!raw || raw.result === undefined) {
-          failedIds.push(thisId);
-          continue;
-        }
-
-        let parsed;
-        try {
-          parsed = parseGotchipusInfo(raw);
-        } catch (err) {
-          failedIds.push(thisId);
-          continue;
-        }
-
-        if (!parsed) {
-          failedIds.push(thisId);
-          continue;
-        }
-
-        if (parsed.status === 0) {
-          if (!updatedAcc.includes(thisId)) {
-            updatedAcc.push(thisId);
-          }
-        }
-      }
-
-      setAccValidIds(updatedAcc);
-
-      if (failedIds.length > 0) {
-        setQueryIds(failedIds);
-        return;
-      }
-
-      setIds(updatedAcc);
-      setOneCheckInfo(true);
-    }
-  }, [tokenInfos, queryIds, oneCheckInfo, accValidIds]);
 
   const getCurrentPageItems = useCallback(() => {
     const startIndex = 0;
@@ -265,7 +212,6 @@ const MyPharosContent = observer(() => {
   const handleSelectPreview = (index: number) => {
     setSelectedPreviewIndex(index);
     if (gotchipusPreviews[index]) {
-      setPharoName(gotchipusPreviews[index].name);
       setDisplayedStory(gotchipusPreviews[index].story);
       setIsStoryComplete(true);
     }
@@ -276,7 +222,6 @@ const MyPharosContent = observer(() => {
     setViewState("hatching");
     setDisplayedStory("");
     setIsStoryComplete(false);
-    setPharoName("");
     setSelectedPreviewIndex(-1);
     setGotchipusPreviews([]);
   }, []);
@@ -289,8 +234,6 @@ const MyPharosContent = observer(() => {
 
   const handleBack = useCallback(() => {
     setViewState("list");
-    setOneCheckInfo(false);
-    setQueryIds(ids);
   }, []);
 
   const floatAnimation = {
@@ -302,48 +245,50 @@ const MyPharosContent = observer(() => {
     }
   };
 
+  if (isInitialLoading) {
+    return (
+      <div className="p-4 h-full scrollbar-none flex justify-center items-center">
+        <Win98Loading />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 h-full scrollbar-none flex justify-center items-center">
+        <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
+          Failed to load NFTs, please refresh.
+        </div>
+        <button onClick={() => mutate()}>Refresh</button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 h-full scrollbar-none">
       {viewState === "list" && (
         <div className="flex flex-col h-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
-            {balances > 0 || walletStore.isConnected ? (
-              getCurrentPageItems().length > 0 ? (
-                getCurrentPageItems().map((id) => (
-                  <div
-                    key={id}
-                    className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
-                    onClick={() => handlePharoClick(id.toString())}
-                  >
-                    <motion.div
-                      className="w-48 h-48 relative flex items-center justify-center"
-                      animate={floatAnimation}
-                    >
-                      <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
-                    </motion.div>
-                    <div className="text-center mt-4 font-bold">Pharos #{id.toString()}</div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-                  {isGeneratingPreviews ? (
-                    <div className="text-center">
-                      <Win98Loading />
-                      <p className="mt-4 text-sm">Loading your Pharos NFTs...</p>
-                    </div>
-                  ) : (
-                    "No Pharos NFTs found in your wallet"
-                  )}
+            {ids && ids.length > 0 ? (
+              getCurrentPageItems().map((id, index) => (
+                <div
+                  key={id + index}
+                  className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-outer rounded-none p-3 hover:bg-[#c0c0c0]"
+                  onClick={() => handlePharoClick(id)}
+                >
+                  <motion.div /* ... */ >
+                    <Image src="/pharos.png" alt="Pharo" width={150} height={150} />
+                  </motion.div>
+                  <div className="text-center mt-4 font-bold">Pharos #{id}</div>
                 </div>
-              )
+              ))
             ) : (
               <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-                No Pharos NFTs found in your wallet.
+                {walletStore.isConnected ? "No Pharos NFTs in your wallet." : "Please connect your wallet first."}
               </div>
             )}
           </div>
           
-          {/* Loading indicator and observer target */}
           {hasMore && getCurrentPageItems().length > 0 && (
             <div 
               ref={observerTarget} 

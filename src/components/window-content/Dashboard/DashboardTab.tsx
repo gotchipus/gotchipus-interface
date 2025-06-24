@@ -2,9 +2,8 @@
 
 import Image from "next/image"
 import { motion } from "framer-motion"
-import { TokenInfo } from "@/lib/types"
+import { GotchipusInfo } from "@/lib/types"
 import { observer } from "mobx-react-lite"
-import { useStores } from "@stores/context"
 import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
 import { useSvgLayers } from "@/hooks/useSvgLayers"
 
@@ -17,9 +16,17 @@ interface DashboardTabProps {
   setIsRenaming: (isRenaming: boolean) => void
   handleRename: () => void
   handlePet: () => void
-  tokenInfoMap: Record<string, TokenInfo>
+  tokenInfoMap: GotchipusInfo
   floatAnimation: any
 }
+
+const AttributeValueSkeleton = () => (
+  <div className="w-full h-6 bg-[#d4d0c8] rounded animate-pulse"></div>
+)
+
+const DnaValueSkeleton = () => (
+  <div className="w-full h-4 bg-[#d4d0c8] rounded animate-pulse"></div>
+)
 
 const DashboardTab = observer(({
   selectedTokenId,
@@ -34,9 +41,16 @@ const DashboardTab = observer(({
   floatAnimation
 }: DashboardTabProps) => {
   const tokenId = selectedTokenId || "";
-  const tokenInfo = tokenInfoMap[tokenId] || {} as TokenInfo;
-  const { wearableStore } = useStores()
+  const tokenInfo = tokenInfoMap;
   const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
+
+  // Check if tokenInfo is loading (has default/empty values)
+  const isDataLoading = !tokenInfo || 
+    (tokenInfo.aether === undefined && 
+     tokenInfo.bonding === undefined && 
+     tokenInfo.growth === undefined && 
+     tokenInfo.element === undefined && 
+     tokenInfo.wisdom === undefined);
 
   const viewBox = "0 0 80 80"; 
 
@@ -151,7 +165,13 @@ const DashboardTab = observer(({
                 <Image src={`/icons/${attr.name}.png`} alt={attr.name} width={18} height={18} className="mr-2"/>
                 <span className="font-medium text-sm">{attr.name}</span>
               </div>
-              <div className="text-xl font-bold">{attr.value}</div>
+              <div className="text-xl font-bold">
+                {isDataLoading ? (
+                  <AttributeValueSkeleton />
+                ) : (
+                  attr.value
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -164,7 +184,11 @@ const DashboardTab = observer(({
           </div>
           <div className="border-t border-[#808080] my-2"></div>
           <div className="font-mono text-xs bg-[#c0c0c0] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
-            {dnaData.value}
+            {isDataLoading ? (
+              <DnaValueSkeleton />
+            ) : (
+              dnaData.value
+            )}
           </div>
         </div>
 

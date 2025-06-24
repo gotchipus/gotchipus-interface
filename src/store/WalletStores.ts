@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { type Address, type Chain } from "viem";
+import { type Address } from "viem";
 import { ethers } from "ethers";
 
 class WalletStore {
