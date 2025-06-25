@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch('http://127.0.0.1:8000/tokens/search', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/tokens/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

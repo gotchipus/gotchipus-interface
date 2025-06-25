@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       "address": walletAddress,
       "discord_id": discordUserId
     };
-    const upsertResponse = await fetch('http://127.0.0.1:8000/account/upsert_discord', {
+    const upsertResponse = await fetch(`${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/account/upsert_discord`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
