@@ -264,12 +264,26 @@ const MyPharosContent = observer(() => {
     );
   }
 
+  if (ids.length === 0) {
+    return (
+      <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
+        <div className="text-center flex flex-col items-center">
+          <div className="mb-4">
+            <Image src="/not-any.png" alt="No NFTs" width={120} height={120} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">No NFTs Found</h3>
+          <p className="text-[#000080] mb-4">You don't have any Pharos NFTs yet.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 h-full scrollbar-none">
       {viewState === "list" && (
         <div className="flex flex-col h-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
-            {ids && ids.length > 0 ? (
+            {ids && ids.length > 0 && (
               getCurrentPageItems().map((id, index) => (
                 <div
                   key={id + index}
@@ -282,10 +296,6 @@ const MyPharosContent = observer(() => {
                   <div className="text-center mt-4 font-bold">Pharos #{id}</div>
                 </div>
               ))
-            ) : (
-              <div className="col-span-4 flex justify-center items-center p-8 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer">
-                {walletStore.isConnected ? "No Pharos NFTs in your wallet." : "Please connect your wallet first."}
-              </div>
             )}
           </div>
           

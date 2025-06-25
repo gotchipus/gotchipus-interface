@@ -82,7 +82,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       selectedTimezone,
       ethers.hexlify(ethers.toUtf8Bytes(story))
     ];
-    console.log("args", args);
+
     const value = ethers.parseEther(stakeAmount);
     contractWrite("summonGotchipus", [args], value);
     
@@ -121,8 +121,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             throw new Error(`API call failed with status: ${response.status}`);
           }
           
-          const result = await response.json();
-          console.log("Data sent to backend successfully:", result);
+          await response.json();
         } catch (error) {
           console.error("Error sending data to backend:", error);
         }

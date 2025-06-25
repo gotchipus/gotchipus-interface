@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useState, useEffect, useCallback, useRef } from "react"
-import {ChevronLeft, RefreshCw} from "lucide-react"
+import {ChevronLeft, X} from "lucide-react"
 import EquipSelectWindow from "./equip/EquipSelectWindow"
 import { useContractWrite } from "@/hooks/useContract"
 import { observer } from "mobx-react-lite"
@@ -15,7 +15,8 @@ import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOT
 import { NftCard } from "@/components/gotchiSvg/NftCard";
 import { checkAndCompleteTask } from "@/src/utils/taskUtils";
 import useSWR from 'swr';
-
+import WalletConnectTBA from "./Dashboard/WalletTabContent/WalletConnectTBA";
+import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 
 interface ListApiData {
   balance: string;
@@ -63,11 +64,13 @@ const DashboardContent = observer(() => {
   const [wearableBalances, setWearableBalances] = useState<string[]>([])
   const [selectedType, setSelectedType] = useState<string>("")
   const [isPetWriting, setIsPetWriting] = useState<boolean>(false)
+  const [showWalletConnectTBA, setShowWalletConnectTBA] = useState<boolean>(false)
 
-  const { walletStore, wearableStore } = useStores()
+  const { walletStore } = useStores()
+  const walletAddress = walletStore.address;
   const { toast } = useToast()
-
-  const listApiUrl = walletStore.address ? `/api/tokens/gotchipus?owner=${walletStore.address}` : null;
+  
+  const listApiUrl = walletAddress ? `/api/tokens/gotchipus?owner=${walletAddress}` : null;
 
 
   const { data: listData, error: listError, isLoading: isListLoading, mutate: mutateList } = useSWR<ListApiData>(listApiUrl, fetcher, {
@@ -82,8 +85,8 @@ const DashboardContent = observer(() => {
   const ids = listData?.filteredIds || [];
   const balances = parseInt(listData?.balance || '0');
 
-  const detailsApiUrl = selectedTokenId && walletStore.address 
-    ? `/api/tokens/gotchipus-details?owner=${walletStore.address}&tokenId=${selectedTokenId}` 
+  const detailsApiUrl = selectedTokenId && walletAddress 
+    ? `/api/tokens/gotchipus-details?owner=${walletAddress}&tokenId=${selectedTokenId}` 
     : null; 
 
   const { 
@@ -180,6 +183,10 @@ const DashboardContent = observer(() => {
     setSelectedEquipSlot(null);
   };
 
+  const handleWalletConnectTBAClose = () => {
+    setShowWalletConnectTBA(false);
+  };
+
   const handleEquipWearable = (ids: string[]) => {
     setWearableBalances(ids);
   };
@@ -244,6 +251,25 @@ const DashboardContent = observer(() => {
   }, [hasMore, isLoadingMore, loadMoreItems]);
 
 
+  if (!walletAddress) {
+    return (
+      <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
+        <div className="text-center flex flex-col items-center">
+          <div className="mb-4">
+            <Image src="/not-any.png" alt="No NFTs" width={120} height={120} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">No Wallet Connected</h3>
+          <p className="text-[#000080] mb-4">Please connect your wallet to continue.</p>
+          <div
+            className="h-10 text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner"
+          >
+            <CustomConnectButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isListLoading) {
     return (
       <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
@@ -258,7 +284,7 @@ const DashboardContent = observer(() => {
   if (balances === 0) {
     return (
       <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center">
           <div className="mb-4">
             <Image src="/not-any.png" alt="No NFTs" width={120} height={120} />
           </div>
@@ -313,10 +339,11 @@ const DashboardContent = observer(() => {
         </div>
         <div className="flex gap-2">
           <button 
-            onClick={handleRefresh}
+            onClick={() => setShowWalletConnectTBA(true)}
             className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-3 py-1 hover:bg-[#c0c0c0] flex items-center"
           >
-            <RefreshCw size={16} className="mr-1" /> Refresh
+            <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+            Connect dApp
           </button>
         </div>
       </div>
@@ -415,6 +442,28 @@ const DashboardContent = observer(() => {
           selectedType={selectedType}
           selectedTokenId={selectedTokenId}
         />
+      )}
+
+      {showWalletConnectTBA && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto">
+            <div className="border-b-2 border-[#808080] bg-[#000080] text-white p-2 flex justify-between items-center">
+              <div className="flex items-center">
+                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                <span className="font-bold">Connect dApp</span>
+              </div>
+              <button 
+                onClick={handleWalletConnectTBAClose}
+                className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-win98-outer flex items-center justify-center hover:bg-[#d4d0c8]"
+              >
+                <X size={16} className="text-black" />
+              </button>
+            </div>
+            <div className="p-4">
+              <WalletConnectTBA tbaAddress={tbaAddress} tokenId={selectedTokenId} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

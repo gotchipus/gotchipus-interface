@@ -44,7 +44,6 @@ const DashboardTab = observer(({
   const tokenInfo = tokenInfoMap;
   const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
 
-  // Check if tokenInfo is loading (has default/empty values)
   const isDataLoading = !tokenInfo || 
     (tokenInfo.aether === undefined && 
      tokenInfo.bonding === undefined && 
@@ -90,7 +89,7 @@ const DashboardTab = observer(({
               autoFocus
             />
           ) : (
-            <div className="font-bold text-lg flex items-center">
+            <div className="font-bold text-lg flex items-center text-white">
               <span className="mr-2">🐙</span>
               {pusName}
             </div>

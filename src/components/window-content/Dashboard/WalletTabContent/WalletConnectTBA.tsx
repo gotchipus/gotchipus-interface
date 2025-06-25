@@ -1,34 +1,92 @@
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+'use client';
+
+import Image from 'next/image';
+import { useState, useEffect, useRef } from 'react';
 import SignClient from '@walletconnect/sign-client';
 import { getSdkError } from '@walletconnect/utils';
 import { useStores } from '@stores/context';
+import { observer } from 'mobx-react-lite';
+import { useSignMessage, useSignTypedData, useWriteContract } from 'wagmi';
+import { PUS_ABI, PUS_ADDRESS } from '@/src/app/blockchain';
 
-export default function WalletConnectTBA() {
+interface DappMetadata {
+  name: string;
+  description: string;
+  url: string;
+  icons: string[];
+}
+
+interface WalletConnectTBAProps {
+  tbaAddress: string;
+  tokenId: string;
+}
+
+const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProps) => {
   const [walletAddress, setWalletAddress] = useState('');
-  const [tbaAddress, setTbaAddress] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState('');
   const [signClient, setSignClient] = useState<SignClient | null>(null);
   const [session, setSession] = useState<any>(null);
   const [wcUri, setWcUri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isPairing, setIsPairing] = useState(false);
-  const { walletStore } = useStores();
+  const [dappMetadata, setDappMetadata] = useState<DappMetadata | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [clientKey, setClientKey] = useState(Date.now());
 
+  const { walletStore } = useStores();
   const CHAIN_ID = 688688;
+  const { signMessageAsync } = useSignMessage();
+  const { signTypedDataAsync } = useSignTypedData();
+  const { writeContract } = useWriteContract();
+
+  const tbaAddressRef = useRef(tbaAddress);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    tbaAddressRef.current = tbaAddress;
+  }, [tbaAddress]);
+
+  const resetSession = () => {
+    setSession(null);
+    setWcUri('');
+    setDappMetadata(null);
+    setIsConnected(false);
+    setClientKey(Date.now()); 
+  };
+
+  const handleDisconnect = async () => {
+    if (!signClient || !session) {
+        return;
+    }
+
+    try {
+        await signClient.disconnect({
+            topic: session.topic,
+            reason: getSdkError('USER_DISCONNECTED'),
+        });
+        resetSession();
+    } catch (error) {
+        console.error('Failed to disconnect session:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (initialized.current) {
+      return;
+    }
+    initialized.current = true;
+    let client: SignClient | null = null;
+
     async function initSignClient() {
       try {
         setIsLoading(true);
-        const client = await SignClient.init({
+        client = await SignClient.init({
           projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!,
           metadata: {
-            name: 'TBA Wallet',
-            description: 'TBA Wallet for ERC-6551',
+            name: 'Gotchipus',
+            description: 'Gotchipus Wallet for Gotchipus',
             url: 'http://localhost:3000',
-            icons: ['https://walletconnect.com/walletconnect-logo.png'],
+            icons: ['https://images.gotchipus.com/favicon-96x96.png'],
           },
         });
         setSignClient(client);
@@ -36,10 +94,14 @@ export default function WalletConnectTBA() {
         client.on('session_proposal', async ({ id, params }) => {
           try {
             setIsPairing(true);
-            const tba = await getOrCreateTBA();
-            if (!tba) return;
-
-            const isAuthorized = await verifyTBAAuthority(tba);
+            setIsConnected(true);
+            const metadata = params.proposer.metadata;
+            setDappMetadata(metadata);
+            const currentTba = tbaAddressRef.current;
+            if (!currentTba) {
+                throw new Error("TBA address is not available for session proposal.");
+            }
+            const isAuthorized = await verifyTBAAuthority(currentTba);
             if (!isAuthorized) return;
 
             const sessionNamespaces = {
@@ -47,106 +109,145 @@ export default function WalletConnectTBA() {
                 chains: [`eip155:${CHAIN_ID}`],
                 methods: ['eth_accounts', 'eth_sign', 'eth_sendTransaction', 'personal_sign'],
                 events: ['accountsChanged', 'chainChanged'],
-                accounts: [`eip155:${CHAIN_ID}:${tba}`],
+                accounts: [`eip155:${CHAIN_ID}:${currentTba}`],
               },
             };
 
-            const session = await client.approve({ id, namespaces: sessionNamespaces });
+            const session = await client?.approve({ id, namespaces: sessionNamespaces });
             setSession(session);
-            setConnectionStatus(`Connected TBA ${tba} via WalletConnect`);
           } catch (error) {
             console.error('Session proposal failed:', error);
-            await client.reject({ id, reason: getSdkError('USER_REJECTED') });
-            setConnectionStatus('Session proposal rejected');
+            await client?.reject({ id, reason: getSdkError('USER_REJECTED') });
           } finally {
             setIsPairing(false);
           }
         });
 
-        client.on('session_request', async ({ id, params }) => {
-          const { chainId, request } = params;
+        client.on('session_request', async ({ id, topic, params }) => {
+          const { request } = params;
           const { method, params: requestParams } = request;
 
           try {
             if (method === 'eth_accounts') {
-              await client.respond({
-                topic: session.topic,
-                response: { id, jsonrpc: '2.0', result: [tbaAddress] },
+              await client?.respond({
+                topic,
+                response: { id, jsonrpc: '2.0', result: [tbaAddressRef.current] },
               });
+        
             } else if (method === 'eth_sign' || method === 'personal_sign') {
-              const message = method === 'eth_sign' ? requestParams[1] : requestParams[0];
-              const hash = ethers.hashMessage(message);
-            } 
+              const messageToSign = method === 'eth_sign' ? requestParams[1] : requestParams[0];
+              const signature = await signMessageAsync({ message: messageToSign });
+
+              await client?.respond({
+                topic,
+                response: { id, jsonrpc: '2.0', result: signature },
+              });
+        
+            } else if (method === 'eth_signTypedData' || method === 'eth_signTypedData_v4') {
+              const [from, typedDataString] = requestParams;
+              const typedData = JSON.parse(typedDataString);
+              
+              const { domain, types, message, primaryType } = typedData;
+              delete types.EIP712Domain;
+              
+              const signature = await signTypedDataAsync({ domain, message, primaryType, types });
+              await client?.respond({
+                topic,
+                response: { id, jsonrpc: '2.0', result: signature },
+              });
+            } else if (method === 'eth_sendTransaction') { 
+
+              const originalTx = requestParams[0];
+
+              const estimatedGasLimit = BigInt(500000);
+              let value = BigInt(0);
+              if (originalTx.value && originalTx.value !== undefined) {
+                value = BigInt(originalTx.value);
+              }
+
+              writeContract({
+                address: PUS_ADDRESS as `0x${string}`, 
+                abi: PUS_ABI,
+                functionName: 'executeAccount',
+                args: [
+                    tbaAddressRef.current,
+                    tokenId,
+                    originalTx.to,     
+                    value, 
+                    originalTx.data || "0x",
+                ],
+                gas: estimatedGasLimit,
+            }, 
+            {
+                onSuccess: async (txHash) => {
+                    await client?.respond({
+                        topic,
+                        response: { id, jsonrpc: '2.0', result: txHash },
+                    });
+                },
+                onError: async (error) => {
+                    await client?.respond({
+                        topic,
+                        response: { id, jsonrpc: '2.0', error: getSdkError('USER_REJECTED') },
+                    });
+                }
+            });
+            } else {
+                throw new Error(`Unsupported method: ${method}`);
+            }
           } catch (error) {
-            console.error('Session request failed:', error);
-            await client.respond({
-              topic: session.topic,
-              response: { id, jsonrpc: '2.0', error: getSdkError('INVALID_METHOD') },
+            await client?.respond({
+              topic,
+              response: { id, jsonrpc: '2.0', error: getSdkError('USER_REJECTED') },
             });
           }
         });
+
+        client.on('session_delete', ({ id, topic }) => {
+          console.error('🔴 SESSION DELETED BY DAPP!', { id, topic });
+          resetSession();
+        });
+
       } catch (error) {
         console.error('SignClient initialization failed:', error);
-        setConnectionStatus('WalletConnect initialization failed');
       } finally {
         setIsLoading(false);
       }
     }
     initSignClient();
-  }, [tbaAddress]);
+  }, [clientKey]);
 
   const connectWallet = async () => {
     try {
       setIsConnecting(true);
       setWalletAddress(walletStore.address!);
-      setConnectionStatus('Wallet connected successfully');
     } catch (error) {
       console.error('Wallet connection failed:', error);
-      setConnectionStatus('Wallet connection failed');
     } finally {
       setIsConnecting(false);
     }
   };
 
-  const getOrCreateTBA = async () => {
-    try {
-      const tba = "0x574944744E51d2D032f0f7b3fF2509b06cf88f05";
-      const code = "0x";
-      if (code === '0x') {
-        setConnectionStatus('TBA created successfully');
-      }
-      setTbaAddress(tba);
-      return tba;
-    } catch (error) {
-      console.error('TBA creation/query failed:', error);
-      setConnectionStatus('Failed to get/create TBA');
-      return null;
-    }
-  };
 
   const verifyTBAAuthority = async (tba: string) => {
     try {
       return true;
     } catch (error) {
       console.error('TBA authority verification failed:', error);
-      setConnectionStatus('TBA authority verification failed');
       return false;
     }
   };
 
   const pairWithDApp = async () => {
     if (!signClient || !wcUri) {
-      setConnectionStatus('Please provide URI, and ensure WalletConnect is initialized');
       return;
     }
 
     try {
       setIsPairing(true);
       await signClient.pair({ uri: wcUri });
-      setConnectionStatus('Pairing initiated, awaiting session proposal');
     } catch (error) {
       console.error('Pairing failed:', error);
-      setConnectionStatus('Pairing failed');
     } finally {
       setIsPairing(false);
     }
@@ -154,8 +255,6 @@ export default function WalletConnectTBA() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setConnectionStatus('Address copied to clipboard!');
-    setTimeout(() => setConnectionStatus(''), 2000);
   };
 
   if (isLoading) {
@@ -170,40 +269,24 @@ export default function WalletConnectTBA() {
   }
 
   return (
-    <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-4">
-      <div className="text-lg font-bold mb-3 flex items-center border-b border-[#808080] pb-2">
-        <div className="w-6 h-6 bg-[#000080] mr-2 flex items-center justify-center">
-          <div className="w-4 h-4 bg-white"></div>
-        </div>
-        GOTCHI WalletConnect
-      </div>
-
+    <div className="bg-[#d4d0c8] rounded-sm">
       {!walletAddress ? (
         <div className="text-center">
           <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-6 mb-4">
-            <div className="text-center mb-4">
-              <div className="w-16 h-16 bg-[#000080] mx-auto mb-4 flex items-center justify-center">
-                <div className="w-12 h-12 bg-white"></div>
-              </div>
-              <h2 className="text-lg font-bold mb-2">Connect Your Wallet</h2>
-              <p className="text-[#000080] mb-4">Start by connecting your EOA wallet to proceed</p>
+            <div className="text-center mb-4 flex flex-col items-center">
+              <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={128} height={128} className="mx-auto mb-4" />
+              <h2 className="text-lg font-bold mb-2">Connect Your GOTCHI</h2>
+              <p className="text-[#000080] mb-4">Start by connecting your GOTCHI wallet to proceed</p>
             </div>
             <button 
               onClick={connectWallet}
               disabled={isConnecting}
               className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-8 py-3 font-bold hover:bg-[#c0c0c0] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isConnecting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-[#808080] border-t-[#000080] animate-spin mr-2 inline-block"></div>
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <div className="w-4 h-4 bg-[#000080] mr-2 inline-block"></div>
-                  Connect Wallet
-                </>
-              )}
+              <div className="flex items-center">
+                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                {isConnecting ? 'Connecting...' : 'Connect dApp'}
+              </div>
             </button>
           </div>
         </div>
@@ -213,8 +296,8 @@ export default function WalletConnectTBA() {
           <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <div className="w-4 h-4 bg-[#008000] mr-2"></div>
-                <span className="font-bold">Wallet Connected</span>
+                <Image src="/icons/tba-gotchi.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                <span className="font-bold">Your GOTCHI Owner</span>
               </div>
               <button 
                 onClick={() => copyToClipboard(walletAddress)}
@@ -247,20 +330,29 @@ export default function WalletConnectTBA() {
 
           {/* Action Button */}
           <button 
-            onClick={pairWithDApp}
+            onClick={isConnected ? handleDisconnect : pairWithDApp}
             disabled={!wcUri || isPairing}
-            className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] py-3 font-bold hover:bg-[#c0c0c0] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full border-2 border-[#808080] shadow-win98-outer py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed ${
+              isConnected 
+                ? 'bg-[#c0c0c0] text-[#000080] hover:bg-[#d4d0c8]' 
+                : 'bg-[#c0c0c0] text-black hover:bg-[#d4d0c0]'
+            }`}
           >
             {isPairing ? (
               <>
                 <div className="w-4 h-4 border-2 border-[#808080] border-t-[#000080] animate-spin mr-2 inline-block"></div>
                 Connecting with DApp...
               </>
+            ) : isConnected ? (
+              <div className="flex items-center justify-center">
+                <Image src="/icons/connect.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                Disconnect
+              </div>
             ) : (
-              <>
-                <div className="w-4 h-4 bg-[#000080] mr-2 inline-block"></div>
+              <div className="flex items-center justify-center">
+                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
                 Connect with DApp
-              </>
+              </div>
             )}
           </button>
 
@@ -280,18 +372,36 @@ export default function WalletConnectTBA() {
             </div>
           )}
 
-          {/* Status Display */}
-          {connectionStatus && (
+          {session && dappMetadata && (
             <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
+              <div className="flex items-center border-b border-[#808080] pb-2 mb-2">
+                <div className="relative">
+                  <div className={`w-2 h-2 mr-2 rounded-full bg-[#008000]`}></div>
+                  <div className={`absolute top-0 left-0 w-2 h-2 mr-2  rounded-full animate-ping bg-[#008000]`}></div>
+                </div>
+                <span className="font-bold">Connected GOTCHI to {dappMetadata.name}</span>
+              </div>
               <div className="flex items-center">
-                <div className={`w-4 h-4 mr-2 ${
-                  connectionStatus.includes('success') || connectionStatus.includes('Connected') 
-                    ? 'bg-[#008000]' 
-                    : connectionStatus.includes('failed') || connectionStatus.includes('rejected')
-                    ? 'bg-[#ff0000]'
-                    : 'bg-[#000080]'
-                }`}></div>
-                <span className="font-bold">Status: {connectionStatus}</span>
+                {dappMetadata.icons && dappMetadata.icons.length > 0 && (
+                  <Image 
+                    src={dappMetadata.icons[0]} 
+                    alt={`${dappMetadata.name} icon`}
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 mr-4 border-2 border-[#808080] shadow-win98-inner"
+                  />
+                )}
+                <div>
+                  <p className="font-bold text-base">{dappMetadata.name}</p>
+                  <a 
+                    href={dappMetadata.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#000080] hover:underline break-all"
+                  >
+                    {dappMetadata.url}
+                  </a>
+                </div>
               </div>
             </div>
           )}
@@ -299,4 +409,6 @@ export default function WalletConnectTBA() {
       )}
     </div>
   );
-}
+});
+
+export default WalletConnectTBA;
