@@ -19,18 +19,13 @@ interface DappMetadata {
 interface WalletConnectTBAProps {
   tbaAddress: string;
   tokenId: string;
+  handleWalletConnected: (isConnected: boolean, target: string) => void;
 }
 
-const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProps) => {
-  const [walletAddress, setWalletAddress] = useState('');
+const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected }: WalletConnectTBAProps) => {
   const [signClient, setSignClient] = useState<SignClient | null>(null);
-  const [session, setSession] = useState<any>(null);
-  const [wcUri, setWcUri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isPairing, setIsPairing] = useState(false);
-  const [dappMetadata, setDappMetadata] = useState<DappMetadata | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
   const [clientKey, setClientKey] = useState(Date.now());
 
   const { walletStore } = useStores();
@@ -46,25 +41,33 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
     tbaAddressRef.current = tbaAddress;
   }, [tbaAddress]);
 
+  useEffect(() => {
+    if (walletStore.isWalletConnectConnected && walletStore.walletConnectDappMetadata) {
+      handleWalletConnected(true, walletStore.connectedTarget);
+    }
+  }, []);
+
   const resetSession = () => {
-    setSession(null);
-    setWcUri('');
-    setDappMetadata(null);
-    setIsConnected(false);
+    walletStore.setWalletConnectSession(null);
+    walletStore.setWalletConnectUri('');
+    walletStore.setWalletConnectDappMetadata(null);
+    walletStore.setWalletConnectConnected(false);
+    walletStore.setConnectedTarget('');
     setClientKey(Date.now()); 
   };
 
   const handleDisconnect = async () => {
-    if (!signClient || !session) {
+    if (!signClient || !walletStore.walletConnectSession) {
         return;
     }
 
     try {
         await signClient.disconnect({
-            topic: session.topic,
+            topic: walletStore.walletConnectSession.topic,
             reason: getSdkError('USER_DISCONNECTED'),
         });
         resetSession();
+        handleWalletConnected(false, '');
     } catch (error) {
         console.error('Failed to disconnect session:', error);
     }
@@ -93,10 +96,14 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
 
         client.on('session_proposal', async ({ id, params }) => {
           try {
-            setIsPairing(true);
-            setIsConnected(true);
+            walletStore.setWalletConnectPairing(true);
+            walletStore.setWalletConnectConnected(true);
             const metadata = params.proposer.metadata;
-            setDappMetadata(metadata);
+            walletStore.setWalletConnectDappMetadata(metadata);
+            walletStore.setConnectedTarget(metadata.name);
+            handleWalletConnected(true, metadata.name);
+            walletStore.setWalletConnected(true);
+
             const currentTba = tbaAddressRef.current;
             if (!currentTba) {
                 throw new Error("TBA address is not available for session proposal.");
@@ -114,12 +121,14 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
             };
 
             const session = await client?.approve({ id, namespaces: sessionNamespaces });
-            setSession(session);
+            if (session) {
+              walletStore.setWalletConnectSession(session);
+            }
           } catch (error) {
             console.error('Session proposal failed:', error);
             await client?.reject({ id, reason: getSdkError('USER_REJECTED') });
           } finally {
-            setIsPairing(false);
+            walletStore.setWalletConnectPairing(false);
           }
         });
 
@@ -206,6 +215,7 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
         client.on('session_delete', ({ id, topic }) => {
           console.error('🔴 SESSION DELETED BY DAPP!', { id, topic });
           resetSession();
+          handleWalletConnected(false, '');
         });
 
       } catch (error) {
@@ -220,14 +230,12 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
   const connectWallet = async () => {
     try {
       setIsConnecting(true);
-      setWalletAddress(walletStore.address!);
     } catch (error) {
       console.error('Wallet connection failed:', error);
     } finally {
       setIsConnecting(false);
     }
   };
-
 
   const verifyTBAAuthority = async (tba: string) => {
     try {
@@ -239,17 +247,17 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
   };
 
   const pairWithDApp = async () => {
-    if (!signClient || !wcUri) {
+    if (!signClient || !walletStore.walletConnectUri) {
       return;
     }
 
     try {
-      setIsPairing(true);
-      await signClient.pair({ uri: wcUri });
+      walletStore.setWalletConnectPairing(true);
+      await signClient.pair({ uri: walletStore.walletConnectUri });
     } catch (error) {
       console.error('Pairing failed:', error);
     } finally {
-      setIsPairing(false);
+      walletStore.setWalletConnectPairing(false);
     }
   };
 
@@ -270,7 +278,7 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
 
   return (
     <div className="bg-[#d4d0c8] rounded-sm">
-      {!walletAddress ? (
+      {!walletStore.isConnected ? (
         <div className="text-center">
           <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-6 mb-4">
             <div className="text-center mb-4 flex flex-col items-center">
@@ -300,13 +308,13 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
                 <span className="font-bold">Your GOTCHI Owner</span>
               </div>
               <button 
-                onClick={() => copyToClipboard(walletAddress)}
+                onClick={() => copyToClipboard(walletStore.address!)}
                 className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-3 py-1 text-sm font-bold hover:bg-[#c0c0c0]"
               >
                 Copy
               </button>
             </div>
-            <div className="p-3 bg-white border border-[#808080] shadow-win98-inner text-xs font-mono">{walletAddress}</div>
+            <div className="p-3 bg-white border border-[#808080] shadow-win98-inner text-xs font-mono">{walletStore.address}</div>
           </div>
 
           {/* Configuration Form */}
@@ -320,8 +328,8 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
                 <input
                   type="text"
                   placeholder="wc://..."
-                  value={wcUri}
-                  onChange={(e) => setWcUri(e.target.value)}
+                  value={walletStore.walletConnectUri}
+                  onChange={(e) => walletStore.setWalletConnectUri(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-[#808080] shadow-win98-inner font-mono text-sm"
                 />
               </div>
@@ -330,20 +338,20 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
 
           {/* Action Button */}
           <button 
-            onClick={isConnected ? handleDisconnect : pairWithDApp}
-            disabled={!wcUri || isPairing}
+            onClick={walletStore.isWalletConnectConnected ? handleDisconnect : pairWithDApp}
+            disabled={!walletStore.walletConnectUri || walletStore.isWalletConnectPairing}
             className={`w-full border-2 border-[#808080] shadow-win98-outer py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed ${
-              isConnected 
+              walletStore.isWalletConnectConnected 
                 ? 'bg-[#c0c0c0] text-[#000080] hover:bg-[#d4d0c8]' 
                 : 'bg-[#c0c0c0] text-black hover:bg-[#d4d0c0]'
             }`}
           >
-            {isPairing ? (
+            {walletStore.isWalletConnectPairing ? (
               <>
                 <div className="w-4 h-4 border-2 border-[#808080] border-t-[#000080] animate-spin mr-2 inline-block"></div>
                 Connecting with DApp...
               </>
-            ) : isConnected ? (
+            ) : walletStore.isWalletConnectConnected ? (
               <div className="flex items-center justify-center">
                 <Image src="/icons/connect.png" alt="Wallet" width={24} height={24} className="mr-2" />
                 Disconnect
@@ -372,34 +380,34 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId }: WalletConnectTBAProp
             </div>
           )}
 
-          {session && dappMetadata && (
+          {walletStore.walletConnectSession && walletStore.walletConnectDappMetadata && (
             <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
               <div className="flex items-center border-b border-[#808080] pb-2 mb-2">
                 <div className="relative">
                   <div className={`w-2 h-2 mr-2 rounded-full bg-[#008000]`}></div>
                   <div className={`absolute top-0 left-0 w-2 h-2 mr-2  rounded-full animate-ping bg-[#008000]`}></div>
                 </div>
-                <span className="font-bold">Connected GOTCHI to {dappMetadata.name}</span>
+                <span className="font-bold">Connected GOTCHI to {walletStore.walletConnectDappMetadata.name}</span>
               </div>
               <div className="flex items-center">
-                {dappMetadata.icons && dappMetadata.icons.length > 0 && (
+                {walletStore.walletConnectDappMetadata.icons && walletStore.walletConnectDappMetadata.icons.length > 0 && (
                   <Image 
-                    src={dappMetadata.icons[0]} 
-                    alt={`${dappMetadata.name} icon`}
+                    src={walletStore.walletConnectDappMetadata.icons[0]} 
+                    alt={`${walletStore.walletConnectDappMetadata.name} icon`}
                     width={48}
                     height={48}
                     className="w-12 h-12 mr-4 border-2 border-[#808080] shadow-win98-inner"
                   />
                 )}
                 <div>
-                  <p className="font-bold text-base">{dappMetadata.name}</p>
+                  <p className="font-bold text-base">{walletStore.walletConnectDappMetadata.name}</p>
                   <a 
-                    href={dappMetadata.url} 
+                    href={walletStore.walletConnectDappMetadata.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-xs text-[#000080] hover:underline break-all"
                   >
-                    {dappMetadata.url}
+                    {walletStore.walletConnectDappMetadata.url}
                   </a>
                 </div>
               </div>

@@ -65,7 +65,7 @@ const DashboardContent = observer(() => {
   const [selectedType, setSelectedType] = useState<string>("")
   const [isPetWriting, setIsPetWriting] = useState<boolean>(false)
   const [showWalletConnectTBA, setShowWalletConnectTBA] = useState<boolean>(false)
-
+  
   const { walletStore } = useStores()
   const walletAddress = walletStore.address;
   const { toast } = useToast()
@@ -187,6 +187,12 @@ const DashboardContent = observer(() => {
     setShowWalletConnectTBA(false);
   };
 
+  const handleWalletConnected = (isConnected: boolean, target: string) => {
+    if (!isConnected) {
+      setShowWalletConnectTBA(false);
+    }
+  };
+
   const handleEquipWearable = (ids: string[]) => {
     setWearableBalances(ids);
   };
@@ -200,16 +206,6 @@ const DashboardContent = observer(() => {
     setCurrentPage(1);
   };
   
-  const handleRefresh = useCallback(() => {
-    if (selectedTokenId) {
-      toast({ title: "Refreshing details..." });
-      mutateDetails(); 
-    } else {
-      toast({ title: "Refreshing list..." });
-      mutateList(); 
-    }
-  }, [selectedTokenId, mutateDetails, mutateList]);
-
   const floatAnimation = {
     y: [0, -3, 0],
     transition: {
@@ -359,7 +355,7 @@ const DashboardContent = observer(() => {
             className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-3 py-1 hover:bg-[#c0c0c0] flex items-center"
           >
             <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
-            Connect dApp
+            {walletStore.isWalletConnectConnected ? `Connected to ${walletStore.connectedTarget}` : 'Connect dApp'}
           </button>
         </div>
       </div>
@@ -464,10 +460,17 @@ const DashboardContent = observer(() => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto">
             <div className="border-b-2 border-[#808080] bg-[#000080] text-white p-2 flex justify-between items-center">
-              <div className="flex items-center">
-                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
-                <span className="font-bold">Connect dApp</span>
-              </div>
+              {walletStore.isWalletConnectConnected ? (
+                <div className="flex items-center">
+                  <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                  <span className="font-bold">Connected to {walletStore.connectedTarget}</span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                  <span className="font-bold">Connect dApp</span>
+                </div>
+              )}
               <button 
                 onClick={handleWalletConnectTBAClose}
                 className="w-6 h-6 bg-[#c0c0c0] border border-[#808080] shadow-win98-outer flex items-center justify-center hover:bg-[#d4d0c8]"
@@ -476,7 +479,7 @@ const DashboardContent = observer(() => {
               </button>
             </div>
             <div className="p-4">
-              <WalletConnectTBA tbaAddress={tbaAddress} tokenId={selectedTokenId} />
+              <WalletConnectTBA tbaAddress={tbaAddress} tokenId={selectedTokenId} handleWalletConnected={handleWalletConnected} />
             </div>
           </div>
         </div>
