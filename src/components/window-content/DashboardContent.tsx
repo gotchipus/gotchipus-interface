@@ -300,6 +300,22 @@ const DashboardContent = observer(() => {
     );
   }
 
+  if (ids.length === 0) {
+    return (
+      <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
+        <div className="text-center flex flex-col items-center">
+          <div className="mb-4">
+            <Image src="/not-any.png" alt="No NFTs" width={120} height={120} />
+          </div>
+          <h3 className="text-xl font-bold mb-2">No Gotchipus Found</h3>
+          <p className="text-[#000080] mb-4">
+            {balances > 0 ? `You holder ${balances} Pharos, But you don't summon your Gotchipus yet.` : "You don't have any Gotchipus NFTs yet."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!selectedTokenId) {
     return (
       <div className="p-6 bg-[#c0c0c0] h-full overflow-auto">
