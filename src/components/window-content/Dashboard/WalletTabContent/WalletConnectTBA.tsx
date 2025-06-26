@@ -8,13 +8,8 @@ import { useStores } from '@stores/context';
 import { observer } from 'mobx-react-lite';
 import { useSignMessage, useSignTypedData, useWriteContract } from 'wagmi';
 import { PUS_ABI, PUS_ADDRESS } from '@/src/app/blockchain';
-
-interface DappMetadata {
-  name: string;
-  description: string;
-  url: string;
-  icons: string[];
-}
+import { useToast } from '@/hooks/use-toast'
+import { CHAIN_ID } from '@/lib/constant';
 
 interface WalletConnectTBAProps {
   tbaAddress: string;
@@ -27,9 +22,9 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [clientKey, setClientKey] = useState(Date.now());
-
+  const { toast } = useToast()
   const { walletStore } = useStores();
-  const CHAIN_ID = 688688;
+
   const { signMessageAsync } = useSignMessage();
   const { signTypedDataAsync } = useSignTypedData();
   const { writeContract } = useWriteContract();
@@ -124,8 +119,18 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
             if (session) {
               walletStore.setWalletConnectSession(session);
             }
+
+            toast({
+              title: `Connected GOTCHI to ${metadata.name}`,
+              description: `You can now use your GOTCHI to interact with ${metadata.name}`,
+            });
           } catch (error) {
-            console.error('Session proposal failed:', error);
+            const metadata = params.proposer.metadata;
+            toast({
+              title: `Failed to connect GOTCHI to ${metadata.name}`,
+              description: "Please try again",
+            });
+
             await client?.reject({ id, reason: getSdkError('USER_REJECTED') });
           } finally {
             walletStore.setWalletConnectPairing(false);
@@ -186,34 +191,51 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
                     originalTx.data || "0x",
                 ],
                 gas: estimatedGasLimit,
-            }, 
-            {
-                onSuccess: async (txHash) => {
-                    await client?.respond({
-                        topic,
-                        response: { id, jsonrpc: '2.0', result: txHash },
-                    });
-                },
-                onError: async (error) => {
-                    await client?.respond({
-                        topic,
-                        response: { id, jsonrpc: '2.0', error: getSdkError('USER_REJECTED') },
-                    });
-                }
-            });
+              }, 
+              {
+                  onSuccess: async (txHash) => {
+                      await client?.respond({
+                          topic,
+                          response: { id, jsonrpc: '2.0', result: txHash },
+                      });
+                  },
+                  onError: async (error) => {
+                      await client?.respond({
+                          topic,
+                          response: { id, jsonrpc: '2.0', error: getSdkError('USER_REJECTED') },
+                      });
+                  }
+              });
+              toast({
+                title: `Transaction Submitted on ${walletStore.walletConnectDappMetadata?.name}`,
+                description: `Your ${walletStore.walletConnectDappMetadata?.name} transaction has been submitted`,
+              });
+
             } else {
-                throw new Error(`Unsupported method: ${method}`);
+              toast({
+                title: "Unsupported Method",
+                description: "Please try again",
+              });
+              throw new Error(`Unsupported method: ${method}`);
             }
           } catch (error) {
             await client?.respond({
               topic,
               response: { id, jsonrpc: '2.0', error: getSdkError('USER_REJECTED') },
             });
+            toast({
+              title: "Transaction failed",
+              description: "Please try again",
+            });
           }
         });
 
         client.on('session_delete', ({ id, topic }) => {
-          console.error('🔴 SESSION DELETED BY DAPP!', { id, topic });
+          toast({
+            title: `Disconnected by ${walletStore.walletConnectDappMetadata?.name}`,
+            description: "Please try to connect again",
+          });
+
           resetSession();
           handleWalletConnected(false, '');
         });

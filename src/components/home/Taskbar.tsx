@@ -3,9 +3,8 @@
 import type React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import type { WindowType } from "@/lib/types"
-import { Clock } from "lucide-react"
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import AboutContent from "@/components/window-content/AboutContent"
 import { useTranslation } from 'react-i18next'
@@ -17,6 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useBlockNumber } from "wagmi"
+import { useStores } from '@stores/context';
+import { observer } from 'mobx-react-lite';
 
 
 interface TaskbarProps {
@@ -27,28 +29,21 @@ interface TaskbarProps {
   onRestoreWindow: (id: string) => void
 }
 
-export default function Taskbar({
+const Taskbar = observer(({
   onOpenWindow,
   openWindows,
   activeWindow,
   onActivateWindow,
   onRestoreWindow,
-}: TaskbarProps) {
+}: TaskbarProps) => {
   const { i18n } = useTranslation()
-  const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [isStartPressed, setIsStartPressed] = useState(false)
   const [pressedButton, setPressedButton] = useState<string | null>(null)
-  const [clockPressed, setClockPressed] = useState(false)
-  const [currentTime, setCurrentTime] = useState(
-    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  )
+  const { walletStore } = useStores();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
-    }, 60000)
-    return () => clearInterval(timer)
-  }, [])
+  const { data: blockNumber } = useBlockNumber({
+    watch: true
+  });
 
   const handleButtonMouseDown = (id: string) => {
     setPressedButton(id);
@@ -82,7 +77,7 @@ export default function Taskbar({
       <div className="flex items-center h-10">
         <button
           className={`h-10 px-4 mr-2 font-bold text-sm flex items-center justify-center text-white border border-[#808080] ${
-            isStartPressed || startMenuOpen
+            isStartPressed
               ? "bg-uni-bg-01 shadow-win98-inner"
               : "bg-uni-bg-01 shadow-win98-outer"
           }`}
@@ -123,6 +118,18 @@ export default function Taskbar({
       </div>
 
       <div className="flex items-center h-10">
+        {walletStore.isWalletConnectConnected && (
+          <div 
+            className="flex flex-row gap-2 items-center bg-[#c0c0c0] h-10 px-2 m-2 border border-[#808080] cursor-pointer shadow-win98-inner" 
+            onClick={() => {
+              window.open(walletStore.walletConnectDappMetadata?.url, '_blank');
+            }}
+          >
+            <Image src="/icons/walletconnect-logo.png" alt="WalletConnect" width={24} height={24} />
+            <span className="text-sm">{walletStore.walletConnectDappMetadata?.name}</span>
+          </div>
+        )}
+
         <Select value={i18n.language} onValueChange={handleLanguageChange}>
           <SelectTrigger className="w-[80px] h-10 bg-[#c0c0c0] border border-[#808080] shadow-win98-inner cursor-pointer rounded-none">
             <SelectValue placeholder="Language" />
@@ -154,17 +161,23 @@ export default function Taskbar({
           </Link>
         </div>
 
-        <div
-          className={`flex items-center bg-[#c0c0c0] h-10 px-3 ml-2 border border-[#808080] cursor-pointer shadow-win98-inner `}
-          onMouseDown={() => setClockPressed(true)}
-          onMouseUp={() => setClockPressed(false)}
-          onMouseLeave={() => setClockPressed(false)}
-        >
-          <Clock className="w-4 h-4 mr-2" />
-          <span className="text-sm">{currentTime}</span>
+        <div className="flex items-center bg-[#c0c0c0] h-10 px-3 ml-2 border border-[#808080] cursor-pointer shadow-win98-inner justify-center">
+          <div className="relative">
+            <div className={`w-2 h-2 mr-2 rounded-full bg-[#008000]`}></div>
+            <div className={`absolute top-0 left-0 w-2 h-2 mr-2  rounded-full animate-ping bg-[#008000]`}></div>
+          </div>
+          <a 
+            href={`https://testnet.pharosscan.xyz/block/${blockNumber?.toString()}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-base text-[#000080] hover:underline break-all"
+          >
+            {blockNumber?.toString()}
+          </a>
         </div>
       </div>
     </div>
   )
-}
+})
 
+export default Taskbar;
