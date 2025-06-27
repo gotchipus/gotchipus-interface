@@ -74,12 +74,14 @@ const DashboardContent = observer(() => {
 
 
   const { data: listData, error: listError, isLoading: isListLoading, mutate: mutateList } = useSWR<ListApiData>(listApiUrl, fetcher, {
-    refreshInterval: 3000,
+    refreshInterval: 10000,
+    keepPreviousData: true,
+    errorRetryCount: 5,
     revalidateOnMount: true,
     revalidateIfStale: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 0,
+    dedupingInterval: 2000,
   });
 
   const ids = listData?.filteredIds || [];

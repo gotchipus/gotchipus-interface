@@ -18,15 +18,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Valid owner address is required' }, { status: 400 });
     }
 
-    const [balanceResult, allTokenIdsResult] = await Promise.all([
-      publicClient.readContract({ address: PUS_ADDRESS, abi: PUS_ABI, functionName: 'balanceOf', args: [ownerAddress] }).catch(() => BigInt(0)),
-      publicClient.readContract({ address: PUS_ADDRESS, abi: PUS_ABI, functionName: 'allTokensOfOwner', args: [ownerAddress] }).catch(() => [])
-    ]) as [bigint, bigint[]];
+    const balanceResult = await publicClient.readContract({
+      address: PUS_ADDRESS,
+      abi: PUS_ABI,
+      functionName: 'balanceOf',
+      args: [ownerAddress]
+    }).catch(() => BigInt(-1));
+
+    if (balanceResult === BigInt(-1)) {
+        console.error('API Error: Failed to fetch balanceOf from RPC.');
+        return NextResponse.json({ message: 'RPC Service Unavailable', error: 'Failed to fetch balance' }, { status: 503 });
+    }
+
+    const allTokenIdsResult = await publicClient.readContract({
+      address: PUS_ADDRESS,
+      abi: PUS_ABI,
+      functionName: 'allTokensOfOwner',
+      args: [ownerAddress]
+    }).catch(() => null);
+
+    if (allTokenIdsResult === null && (balanceResult as bigint) > 0) {
+        console.error('API Error: Inconsistency detected. Balance > 0 but failed to fetch token IDs.');
+        return NextResponse.json({ message: 'RPC Service Unavailable', error: 'Inconsistent data from RPC' }, { status: 503 });
+    }
+
 
     const tokenIds = (allTokenIdsResult || []) as bigint[];
     
     if (tokenIds.length === 0) {
-      return NextResponse.json({ balance: balanceResult.toString(), filteredIds: [] });
+      if ((balanceResult as bigint) > 0) {
+        console.error('API Error: Inconsistency detected. Balance > 0 but token ID list is empty.');
+        return NextResponse.json({ message: 'RPC Service Unavailable', error: 'Inconsistent data from RPC' }, { status: 503 });
+      }
+      return NextResponse.json({ balance: (balanceResult as bigint).toString(), filteredIds: [] });
     }
 
     const infoPromises = tokenIds.map(id => 
@@ -39,7 +63,7 @@ export async function GET(request: NextRequest) {
       .filter(item => item.info && (item.info as GotchipusInfo).status === 1) 
       .map(item => item.id.toString());
       
-    return NextResponse.json({ balance: balanceResult.toString(), filteredIds });
+    return NextResponse.json({ balance: (balanceResult as bigint).toString(), filteredIds });
 
   } catch (error: any) {
     console.error('API Error (gotchipus-list):', error);
