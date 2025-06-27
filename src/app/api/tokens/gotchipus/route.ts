@@ -6,7 +6,7 @@ import { pharos } from '@/src/app/blockchain/config';
 
 export const runtime = 'edge';
 
-const rpcUrl = process.env.NEXT_PUBLIC_ZAN_RPC;
+const rpcUrl = process.env.NEXT_PUBLIC_TESTNET_RPC;
 const publicClient = createPublicClient({ chain: pharos, transport: http(rpcUrl) });
 
 export async function GET(request: NextRequest) {

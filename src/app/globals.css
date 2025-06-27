@@ -22,6 +22,55 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* FlipCard specific utilities */
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .transform-origin-center {
+    transform-origin: center;
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+  
+  .rotate-y-0 {
+    transform: rotateY(0deg);
+  }
+  
+  .scale-108 {
+    transform: scale(1.08);
+  }
+  
+  .scale-110 {
+    transform: scale(1.10);
+  }
+  
+  .duration-220 {
+    transition-duration: 220ms;
+  }
+  
+  .duration-320 {
+    transition-duration: 320ms;
+  }
+  
+  .text-shadow-win98 {
+    text-shadow: 1px 1px 0 #000;
+  }
+  
+  .image-rendering-pixelated {
+    image-rendering: pixelated;
+  }
 }
 
 .text-shadow {
@@ -233,3 +282,4 @@ body {
 .scrollbar-none {
   -ms-overflow-style: none;
 }
+

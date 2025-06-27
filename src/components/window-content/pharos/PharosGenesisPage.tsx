@@ -233,20 +233,17 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-6 scrollbar-none">
-        {/* Left Side - Gotchipus Preview */}
+      <div className="flex flex-col md:flex-row gap-6 scrollbar-none mx-24">
         <div className="w-full md:w-2/5 flex flex-col gap-4 scrollbar-none">
-          <div className="border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-4 h-80 flex items-center justify-center relative">
+          <div className="border-2 border-[#808080] shadow-win98-outer bg-white rounded-lg p-4 h-96 flex items-center justify-center relative">
             <motion.div animate={floatAnimation} className="relative w-full h-full">
-              <Image src={previewImage} alt="Gotchipus" fill className="object-cover" />
+              <Image src={previewImage} alt="Gotchipus" fill className="object-cover"/>
             </motion.div>
           </div>
 
-          {/* Attributes List */}
           <div>
             <h3 className="text-lg font-bold mb-2">Gotchipus Attributes</h3>
             
-            {/* DNA ID Section */}
             <div className="win98-group-box">
               <div className="win98-group-title">{attributes.dna.name}</div>
               <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
@@ -254,7 +251,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
             </div>
 
-            {/* Token Bound Account Section */}
             <div className="win98-group-box">
               <div className="win98-group-title">Token Bound Account</div>
               <div className="font-mono text-xs bg-[#d4d0c8] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
@@ -262,7 +258,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
             </div>
 
-            {/* Story Section */}
             <div className="win98-group-box mb-2">
               <div className="win98-group-title">Story</div>
               <div
@@ -283,7 +278,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               )}
             </div>
 
-            {/* Attributes Section */}
             <div className="win98-group-box">
               <div className="win98-group-title">Attributes</div>
               <div
@@ -318,9 +312,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
           </div>
         </div>
 
-        {/* Right Side - Input and Staking */}
         <div className="w-full md:w-3/5 flex flex-col gap-4">
-          {/* Name Input */}
           <div>
             <h3 className="text-lg font-bold mb-2">Name Your Gotchipus</h3>
             <div className="relative">
@@ -343,7 +335,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             </div>
           </div>
 
-          {/* Timezone Selection */}
           <div className="mt-2">
             <h3 className="text-lg font-bold mb-2">Select Timezone</h3>
             <div className="relative">
@@ -377,7 +368,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
             </div>
           </div>
 
-          {/* Staking Section */}
           <div className="mt-2">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold">Stake {stakeToken} Token </h3>
@@ -450,7 +440,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
             </div>
 
-            {/* Stake Token Selection */}
             <div className="mt-4">
               <h4 className="font-bold mb-2">Select Stake Token Type:</h4>
               <div className="grid grid-cols-2 gap-2">
@@ -482,7 +471,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               </div>
             </div>
 
-            {/* Confirm Button */}
             {walletStore.isConnected ? (
               <button
                 className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-lg p-3 mt-6 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center ${

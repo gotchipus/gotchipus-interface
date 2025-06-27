@@ -29,7 +29,7 @@ function stringifyBigInts(obj: any): any {
   return obj;
 }
 
-const publicClient = createPublicClient({ chain: pharos, transport: http(process.env.NEXT_PUBLIC_ZAN_RPC!) });
+const publicClient = createPublicClient({ chain: pharos, transport: http(process.env.NEXT_PUBLIC_TESTNET_RPC!) });
 
 export async function GET(request: NextRequest) {
   try {

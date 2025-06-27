@@ -9,6 +9,7 @@ import { useStores } from "@stores/context";
 import { Win98Loading } from "@/components/ui/win98-loading";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useSWR from 'swr';
+import FlipCard from "@/src/components/window-content/pharos/FlipCard";
 
 interface GotchipusPreview {
   id: string;
@@ -210,10 +211,16 @@ const MyPharosContent = observer(() => {
   }, [viewState, selectedPharos, generateGotchipusPreviews]);
 
   const handleSelectPreview = (index: number) => {
-    setSelectedPreviewIndex(index);
-    if (gotchipusPreviews[index]) {
-      setDisplayedStory(gotchipusPreviews[index].story);
-      setIsStoryComplete(true);
+    if (selectedPreviewIndex === index) {
+      setSelectedPreviewIndex(-1);
+      setDisplayedStory("");
+      setIsStoryComplete(false);
+    } else {
+      setSelectedPreviewIndex(index);
+      if (gotchipusPreviews[index]) {
+        setDisplayedStory(gotchipusPreviews[index].story);
+        setIsStoryComplete(true);
+      }
     }
   };
 
@@ -236,14 +243,6 @@ const MyPharosContent = observer(() => {
     setViewState("list");
   }, []);
 
-  const floatAnimation = {
-    y: [0, -3, 0],
-    transition: {
-      duration: 1,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  };
 
   if (isInitialLoading) {
     return (
@@ -282,7 +281,7 @@ const MyPharosContent = observer(() => {
     <div className="p-4 h-full scrollbar-none">
       {viewState === "list" && (
         <div className="flex flex-col h-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scrollbar-none">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 scrollbar-none">
             {ids && ids.length > 0 && (
               getCurrentPageItems().map((id, index) => (
                 <div
@@ -336,40 +335,17 @@ const MyPharosContent = observer(() => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
                   {gotchipusPreviews.map((preview, index) => (
-                    <div 
+                    <FlipCard
                       key={preview.id}
-                      className={`bg-[#d4d0c8] border-2 ${selectedPreviewIndex === index ? 'border-[#000080]' : 'border-[#808080]'} shadow-win98-outer cursor-pointer ${selectedPreviewIndex === index ? 'bg-[#efefef]' : ''}`}
-                      onClick={() => handleSelectPreview(index)}
-                    >
-                      <div className={`flex items-center justify-between p-1 ${selectedPreviewIndex === index ? 'bg-[#000080] text-white' : 'bg-[#d4d0c8]'}`}>
-                        <span className="font-bold text-sm pl-2">{preview.name}</span>
-                        {selectedPreviewIndex === index && (
-                          <div className="w-4 h-4 bg-[#d4d0c8] border border-[#808080] flex items-center justify-center">
-                            <span className="text-black text-xs">✓</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="p-3">
-                        <div className="flex justify-center border border-[#808080] shadow-win98-inner bg-white p-2 mb-3">
-                          <motion.div animate={floatAnimation} className="relative w-32 h-32">
-                            <Image 
-                              src={preview.image} 
-                              alt={preview.name}
-                              width={120}
-                              height={120}
-                              className="object-contain"
-                            />
-                          </motion.div>
-                        </div>
-                        
-                        <div className="border border-[#808080] shadow-win98-inner bg-white p-2 h-[100px] overflow-y-auto text-sm">
-                          {preview.story}
-                        </div>
-                      </div>
-                    </div>
+                      tokenId={index + 1}
+                      name={preview.name}
+                      image={preview.image}
+                      story={preview.story}
+                      onSelect={() => handleSelectPreview(index)}
+                      isSelected={selectedPreviewIndex === index}
+                    />
                   ))}
                 </div>
                 

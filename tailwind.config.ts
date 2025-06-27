@@ -90,7 +90,7 @@ const config: Config = {
   		},
   		animation: {
   			'wiggle-zoom': 'wiggle 0.2s ease-in-out 2, scaleAndColor 0.4s ease-in-out 0.5s forwards',
-				'window-appear': 'window-appear 0.3s ease-out'
+			'window-appear': 'window-appear 0.3s ease-out',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -100,6 +100,39 @@ const config: Config = {
 			boxShadow: {
         'win98-outer': 'inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf',
         'win98-inner': 'inset 1px 1px #0a0a0a, inset -1px -1px #fff',
+      },
+      backdropBlur: {
+        'sm': '4px',
+        'md': '8px',
+        'lg': '12px',
+      },
+      transformStyle: {
+        'preserve-3d': 'preserve-3d',
+      },
+      backfaceVisibility: {
+        'hidden': 'hidden',
+      },
+      perspective: {
+        '1000': '1000px',
+      },
+      rotate: {
+        'y-180': 'rotateY(180deg)',
+        'y-0': 'rotateY(0deg)',
+      },
+      scale: {
+        '108': '1.08',
+        '110': '1.10',
+      },
+      transitionDuration: {
+        '220': '220ms',
+        '320': '320ms',
+        '300': '300ms',
+      },
+      textShadow: {
+        'win98': '1px 1px 0 #000',
+      },
+      imageRendering: {
+        'pixelated': 'pixelated',
       },
   	}
   },

@@ -10,10 +10,10 @@ export const pharos = defineChain({
   },
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_ZAN_RPC!], 
+      http: [process.env.NEXT_PUBLIC_TESTNET_RPC!], 
     },
     public: {
-      http: [process.env.NEXT_PUBLIC_ZAN_RPC!], 
+      http: [process.env.NEXT_PUBLIC_TESTNET_RPC!], 
     },
   },
   blockExplorers: {
