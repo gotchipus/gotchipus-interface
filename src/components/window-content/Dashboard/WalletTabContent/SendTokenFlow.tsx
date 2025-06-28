@@ -128,6 +128,7 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
           await checkAndCompleteTask(walletStore.address!, 7);
         }
         updateTask();
+        walletStore.setIsTaskRefreshing(true);
       }
 
       toast({

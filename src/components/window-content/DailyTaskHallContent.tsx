@@ -56,6 +56,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   const fetchAllData = React.useCallback(async () => {
     if (!walletStore.address) {
       setLoading(false);
+      walletStore.setIsTaskRefreshing(false);
       return;
     }
 
@@ -77,6 +78,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
       }
       if (!userData) {
         setLoading(false);
+        walletStore.setIsTaskRefreshing(false);
         return;
       }
 
@@ -117,14 +119,24 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
         completed: completedStatus[idx]
       }));
       setTasks(finalTasks);
+      setLoading(false);
+      walletStore.setIsTaskRefreshing(false);
     } catch (error) {
       console.error("An error occurred during data fetching:", error);
+      setLoading(false);
+      walletStore.setIsTaskRefreshing(false);
     }
-  }, [walletStore.address]);
+  }, [walletStore.address, walletStore.setIsTaskRefreshing]);
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  useEffect(() => {
+    if (walletStore.isTaskRefreshing) {
+      fetchAllData();
+    }
+  }, [walletStore.isTaskRefreshing, fetchAllData]);
 
   useEffect(() => {
     const viewParam = searchParams.get('view');

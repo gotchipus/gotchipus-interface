@@ -133,6 +133,7 @@ const DashboardContent = observer(() => {
           await checkAndCompleteTask(walletStore.address!, 5);
         };
         updateTask();
+        walletStore.setIsTaskRefreshing(true);
       }
     }
   }, [isConfirmed]);

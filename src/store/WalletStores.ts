@@ -24,6 +24,7 @@ class WalletStore {
   symbol: string | undefined = undefined;
   chainId: number | undefined = undefined;
   isWalletConnected: boolean = false;
+  isTaskRefreshing: boolean = false;
 
   walletConnectSession: WalletConnectSession | null = null;
   walletConnectDappMetadata: DappMetadata | null = null;
@@ -129,6 +130,12 @@ class WalletStore {
       this.connectedTarget = target;
     });
     this.saveWalletConnectState();
+  }
+
+  setIsTaskRefreshing(isRefreshing: boolean) {
+    runInAction(() => {
+      this.isTaskRefreshing = isRefreshing;
+    });
   }
 
   resetWalletConnect() {
