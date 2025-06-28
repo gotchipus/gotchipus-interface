@@ -5,7 +5,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 export default function AboutContent() {
   const { t } = useTranslation()
-  
+
   return (
     <div className="p-4 flex flex-col items-center">
       <Image src="/about-image.png" alt="about" width={800} height={400} />
@@ -16,4 +16,3 @@ export default function AboutContent() {
     </div>
   )
 }
-

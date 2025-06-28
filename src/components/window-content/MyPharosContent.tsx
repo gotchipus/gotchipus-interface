@@ -36,12 +36,10 @@ const MyPharosContent = observer(() => {
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const [displayedStory, setDisplayedStory] = useState<string>("");
-  const [isStoryComplete, setIsStoryComplete] = useState<boolean>(false);
   const [gotchipusPreviews, setGotchipusPreviews] = useState<GotchipusPreview[]>([]);
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(-1);
   const [isGeneratingPreviews, setIsGeneratingPreviews] = useState<boolean>(false);
-  const { walletStore } = useStores();
+  const { walletStore, storyStore } = useStores();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -153,13 +151,7 @@ const MyPharosContent = observer(() => {
   const generateGotchipusPreviews = useCallback(async (pharoId: string) => {
     setIsGeneratingPreviews(true);
     try {
-      const storyResponse = await fetch(`/api/story`);
-      if (!storyResponse.ok) {
-        throw new Error(`Get story failed: ${storyResponse.status}`);
-      }
-      
-      const storyData = await storyResponse.json();
-      
+
       let imageBase64Array: string[] = [];
       try {
         const imgResponse = await fetch(`/api/images/draw`);
@@ -177,24 +169,20 @@ const MyPharosContent = observer(() => {
         imageBase64Array = Array(5).fill("/pharos.png");
       }
       
-      if (Array.isArray(storyData.data.storys) && storyData.data.storys.length > 0) {
-        const previews = storyData.data.storys.map((item: any, index: number) => {
-          const imageData = index < imageBase64Array.length 
-            ? `data:image/png;base64,${imageBase64Array[index]}`
-            : `/pharos.png`;
-          return {
-            id: `${pharoId}-${index}`,
-            name: item.name || `Gotchipus #${index+1}`,
-            story: String(item.story || "").replace(/undefined/g, '').trim(),
-            image: imageData
-          };
-        });
-        
-        setGotchipusPreviews(previews);
-      } else {
-        const defaultPreviews = await createDefaultPreviews(pharoId);
-        setGotchipusPreviews(defaultPreviews);
-      }
+      const previews = Array(5).fill(0).map((item, index) => {
+        const imageData = index < imageBase64Array.length 
+          ? `data:image/png;base64,${imageBase64Array[index]}`
+          : `/pharos.png`;
+        return  {
+          id: `${pharoId}-${index}`,
+          name: item.name || `Gotchipus #${index+1}`,
+          story: String(item.story || "").replace(/undefined/g, '').trim(),
+          image: imageData
+        };
+      });
+
+      setGotchipusPreviews(previews);
+
     } catch (err) {
       console.error("Failed to generate previews:", err);
       const defaultPreviews = await createDefaultPreviews(pharoId);
@@ -213,22 +201,15 @@ const MyPharosContent = observer(() => {
   const handleSelectPreview = (index: number) => {
     if (selectedPreviewIndex === index) {
       setSelectedPreviewIndex(-1);
-      setDisplayedStory("");
-      setIsStoryComplete(false);
     } else {
       setSelectedPreviewIndex(index);
-      if (gotchipusPreviews[index]) {
-        setDisplayedStory(gotchipusPreviews[index].story);
-        setIsStoryComplete(true);
-      }
     }
+    storyStore.setIsFetching(true);
   };
 
   const handlePharoClick = useCallback((pharoId: string) => {
     setSelectedPharos(pharoId);
     setViewState("hatching");
-    setDisplayedStory("");
-    setIsStoryComplete(false);
     setSelectedPreviewIndex(-1);
     setGotchipusPreviews([]);
   }, []);
@@ -340,9 +321,7 @@ const MyPharosContent = observer(() => {
                     <FlipCard
                       key={preview.id}
                       tokenId={index + 1}
-                      name={preview.name}
                       image={preview.image}
-                      story={preview.story}
                       onSelect={() => handleSelectPreview(index)}
                       isSelected={selectedPreviewIndex === index}
                     />
@@ -361,13 +340,28 @@ const MyPharosContent = observer(() => {
                         />
                       </div>
                       <div>
-                        <h3 className="font-bold">{gotchipusPreviews[selectedPreviewIndex].name}</h3>
+                        <h3 className="font-bold">
+                          {storyStore.isFetching ? (
+                            <div className="h-4 bg-gray-300 animate-pulse rounded w-24"></div>
+                          ) : (
+                            storyStore.gotchiName
+                          )}
+                        </h3>
                         <p className="text-xs">Gotchipus for Pharos #{selectedPharos}</p>
                       </div>
                     </div>
                     
                     <div className="border border-[#808080] shadow-win98-inner bg-white p-3 text-sm">
-                      {gotchipusPreviews[selectedPreviewIndex].story}
+                      {storyStore.isFetching ? (
+                        <div className="space-y-2">
+                          <div className="h-3 bg-gray-300 animate-pulse rounded w-full"></div>
+                          <div className="h-3 bg-gray-300 animate-pulse rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-300 animate-pulse rounded w-5/6"></div>
+                          <div className="h-3 bg-gray-300 animate-pulse rounded w-2/3"></div>
+                        </div>
+                      ) : (
+                        storyStore.gotchiStory
+                      )}
                     </div>
                   </div>
                 )}
