@@ -54,7 +54,7 @@ const DashboardContent = observer(() => {
   const [showEquipSelect, setShowEquipSelect] = useState(false)
   const [activeWalletTab, setActiveWalletTab] = useState<"tokens" | "nfts" | "call">("tokens")
   const [selectedTokenId, setSelectedTokenId] = useState<string>("")
-  const [activeTab, setActiveTab] = useState<"dashboard" | "equip" | "stats" | "wallet">("dashboard")
+  const [activeTab, setActiveTab] = useState<"dashboard" | "equip" | "stats" | "wallet" | null>(null)
   const [tokenInfoMap, setTokenInfoMap] = useState<GotchipusInfo>({} as GotchipusInfo)
   const [tbaAddress, setTbaAddress] = useState("")
 
@@ -70,8 +70,7 @@ const DashboardContent = observer(() => {
   const walletAddress = walletStore.address;
   const { toast } = useToast()
   
-  const listApiUrl = walletAddress ? `/api/tokens/gotchipus?owner=${walletAddress}` : null;
-
+  const listApiUrl = walletAddress && activeTab === null ? `/api/tokens/gotchipus?owner=${walletAddress}` : null;
 
   const { data: listData, error: listError, isLoading: isListLoading, mutate: mutateList } = useSWR<ListApiData>(listApiUrl, fetcher, {
     refreshInterval: 10000,
@@ -202,6 +201,7 @@ const DashboardContent = observer(() => {
 
   const handleTokenSelect = (tokenId: string) => {
     setSelectedTokenId(tokenId);
+    setActiveTab("dashboard");
   };
 
   const handleBackToList = () => {
