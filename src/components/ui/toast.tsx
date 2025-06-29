@@ -16,7 +16,9 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed bottom-16 right-4 z-[9999] flex max-h-screen w-full flex-col-reverse gap-2 sm:max-w-[420px]",
+      "fixed z-[9999] flex max-h-screen w-full flex-col-reverse gap-2",
+      "bottom-20 left-2 right-2 max-w-[calc(100vw-2rem)]",
+      "sm:bottom-16 sm:right-4 sm:left-auto sm:max-w-[420px]",
       className
     )}
     {...props}
@@ -33,9 +35,14 @@ const toastVariants = cva(
         destructive:
           "border-[#ff0000] bg-[#c0c0c0]",
       },
+      size: {
+        default: "p-4",
+        mobile: "p-3",
+      },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 )
@@ -44,9 +51,9 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, duration = 3000, ...props }, ref) => {
+>(({ className, variant, size, duration = 3000, ...props }, ref) => {
   const [progress, setProgress] = React.useState(100)
-  const stepTime = 100 // Update every 100ms
+  const stepTime = 100
   const steps = duration / stepTime
 
   React.useEffect(() => {
@@ -66,12 +73,15 @@ const Toast = React.forwardRef<
   return (
     <ToastPrimitives.Root
       ref={ref}
-      className={cn(toastVariants({ variant }), "pb-6", className)}
+      className={cn(toastVariants({ variant, size }), "pb-6", className)}
       duration={duration}
       {...props}
     >
       {props.children}
-      <div className="absolute bottom-0 left-0 right-2 h-2 border border-[#808080] shadow-win98-inner mx-4 mb-2 overflow-hidden">
+      <div className={cn(
+        "absolute bottom-0 left-0 right-2 h-2 border border-[#808080] shadow-win98-inner mx-4 mb-2 overflow-hidden",
+        size === "mobile" && "h-1.5 mx-2 mb-1.5"
+      )}>
         <div 
           className="h-full bg-uni-bg-01 shadow-win98-outer transition-all duration-100 ease-linear" 
           style={{ width: `${progress}%` }} 
@@ -89,7 +99,8 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center border border-[#808080] bg-[#c0c0c0] px-3 text-sm font-medium shadow-win98-outer active:shadow-win98-inner hover:bg-[#d4d4d4] focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex shrink-0 items-center justify-center border border-[#808080] bg-[#c0c0c0] px-3 text-sm font-medium shadow-win98-outer active:shadow-win98-inner hover:bg-[#d4d4d4] focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+      "h-10 sm:h-8",
       className
     )}
     {...props}
@@ -104,13 +115,14 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-1 top-1 flex h-5 w-5 items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-win98-outer active:shadow-win98-inner hover:bg-[#d4d4d4]",
+      "absolute right-1 top-1 flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-win98-outer active:shadow-win98-inner hover:bg-[#d4d4d4]",
+      "h-6 w-6 sm:h-5 sm:w-5",
       className
     )}
     toast-close=""
     {...props}
   >
-    <X className="h-3 w-3" />
+    <X className="h-4 w-4 sm:h-3 sm:w-3" />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName
@@ -121,7 +133,11 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-bold text-black mb-1 flex items-center gap-2", className)}
+    className={cn(
+      "font-bold text-black mb-1 flex items-center gap-2",
+      "text-base sm:text-sm",
+      className
+    )}
     {...props}
   />
 ))
@@ -133,7 +149,11 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm text-black", className)}
+    className={cn(
+      "text-black",
+      "text-base sm:text-sm",
+      className
+    )}
     {...props}
   />
 ))

@@ -13,7 +13,6 @@ const DNAAnalyzerContent = () => {
   const [activeTab, setActiveTab] = useState<'traits' | 'genetic' | 'breeding'>('traits');
   const [rarityScore, setRarityScore] = useState(0);
 
-  // Example DNA IDs for quick testing
   const exampleDnaIds = [
     '100420794452324007740289417880043935369077597111104194087309767408790248852035',
     '100420794452324007740289417880043935369077597111104194087309767408790248852035',
@@ -26,7 +25,6 @@ const DNAAnalyzerContent = () => {
       setError(null);
       setIsLoading(true);
       
-      // Simulate loading delay
       setTimeout(() => {
         const result = analyzeDNA(dnaId);
         setTraits(result);
@@ -39,7 +37,6 @@ const DNAAnalyzerContent = () => {
     }
   };
 
-  // Render DNA sequence visualization
   const renderDNAVisualization = () => {
     if (!traits) return null;
 
@@ -60,7 +57,6 @@ const DNAAnalyzerContent = () => {
               </div>
               <div className="text-[10px] mt-1 text-center">{segment.name}</div>
               
-              {/* Hover tooltip */}
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-[#ffffcc] border border-[#808080] p-2 text-xs hidden group-hover:block z-10">
                 <p className="font-bold">{segment.name}</p>
                 <p>{segment.description}</p>
@@ -74,7 +70,6 @@ const DNAAnalyzerContent = () => {
     );
   };
 
-  // Render creature preview
   const renderCreaturePreview = () => {
     if (!traits) return null;
 
@@ -109,7 +104,6 @@ const DNAAnalyzerContent = () => {
             })}
           </div>
           
-          {/* Tentacles */}
           <div className="absolute inset-0 flex items-center justify-center">
             {Array.from({ length: Number(traits.tentacleCount.name) }).map((_, i) => {
               const angle = (i / Number(traits.tentacleCount.name)) * Math.PI * 2;
@@ -134,7 +128,6 @@ const DNAAnalyzerContent = () => {
     );
   };
 
-  // Render trait card
   const renderTraitCard = ({ title, trait }: { title: string; trait: any }) => {
     const rarityColor = getRarityColor(trait.rarity);
     

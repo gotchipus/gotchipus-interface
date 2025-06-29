@@ -10,9 +10,10 @@ interface FlipCardProps {
   image: string;
   onSelect: () => void;
   isSelected?: boolean;
+  isMobile?: boolean;
 }
 
-const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false }: FlipCardProps) => {
+const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false, isMobile = false }: FlipCardProps) => {
   const [flipped, setFlipped] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [stage, setStage] = useState('');
@@ -264,9 +265,55 @@ const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false }: Fli
     ${stage === 'lift' || stage === 'flip' ? 'scale-110' : 'scale-100'}
   `;
 
+  if (isMobile) {
+    return (
+      <div 
+        className={`perspective-1000 w-32 h-48 cursor-pointer mx-auto my-2 font-['MS_Sans_Serif'] ${
+          isSelected ? 'ring-2 ring-[#FAC428] ring-opacity-80' : ''
+        }`}
+        onClick={handleClick}
+      >
+        <div className={flipCardContainerClasses}>
+          <div className="absolute w-full h-full backface-hidden rounded-none overflow-hidden bg-[#281586] p-1">
+            <div className="w-full h-full bg-white p-1 border-2 border-[#FAC428]">
+              <div className="relative z-10 flex flex-col h-full bg-white">
+                <main className="flex-grow p-1 min-h-0">
+                  <div className="relative w-full h-full border-2 border-t-[#5845c6] border-l-[#5845c6] border-b-[#140a43] border-r-[#140a43]">
+                    <Image 
+                      src={image} 
+                      alt={displayName || `Gotchipus #${tokenId}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="bg-black"
+                      draggable={false}
+                    />
+                    {isLoading && (
+                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                        <div className="animate-spin h-4 w-4 border-2 border-[#FAC428] border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+          <div className="absolute w-full h-full backface-hidden rotate-y-180">
+            <Image src="/gotchi-card-back.png" alt="Card Back" layout="fill" objectFit="cover" />
+          </div>
+        </div>
+        
+        {error && (
+          <div className="absolute bottom-1 left-0 right-0 bg-red-500 text-white text-xs text-center py-0.5 px-1 mx-1 rounded">
+            {error}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div 
-      className={`perspective-1000 w-52 h-80 cursor-pointer mx-auto my-2.5 font-['MS_Sans_Serif'] ${
+      className={`perspective-1000 w-32 h-48 md:w-52 md:h-80 cursor-pointer mx-auto my-2.5 font-['MS_Sans_Serif'] ${
         isSelected ? 'ring-4 ring-[#FAC428] ring-opacity-80' : ''
       }`}
       onClick={handleClick}
@@ -276,10 +323,10 @@ const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false }: Fli
           <div className="w-full h-full bg-white p-1 border-2 border-[#FAC428]">
             <div className="relative z-10 flex flex-col h-full bg-white">
               <header className="flex-shrink-0 flex items-center justify-between px-2 h-6 bg-[#281586]">
-                <span className="text-sm font-bold text-[#FAC428] drop-shadow-[1px_1px_0_#000]">
+                <span className="text-xs md:text-sm font-bold text-[#FAC428] drop-shadow-[1px_1px_0_#000]">
                   #{tokenId}
                 </span>
-                <span className="text-sm font-bold text-[#FAC428] truncate drop-shadow-[1px_1px_0_#000]">
+                <span className="text-xs md:text-sm font-bold text-[#FAC428] truncate drop-shadow-[1px_1px_0_#000]">
                   {displayName || (isLoading ? 'Generating...' : 'Waiting for generation')}
                 </span>
               </header>

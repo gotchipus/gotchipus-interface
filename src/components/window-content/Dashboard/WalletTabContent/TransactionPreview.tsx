@@ -25,21 +25,17 @@ const TransactionPreview = ({ summary, onConfirm, onCancel, loading }: Transacti
       </div>
     </div>
 
-    {/* <div className="text-sm text-center my-4 p-2 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-inner">
-      Fee Estimate: ~$1.23 (0.0005 PHRS)
-    </div> */}
-
     <div className="flex justify-between gap-4 pt-2">
       <button 
         onClick={onCancel} 
-        className="px-6 py-3 border-2 border-[#808080] shadow-win98-outer w-full bg-[#d4d0c8] hover:bg-[#c0c0c0] text-base font-medium transition-colors"
+        className="md:px-6 py-3 px-2 border-2 border-[#808080] shadow-win98-outer w-full bg-[#d4d0c8] hover:bg-[#c0c0c0] text-sm md:text-base whitespace-nowrap font-medium transition-colors"
       >
         Back to Modify
       </button>
       <button 
         onClick={onConfirm} 
         disabled={loading} 
-        className="px-6 py-3 border-2 border-[#808080] shadow-win98-outer w-full bg-[#d4d0c8] hover:bg-[#c0c0c0] font-bold text-base disabled:opacity-50 transition-colors"
+        className="md:px-6 py-3 px-2 border-2 border-[#808080] shadow-win98-outer w-full bg-[#d4d0c8] hover:bg-[#c0c0c0] font-bold text-sm md:text-base whitespace-nowrap disabled:opacity-50 transition-colors"
       >
         {loading ? "Sending..." : "✅ Confirm"}
       </button>

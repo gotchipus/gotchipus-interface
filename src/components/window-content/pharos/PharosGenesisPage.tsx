@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import Win98WarningDialog from "@/components/ui/win98-warning-dialog";
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import { Win98Loading } from "@/components/ui/win98-loading"
+import useResponsive from "@/hooks/useResponsive"
 
 interface PharosGenesisPageProps {
   tokenId: string,
@@ -56,6 +57,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
   const [showBalanceWarning, setShowBalanceWarning] = useState(false)
   const { toast } = useToast()
   const { walletStore } = useStores()
+  const isMobile = useResponsive()
 
   const salt = getERC6551AccountSalt(CHAIN_ID, parseInt(tokenId));
 
@@ -157,31 +159,31 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       { 
         name: "Elemented", 
         displayValue: "Water", 
-        icon: <Image src="/icons/element.png" alt="Water" width={18} height={18} />,
+        icon: <Image src="/icons/element.png" alt="Water" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-blue-50"
       },
       { 
         name: "Bonding", 
         displayValue: "50", 
-        icon: <Image src="/icons/bonding.png" alt="Bonding" width={18} height={18} />,
+        icon: <Image src="/icons/bonding.png" alt="Bonding" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-red-50"
       },
       { 
         name: "Growth", 
         displayValue: "0", 
-        icon: <Image src="/icons/growth.png" alt="Growth" width={18} height={18} />,
+        icon: <Image src="/icons/growth.png" alt="Growth" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-amber-50"
       },
       { 
         name: "Wisdom", 
         displayValue: "0", 
-        icon: <Image src="/icons/wisdom.png" alt="Wisdom" width={18} height={18} />,
+        icon: <Image src="/icons/wisdom.png" alt="Wisdom" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-emerald-50"
       },
       { 
         name: "Aether", 
         displayValue: getStableAether(Number(stakeAmount)), 
-        icon: <Image src="/icons/aether.png" alt="Aether" width={18} height={18} />,
+        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-cyan-50"
       }
     ]
@@ -230,6 +232,246 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
       ease: "easeInOut"
     }
   };
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-4 p-4 scrollbar-none">
+        <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer p-3">
+          <h2 className="text-lg font-bold text-center">Summon Your Gotchipus</h2>
+          <p className="text-sm text-center mt-1">Pharos #{tokenId}</p>
+        </div>
+
+        <div className="border-2 border-[#808080] shadow-win98-outer bg-white rounded-none p-3">
+          <motion.div animate={floatAnimation} className="relative w-full h-48">
+            <Image src={previewImage} alt="Gotchipus" fill className="object-cover"/>
+          </motion.div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-base font-bold mb-2">Name Your Gotchipus</h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Enter gotchipus name"
+                className="w-full border-2 border-[#808080] shadow-win98-inner bg-white rounded-none p-3 text-base"
+                value={pusName}
+                onChange={(e) => setPusName(e.target.value)}
+                disabled={isSummoning}
+              />
+              {pusName && !isSummoning && (
+                <button
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] px-2 py-1 text-xs"
+                  onClick={() => setPusName("")}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold mb-2">Select Timezone</h3>
+            <div className="relative">
+              <div 
+                className={`border-2 border-[#808080] shadow-win98-outer bg-white rounded-none p-3 flex justify-between items-center cursor-pointer ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => !isSummoning && setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+              >
+                <span className="text-base">UTC{selectedTimezone >= 0 ? '+' : ''}{selectedTimezone}</span>
+                <ChevronDown size={20} />
+              </div>
+              
+              {isTimezoneDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-[#808080] shadow-win98-outer rounded-none max-h-40 overflow-y-auto">
+                  {Array.from({ length: 27 }, (_, i) => {
+                    const offset = i - 12;
+                    return (
+                      <div
+                        key={offset}
+                        className="p-3 hover:bg-[#d4d0c8] cursor-pointer text-base"
+                        onClick={() => {
+                          setSelectedTimezone(offset);
+                          setIsTimezoneDropdownOpen(false);
+                        }}
+                      >
+                        UTC{offset >= 0 ? '+' : ''}{offset}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-base font-bold">Stake {stakeToken} Token</h3>
+              <span className="text-sm bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1">
+                Balance: {walletStore.formattedPharos()} {stakeToken}
+              </span>
+            </div>
+
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="0.0"
+                className={`w-full border-2 ${isInsufficientBalance ? 'border-[#ff0000]' : 'border-[#808080]'} shadow-win98-inner bg-white rounded-none p-3 text-base`}
+                value={stakeAmount}
+                onChange={(e) => handleStakeAmountChange(e.target.value)}
+                disabled={isSummoning}
+              />
+              {!isSummoning && (
+                <button
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] px-2 py-1 text-xs"
+                  onClick={() => {
+                    const maxAmount = walletStore.formattedPharos(18)
+                    setStakeAmount(maxAmount)
+                    setIsInsufficientBalance(false)
+                    setShowBalanceWarning(false)
+                  }}
+                >
+                  Max
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold mb-2 text-base">Select Stake Token Type:</h4>
+            <div className="grid grid-cols-1 gap-2">
+              {tokens[positionVersion as keyof typeof tokens].map((token, index) => (
+                <div
+                  key={index}
+                  className={`border-2 border-[#808080] shadow-win98-outer bg-white rounded-none p-3 flex items-center cursor-pointer ${
+                    selectedToken === index ? "bg-[#d4d0c8]" : ""
+                  } ${isSummoning ? "opacity-50 cursor-not-allowed" : ""}`}
+                  onClick={() => !isSummoning && handleLpTokenChange(positionVersion, index)}
+                >
+                  <div
+                    className={`w-6 h-6 border-2 border-[#808080] rounded-full mr-3 flex items-center justify-center ${
+                      selectedToken === index ? "bg-[#000080]" : ""
+                    }`}
+                  >
+                    {selectedToken === index && <Check size={16} className="text-white" />}
+                  </div>
+                  <span className="flex items-center text-base">
+                    <Image src={`/tokens/${token.toLowerCase()}.png`} alt={token} width={24} height={24} className="mr-2" />
+                    {token}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer p-3">
+            <h3 className="text-base font-bold mb-3">Gotchipus Attributes</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm font-bold mb-1">{attributes.dna.name}</div>
+                <div className="font-mono text-xs bg-white p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap">
+                  {attributes.dna.displayValue}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm font-bold mb-1">Token Bound Account</div>
+                <div className="font-mono text-xs bg-white p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap">
+                  {tokenBoundAccount}
+                </div>
+              </div>
+
+              <div>
+                <div
+                  className="flex items-center justify-between cursor-pointer mb-2"
+                  onClick={() => setStoryExpanded(!storyExpanded)}
+                >
+                  <div className="flex items-center">
+                    <Image src="/icons/story.png" alt="Story" width={16} height={16} className="mr-2" />
+                    <span className="text-sm font-bold">Story</span>
+                  </div>
+                  {storyExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+
+                {storyExpanded && (
+                  <div className="p-2 bg-white border border-[#808080] shadow-win98-inner text-sm max-h-32 overflow-y-auto">
+                    {story}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div
+                  className="flex items-center justify-between cursor-pointer mb-2"
+                  onClick={() => setTraitsExpanded(!traitsExpanded)}
+                >
+                  <div className="flex items-center">
+                    <Image src="/icons/attribute.png" alt="Attributes" width={16} height={16} className="mr-2" />
+                    <span className="text-sm font-bold">Attributes</span>
+                  </div>
+                  {traitsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </div>
+
+                {traitsExpanded && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {attributes.traits.map((attr, index) => (
+                      <div key={index} className="bg-white border border-[#808080] shadow-win98-inner p-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center ${attr.bgColor}`}>
+                            {attr.icon}
+                          </div>
+                          <div className="font-bold text-xs">{attr.name}</div>
+                        </div>
+                        <div className="mt-1 text-xs font-medium">{attr.displayValue}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {walletStore.isConnected ? (
+            <button
+              className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-none p-4 mt-4 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center text-base font-bold ${
+                !pusName || !stakeAmount || selectedToken === null || isSummoning || isInsufficientBalance
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              onClick={handleSummon}
+              disabled={!pusName || !stakeAmount || selectedToken === null || isSummoning || isInsufficientBalance}
+            >
+              {isSummoning ? (
+                <Win98Loading text="Summoning..." />
+              ) : (
+                <>
+                  <Sparkles size={20} className="mr-2" />
+                  Confirm Summon
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-none p-4 mt-4 hover:bg-[#c0c0c0] transition-colors flex items-center justify-center">
+              <CustomConnectButton />
+            </div>
+          )}
+        </div>
+
+        <Win98WarningDialog
+          isOpen={showBalanceWarning}
+          onClose={() => setShowBalanceWarning(false)}
+          title="⚠️ Warning"
+          icon={<span className="text-2xl">⚠️</span>}
+          iconBgColor="#ffff80"
+        >
+          <p className="text-sm font-bold mb-1">Insufficient Balance</p>
+          <p className="text-xs">You don't have enough {stakeToken} to stake this amount.</p>
+          <p className="text-xs mt-1">Your balance: {walletStore.formattedPharos()} {stakeToken}</p>
+        </Win98WarningDialog>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -412,7 +654,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
               <p className="text-xs mt-1">Your balance: {walletStore.formattedPharos()} {stakeToken}</p>
             </Win98WarningDialog>
 
-            {/* Position Version Dropdown */}
             <div className="mt-4">
               <h4 className="font-bold mb-2">Select Stake Position:</h4>
               <div className="relative">

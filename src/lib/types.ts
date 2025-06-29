@@ -17,6 +17,7 @@ export interface DesktopIconProps {
   icon: string
   onClick: () => void
   isActive: boolean
+  isMobile?: boolean
 }
 
 export interface TokenInfo {

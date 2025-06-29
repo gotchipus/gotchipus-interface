@@ -260,7 +260,6 @@ export default function AIContent() {
 
   return (
     <div className="relative h-full bg-[#c0c0c0]">
-      {/* Map Section - Full container as background */}
       <div className="absolute inset-0 z-0 mr-98">
         <div className="relative w-full h-full">
           <Image
@@ -273,7 +272,6 @@ export default function AIContent() {
         </div>
       </div>
 
-      {/* Chat Section - Positioned on the right side, higher layer */}
       <div className="absolute right-0 top-0 bottom-0 w-1/3 z-10 flex flex-col bg-[#c0c0c0] border-l-2 border-t-2 border-b border-r border-[#ffffff] border-l-[#808080] border-t-[#ffffff] border-b-[#808080]">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {uiMessages.map((msg, index) => (

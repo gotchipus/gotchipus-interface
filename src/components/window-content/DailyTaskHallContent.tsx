@@ -7,6 +7,7 @@ import { useStores } from "@stores/context"
 import { useCheckIn } from '@/hooks/useSign'
 import TaskList from './tasks/Task'
 import { useSearchParams } from 'next/navigation'
+import useResponsive from "@/hooks/useResponsive"
 
 interface Task {
   task_id: number
@@ -40,6 +41,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
 
   const { walletStore } = useStores()
   const searchParams = useSearchParams()
+  const isMobile = useResponsive()
 
   const experienceToNextLevel = Math.floor(100 * ((userInfo.level + 1) ** 1.5));
   const timeNow = Math.floor(Date.now() / 1000);
@@ -182,22 +184,22 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Win98Loading text="Loading Task Hall..." />
+        <Win98Loading text={isMobile ? "Loading..." : "Loading Task Hall..."} />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
-      <div className="flex gap-4 flex-1">
-        <div className="w-1/3 flex flex-col gap-4">
-          <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-3">
-            <h2 className="text-black font-bold mb-2">Experience & Level</h2>
+    <div className={`flex flex-col h-full gap-4 ${isMobile ? 'p-2' : 'p-4'}`}>
+      <div className={`flex gap-4 flex-1 ${isMobile ? 'flex-col' : ''}`}>
+        <div className={`flex flex-col gap-4 ${isMobile ? 'w-full' : 'w-1/3'}`}>
+          <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-2' : 'p-3'}`}>
+            <h2 className={`text-black font-bold mb-2 ${isMobile ? 'text-sm' : ''}`}>Experience & Level</h2>
             
-            <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 mb-2">
+            <div className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 mb-2 ${isMobile ? 'p-1 mb-1' : ''}`}>
               <div className="flex justify-between mb-1">
-                <span className="text-xs">Level {userInfo.level}</span>
-                <span className="text-xs">{userInfo.xp} / {experienceToNextLevel} XP</span>
+                <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>Level {userInfo.level}</span>
+                <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>{userInfo.xp} / {experienceToNextLevel} XP</span>
               </div>
               <div className="w-full h-4 border border-[#808080] shadow-win98-outer bg-[#d4d0c8] overflow-hidden">
                 <div 
@@ -207,47 +209,53 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
               </div>
             </div>
             
-            <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2">
-              <div className="text-xs mb-1">Honor Badges:</div>
+            <div className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 ${isMobile ? 'p-1' : ''}`}>
+              <div className={`mb-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>Honor Badges:</div>
               {userInfo.badges && userInfo.badges.length > 0 ? (
-                <div className="grid grid-cols-6 gap-1">
+                <div className={`grid gap-1 ${isMobile ? 'grid-cols-10' : 'grid-cols-6'}`}>
                   {userInfo.badges.map((badge) => (
-                    <Image src={badge.url} key={badge.name} alt="Honor Badge" width={50} height={50} />
+                    <Image 
+                      src={badge.url} 
+                      key={badge.name} 
+                      alt="Honor Badge" 
+                      width={isMobile ? 30 : 50} 
+                      height={isMobile ? 30 : 50} 
+                    />
                   ))}
                 </div>
               ) : (
-                <div className="text-xs">No badges yet</div>
+                <div className={`${isMobile ? 'text-xs' : 'text-xs'}`}>No badges yet</div>
               )}
             </div>
           </div>
           
-          <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-3">
-            <h2 className="text-black font-bold mb-2">Daily Check-in</h2>
+          <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-2' : 'p-3'}`}>
+            <h2 className={`text-black font-bold mb-2 ${isMobile ? 'text-sm' : ''}`}>Daily Check-in</h2>
             
-            <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-3 mb-2">
-              <div className="text-xs mb-2">Check in daily to earn rewards!</div>
+            <div className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-3 mb-2 ${isMobile ? 'p-2 mb-1' : ''}`}>
+              <div className={`mb-2 ${isMobile ? 'text-xs' : 'text-xs'}`}>Check in daily to earn rewards!</div>
               
-              <div className="grid grid-cols-7 gap-1 mb-2">
+              <div className={`grid gap-1 mb-2 ${isMobile ? 'grid-cols-7 gap-0.5' : 'grid-cols-7'}`}>
                 {Array.from({ length: 7 }).map((_, index) => (
                   <div 
                     key={index} 
-                    className={`aspect-square border border-[#808080] shadow-win98-inner flex items-center justify-center text-xs ${
+                    className={`aspect-square border border-[#808080] shadow-win98-inner flex items-center justify-center ${
                       index < userInfo.daily_check_in ? 'bg-[#000080] text-white' : 'bg-[#d4d0c8]'
-                    }`}
+                    } ${isMobile ? 'text-xs' : 'text-xs'}`}
                   >
                     {index + 1}
                   </div>
                 ))}
               </div>
               
-              <div className="text-xs mb-2">
+              <div className={`mb-2 ${isMobile ? 'text-xs' : 'text-xs'}`}>
                 <span className="font-bold">Today's Reward:</span> 10 XP
               </div>
               
               <button 
-                className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm py-1 hover:bg-[#c0c0c0] flex items-center justify-center ${
+                className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center justify-center ${
                   checkedInToday ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                } ${isMobile ? 'py-1 text-xs' : 'py-1'}`}
                 onClick={checkIn}
                 disabled={checkedInToday}
               >
@@ -255,9 +263,9 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
               </button>
             </div>
             
-            <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2">
-              <div className="text-xs font-bold mb-1">Check-in Streak: {userInfo.daily_check_in} days</div>
-              <div className="text-xs">Keep checking in to earn more rewards!</div>
+            <div className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 ${isMobile ? 'p-1' : ''}`}>
+              <div className={`font-bold mb-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>Check-in Streak: {userInfo.daily_check_in} days</div>
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'}`}>Keep checking in to earn more rewards!</div>
             </div>
           </div>
         </div>
@@ -267,6 +275,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
           selectedTaskType={selectedTaskType} 
           onTaskTypeChange={setSelectedTaskType} 
           openWindow={openWindow}
+          isMobile={isMobile}
         />
       </div>
     </div>

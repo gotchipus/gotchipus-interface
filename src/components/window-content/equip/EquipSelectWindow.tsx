@@ -16,9 +16,10 @@ interface EquipSelectWindowProps {
   wearableBalances: string[]
   selectedType?: string
   selectedTokenId?: string
+  isMobile?: boolean
 }
 
-const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, selectedTokenId }: EquipSelectWindowProps) => {
+const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, selectedTokenId, isMobile = false }: EquipSelectWindowProps) => {
   const getTypeFromIndex = (type?: string) => {
     if (type === undefined) return HAND_BYTES32;
     return type;
@@ -161,43 +162,61 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
 
   return (
     <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-      <div className="w-[700px] h-[500px] border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] flex flex-col">
-        {/* Window Header */}
+      <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] flex flex-col ${
+        isMobile 
+          ? 'w-[95vw] h-[80vh] max-w-[400px] max-h-[600px]' 
+          : 'w-[700px] h-[500px]'
+      }`}>
         <div className="bg-[#000080] px-2 py-1 flex items-center justify-between text-white">
-          <span className="text-sm">Select Equipment</span>
-          <button onClick={onClose} className="bg-[#d4d0c8] shadow-win98-outer border-2 border-[#808080] p-0.5">
-            <X size={14} className="w-3 h-3 text-black" />
+          <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Select Equipment</span>
+          <button onClick={onClose} className={`bg-[#d4d0c8] shadow-win98-outer border-2 border-[#808080] p-0.5 ${
+            isMobile ? 'w-5 h-5' : ''
+          }`}>
+            <X size={isMobile ? 12 : 14} className={`text-black ${isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'}`} />
           </button>
         </div>
 
-        {/* Equipment Grid */}
-        <div className="p-4 grid grid-cols-4 gap-4 overflow-y-auto flex-1">
+        <div className={`p-4 overflow-y-auto flex-1 ${
+          isMobile 
+            ? 'grid grid-cols-2 gap-2 p-3' 
+            : 'grid grid-cols-4 gap-4'
+        }`}>
           {availableEquipments.map((equip) => {
               const isSelected = equip.id === equipIndex;
-              const isDisabled = isConfirming && !isSelected;
+              const isDisabled = isEquiping && !isSelected;
               
               return (
                 <div
                   key={equip.id}
                   onClick={() => !isDisabled && handleEquipWearable(equip.id)}
-                  className={`flex flex-col transition-all duration-200 transform hover:scale-105 ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'} ${isSelected && isConfirming ? 'scale-105' : ''}`}
+                  className={`flex flex-col transition-all duration-200 transform hover:scale-105 ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'} ${isSelected && isEquiping ? 'scale-105' : ''}`}
                 >
-                  <div className={`h-24 border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center p-2`}>
+                  <div className={`border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center p-2 ${
+                    isMobile ? 'h-24' : 'h-24'
+                  }`}>
                     <SvgIcon
                       svgString={equip.svg}
                       alt={equip.name}
-                      width={64}
-                      height={64}
+                      width={isMobile ? 40 : 64}
+                      height={isMobile ? 40 : 64}
                       className={isDisabled ? 'grayscale' : ''}
                     />
                   </div>
-                  <div className={`border-2 border-t-0 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-b-sm p-2`}>
-                    <div className="text-sm font-medium text-center">{equip.name}</div>
-                    <div className="text-xs text-center text-gray-600">
+                  <div className={`border-2 border-t-0 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-b-sm p-2 ${
+                    isMobile ? 'p-1.5' : ''
+                  }`}>
+                    <div className={`font-medium text-center ${
+                      isMobile ? 'text-xs' : 'text-sm'
+                    }`}>{equip.name}</div>
+                    <div className={`text-center text-gray-600 ${
+                      isMobile ? 'text-xs' : 'text-xs'
+                    }`}>
                       Balance: {parseInt(wearableBalances[equip.id]) || 0}
                     </div>
-                    {isSelected && isConfirming && (
-                      <div className="text-xs text-center text-blue-600 mt-1 font-medium">
+                    {isSelected && isEquiping && (
+                      <div className={`text-center text-blue-600 mt-1 font-medium ${
+                        isMobile ? 'text-xs' : 'text-xs'
+                      }`}>
                         Equipping...
                       </div>
                     )}

@@ -23,6 +23,7 @@ interface TaskListProps {
   selectedTaskType: string
   onTaskTypeChange: (type: string) => void
   openWindow: (view: string) => void
+  isMobile?: boolean
 }
 
 const taskTypes = [
@@ -61,7 +62,7 @@ const taskTypeIcons: Record<string, string> = {
   'specialEvent': '/icons/pharos-proof.png'
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskTypeChange, openWindow }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskTypeChange, openWindow, isMobile }) => {
   const [fixedTasksState, setFixedTasksState] = useState(fixedTasks)
   const { walletStore } = useStores()
   const router = useRouter()
@@ -180,58 +181,58 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
     return (
       <div 
         key={taskId} 
-        className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-2 ${
+        className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-1' : 'p-2'} ${
           isCompleted ? 'opacity-70' : ''
         }`}
       >
         <div className="flex justify-between items-start mb-1">
           <div className="flex items-center">
             <div 
-              className={`w-4 h-4 border border-[#808080] shadow-win98-inner mr-2 flex items-center justify-center ${
+              className={`border border-[#808080] shadow-win98-inner mr-2 flex items-center justify-center ${
                 isCompleted ? 'bg-[#000080]' : 'bg-white'
-              }`}
+              } ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`}
             >
               {isCompleted && (
-                <span className="text-white text-xs">✓</span>
+                <span className={`text-white ${isMobile ? 'text-xs' : 'text-xs'}`}>✓</span>
               )}
             </div>
             <div className="flex items-center">
-              <div className="w-5 h-5 mr-2 relative">
+              <div className={`mr-2 relative ${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`}>
                 <Image 
                   src={taskIcon} 
                   alt={`${taskType} icon`} 
-                  width={20} 
-                  height={20} 
+                  width={isMobile ? 16 : 20} 
+                  height={isMobile ? 16 : 20} 
                   className="object-contain"
                 />
               </div>
-              <span className="font-bold">{taskTitle}</span>
+              <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>{taskTitle}</span>
             </div>
           </div>
-          <span className="text-xs bg-[#000080] text-white px-2 py-0.5">
+          <span className={`bg-[#000080] text-white px-2 py-0.5 ${isMobile ? 'text-xs' : 'text-xs'}`}>
               +{taskXpReward} XP
           </span>
         </div>
         
-        <p className="text-xs mb-2 ml-6">{taskDescription}</p>
+        <p className={`mb-2 ${isMobile ? 'text-xs ml-5' : 'text-xs ml-6'}`}>{taskDescription}</p>
         
-        <div className="flex justify-between items-center ml-6">
-          <span className="text-xs text-[#808080]">
+        <div className={`flex justify-between items-center ${isMobile ? 'ml-5' : 'ml-6'}`}>
+          <span className={`text-[#808080] ${isMobile ? 'text-xs' : 'text-xs'}`}>
             {taskType.charAt(0).toUpperCase() + taskType.slice(1)} Task
           </span>
           
           {isFixedTask ? (
-            <div className="flex gap-2">
+            <div className={`flex gap-2 ${isMobile ? 'gap-1' : ''}`}>
               {taskId === 'follow-x' && !isCompleted && (
                 <>
                   <button 
-                    className="px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0]"
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
                     onClick={handleFollowX}
                   >
                     Follow
                   </button>
                   <button 
-                    className="px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0]"
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
                     onClick={handleVerifyX}
                   >
                     Verify
@@ -241,13 +242,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
               {taskId === 'join-discord' && !isCompleted && (
                 <>
                   <button 
-                    className="px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0]"
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
                     onClick={handleJoinDiscord}
                   >
                     Join
                   </button>
                   <button 
-                    className="px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0]"
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
                     onClick={handleVerifyDiscord}
                   >
                     Verify
@@ -256,7 +257,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
               )}
               {isCompleted && (
                 <button 
-                  className="px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs opacity-50 cursor-not-allowed"
+                  className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] opacity-50 cursor-not-allowed ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
                   disabled
                 >
                   Completed
@@ -265,9 +266,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
             </div>
           ) : (
             <button 
-              className={`px-3 py-0.5 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-xs hover:bg-[#c0c0c0] ${
+              className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] hover:bg-[#c0c0c0] ${
                 isCompleted ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              } ${isMobile ? 'px-2 py-0.5 text-xs' : 'px-3 py-0.5 text-xs'}`}
               onClick={() => handleCompleteTask(taskId)}
               disabled={isCompleted}
             >
@@ -280,16 +281,16 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
   }
 
   return (
-    <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-3">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-black font-bold">Available Tasks</h2>
+    <div className={`flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-2' : 'p-3'}`}>
+      <div className={`flex justify-between items-center mb-3 ${isMobile ? 'mb-2 flex-col gap-2' : ''}`}>
+        <h2 className={`text-black font-bold ${isMobile ? 'text-sm' : ''}`}>Available Tasks</h2>
         
-        <div className="flex gap-1">
+        <div className={`flex gap-1 ${isMobile ? 'flex-wrap justify-center' : ''}`}>
           {taskTypes.map(type => (
             <button 
-              className={`px-2 py-1 border-2 border-[#808080] shadow-win98-outer text-xs ${
+              className={`border-2 border-[#808080] shadow-win98-outer ${
               selectedTaskType === type.id ? 'bg-[#000080] text-white' : 'bg-[#d4d0c8] hover:bg-[#c0c0c0] hover:text-black'
-            }`}
+            } ${isMobile ? 'px-1 py-0.5 text-xs' : 'px-2 py-1 text-xs'}`}
               onClick={() => onTaskTypeChange(type.id)}
               key={type.id}
             >
@@ -299,13 +300,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
         </div>
       </div>
     
-      <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 h-5/6 overflow-y-auto">
+      <div className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-2 h-5/6 overflow-y-auto ${isMobile ? 'p-1' : ''}`}>
         {mergedTasks.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm">
+          <div className={`flex items-center justify-center h-full ${isMobile ? 'text-xs' : 'text-sm'}`}>
             No tasks available in this category
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? 'space-y-1' : ''}`}>
             {mergedTasks.map(task => renderTaskItem(task, task._isFixedTask))}
           </div>
         )}

@@ -1,5 +1,5 @@
 import "@rainbow-me/rainbowkit/styles.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@providers/providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -38,6 +38,15 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://gotchipus.com'),
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#008080',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,6 +54,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+        <meta name="theme-color" content="#008080" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Gotchipus" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+      </head>
       <body className="antialiased font-vt323">
         <GoogleAnalytics />
         <Providers>

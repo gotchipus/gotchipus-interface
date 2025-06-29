@@ -14,6 +14,7 @@ import DailyTaskHallContent from "@/src/components/window-content/DailyTaskHallC
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
   activeWindow: string | null
+  isMobile?: boolean
 }
 
 const icons = [
@@ -45,12 +46,12 @@ const icons = [
 
 ]
 
-export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
+export default function Desktop({ onOpenWindow, activeWindow, isMobile = false }: DesktopProps) {
   const [activeIcon, setActiveIcon] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const MAX_ICONS_PER_COLUMN = 6
+  const MAX_ICONS_PER_COLUMN = isMobile ? 6 : 6
   
   const numberOfColumns = Math.ceil(icons.length / MAX_ICONS_PER_COLUMN)
   
@@ -101,21 +102,21 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
   }
 
   return (
-    <div className="top-0 left-0 w-full h-[calc(100%-28px)] p-4 flex flex-col items-start gap-2 relative">
-      <div className="absolute inset-0 left-10 flex items-center justify-center z-0 pointer-events-none">
+    <div className={`top-0 left-0 w-full h-[calc(100%-28px)] p-4 flex flex-col items-start gap-2 relative ${isMobile ? 'p-2' : ''}`}>
+      <div className={`absolute inset-0 left-10 flex items-center justify-center z-0 pointer-events-none ${isMobile ? 'left-2' : ''}`}>
         <Image 
           src="/gotchipus.png" 
           alt="Gotchipus" 
-          width={600} 
-          height={600} 
+          width={isMobile ? 300 : 600} 
+          height={isMobile ? 300 : 600} 
           className="object-contain"
           priority
         />
       </div>
       
-      <div className="relative z-10 flex flex-row gap-4 p-2">
+      <div className={`relative z-10 flex flex-row gap-4 p-2 ${isMobile ? 'gap-2 p-1' : ''}`}>
         {columns.map((columnIcons, columnIndex) => (
-          <div key={`column-${columnIndex}`} className="flex flex-col gap-2">
+          <div key={`column-${columnIndex}`} className={`flex flex-col gap-2 ${isMobile ? 'gap-1' : ''}`}>
             {columnIcons.map((icon) => (
               <DesktopIcon
                 key={icon.id}
@@ -124,6 +125,7 @@ export default function Desktop({ onOpenWindow, activeWindow }: DesktopProps) {
                 icon={icon.icon}
                 onClick={() => handleIconClick(icon.id)}
                 isActive={activeWindow === icon.id}
+                isMobile={isMobile}
               />
             ))}
           </div>

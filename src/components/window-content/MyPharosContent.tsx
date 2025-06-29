@@ -10,6 +10,7 @@ import { Win98Loading } from "@/components/ui/win98-loading";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useSWR from 'swr';
 import FlipCard from "@/src/components/window-content/pharos/FlipCard";
+import useResponsive from "@/hooks/useResponsive";
 
 interface GotchipusPreview {
   id: string;
@@ -40,7 +41,8 @@ const MyPharosContent = observer(() => {
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState<number>(-1);
   const [isGeneratingPreviews, setIsGeneratingPreviews] = useState<boolean>(false);
   const { walletStore, storyStore } = useStores();
-
+  const isMobile = useResponsive()
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -262,7 +264,7 @@ const MyPharosContent = observer(() => {
     <div className="p-4 h-full scrollbar-none">
       {viewState === "list" && (
         <div className="flex flex-col h-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 scrollbar-none">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 scrollbar-none">
             {ids && ids.length > 0 && (
               getCurrentPageItems().map((id, index) => (
                 <div
@@ -316,7 +318,7 @@ const MyPharosContent = observer(() => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
                   {gotchipusPreviews.map((preview, index) => (
                     <FlipCard
                       key={preview.id}
@@ -324,6 +326,7 @@ const MyPharosContent = observer(() => {
                       image={preview.image}
                       onSelect={() => handleSelectPreview(index)}
                       isSelected={selectedPreviewIndex === index}
+                      isMobile={isMobile}
                     />
                   ))}
                 </div>
@@ -375,9 +378,9 @@ const MyPharosContent = observer(() => {
                   </button>
                   
                   <button 
-                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0] ${selectedPreviewIndex < 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-4 py-2 flex items-center hover:bg-[#c0c0c0] ${storyStore.isFetching ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleNext}
-                    disabled={selectedPreviewIndex < 0}
+                    disabled={storyStore.isFetching}
                   >
                     Continue to Genesis <ChevronRight size={16} className="ml-1" />
                   </button>

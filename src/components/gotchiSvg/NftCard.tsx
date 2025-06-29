@@ -7,6 +7,7 @@ import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
 interface NftCardProps {
   id: string;
   onSelect: (tokenId: string) => void;
+  isMobile?: boolean;
 }
 
 const floatAnimation = {
@@ -18,7 +19,7 @@ const floatAnimation = {
   }
 };
 
-export const NftCard = ({ id, onSelect }: NftCardProps) => {
+export const NftCard = ({ id, onSelect, isMobile }: NftCardProps) => {
   const { layers, backgroundSvg, isLoading } = useSvgLayers(id);
 
   const viewBox = "0 0 80 80"; 
@@ -33,22 +34,22 @@ export const NftCard = ({ id, onSelect }: NftCardProps) => {
 
   return (
     <div
-      className="bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-inner rounded-sm p-3 hover:bg-[#c0c0c0] bg-cover bg-center transition-all duration-200"
+      className={`bg-[#d4d0c8] flex flex-col items-center justify-center cursor-pointer border-2 border-[#808080] shadow-win98-inner rounded-sm hover:bg-[#c0c0c0] bg-cover bg-center transition-all duration-200 ${isMobile ? 'p-2' : 'p-3'}`}
       style={backgroundStyle} 
       onClick={() => onSelect(id.toString())}
     >
       <motion.div
-        className="w-48 h-48 relative flex items-center justify-center"
+        className={`relative flex items-center justify-center ${isMobile ? 'w-32 h-32' : 'w-48 h-48'}`}
         animate={floatAnimation}
       >
         {isLoading ? (
-          <div className="text-sm">...</div>
+          <div className={`${isMobile ? 'text-xs' : 'text-sm'}`}>...</div>
         ) : (
           <SvgComposer layers={layers} />
         )}
       </motion.div>
     
-      <div className="text-center mt-4 font-bold bg-[#d4d0c8] bg-opacity-80 px-2 rounded backdrop-blur-sm">#{id.toString()}</div>
+      <div className={`text-center mt-4 font-bold bg-[#d4d0c8] bg-opacity-80 px-2 rounded backdrop-blur-sm ${isMobile ? 'text-sm' : ''}`}>#{id.toString()}</div>
     </div>
   );
 };

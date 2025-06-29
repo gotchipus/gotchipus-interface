@@ -82,11 +82,9 @@ const HookContent = observer(() => {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-hidden">
           {activeTab === 'select' ? (
             <div className="h-full flex gap-4">
-              {/* Hook List */}
               <div className="flex-1 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3 overflow-hidden flex flex-col">
                 <h3 className="font-bold mb-3 text-center pixel-text">Your Hooks</h3>
                 <div className="flex-1 overflow-auto">
@@ -109,7 +107,6 @@ const HookContent = observer(() => {
                 </div>
               </div>
 
-              {/* Hook Details */}
               <div className="w-1/3 border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-3">
                 <h3 className="font-bold mb-3 text-center pixel-text">Hook Details</h3>
                 {selectedHook ? (

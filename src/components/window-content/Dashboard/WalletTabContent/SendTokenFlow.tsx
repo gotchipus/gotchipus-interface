@@ -141,6 +141,7 @@ const SendTokenFlow = ({ onBack, onComplete, tbaAddress, nativeBalance, tokenId 
   useEffect(() => {
     if (error) {
       setLoading(false);
+      console.log("error", error);
       toast({
         title: "Transaction Cancelled",
         description: "Transaction was cancelled or failed",

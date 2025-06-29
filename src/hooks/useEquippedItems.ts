@@ -24,7 +24,7 @@ export interface EquippedItem {
 export const useEquippedItems = (tokenId: number) => {
   const [equippedItems, setEquippedItems] = useState<EquippedItem[]>([]);
   const { data: wearableTypeInfos, isLoading, error } = useContractRead("getAllEquipWearableType", [tokenId]);
-
+  
   useEffect(() => {
     if (wearableTypeInfos && Array.isArray(wearableTypeInfos)) {
       const slotsWithIcons = EQUIPMENT_SLOTS.map(slot => {

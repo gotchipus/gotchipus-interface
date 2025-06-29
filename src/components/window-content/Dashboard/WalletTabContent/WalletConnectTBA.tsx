@@ -15,9 +15,10 @@ interface WalletConnectTBAProps {
   tbaAddress: string;
   tokenId: string;
   handleWalletConnected: (isConnected: boolean, target: string) => void;
+  isMobile?: boolean;
 }
 
-const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected }: WalletConnectTBAProps) => {
+const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected, isMobile = false }: WalletConnectTBAProps) => {
   const [signClient, setSignClient] = useState<SignClient | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -289,62 +290,80 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
 
   if (isLoading) {
     return (
-      <div className="p-6 bg-[#d4d0c8] h-full flex items-center justify-center">
+      <div className={`p-6 bg-[#d4d0c8] h-full flex items-center justify-center ${isMobile ? 'p-4' : ''}`}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#808080] border-t-[#000080] animate-spin mx-auto mb-4"></div>
-          <p className="text-sm font-bold">Initializing WalletConnect...</p>
+          <div className={`border-4 border-[#808080] border-t-[#000080] animate-spin mx-auto mb-4 ${isMobile ? 'w-12 h-12' : 'w-16 h-16'}`}></div>
+          <p className={`font-bold ${isMobile ? 'text-sm' : 'text-sm'}`}>Initializing WalletConnect...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#d4d0c8] rounded-sm">
+    <div className={`bg-[#d4d0c8] rounded-sm ${isMobile ? 'h-full overflow-auto' : ''}`}>
       {!walletStore.isConnected ? (
         <div className="text-center">
-          <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-6 mb-4">
+          <div className={`border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-6 mb-4 ${isMobile ? 'p-4 mb-3' : ''}`}>
             <div className="text-center mb-4 flex flex-col items-center">
-              <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={128} height={128} className="mx-auto mb-4" />
-              <h2 className="text-lg font-bold mb-2">Connect Your GOTCHI</h2>
+              <Image 
+                src="/icons/walletconnect-logo.png" 
+                alt="Wallet" 
+                width={isMobile ? 96 : 128} 
+                height={isMobile ? 96 : 128} 
+                className="mx-auto mb-4" 
+              />
+              <h2 className={`font-bold mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Connect Your GOTCHI</h2>
               <p className="text-[#000080] mb-4">Start by connecting your GOTCHI wallet to proceed</p>
             </div>
             <button 
               onClick={connectWallet}
               disabled={isConnecting}
-              className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-8 py-3 font-bold hover:bg-[#c0c0c0] disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-8 py-3 font-bold hover:bg-[#c0c0c0] disabled:opacity-50 disabled:cursor-not-allowed ${isMobile ? 'px-6 py-2 text-sm' : ''}`}
             >
               <div className="flex items-center">
-                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                <Image 
+                  src="/icons/walletconnect-logo.png" 
+                  alt="Wallet" 
+                  width={isMobile ? 20 : 24} 
+                  height={isMobile ? 20 : 24} 
+                  className={`mr-2 ${isMobile ? 'mr-1' : ''}`} 
+                />
                 {isConnecting ? 'Connecting...' : 'Connect dApp'}
               </div>
             </button>
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Wallet Status */}
-          <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
+        <div className={`space-y-4 ${isMobile ? 'space-y-3' : ''}`}>
+          <div className={`border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4 ${isMobile ? 'p-3' : ''}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <Image src="/icons/tba-gotchi.png" alt="Wallet" width={24} height={24} className="mr-2" />
-                <span className="font-bold">Your GOTCHI Owner</span>
+                <Image 
+                  src="/icons/tba-gotchi.png" 
+                  alt="Wallet" 
+                  width={isMobile ? 20 : 24} 
+                  height={isMobile ? 20 : 24} 
+                  className={`mr-2 ${isMobile ? 'mr-1' : ''}`} 
+                />
+                <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>Your GOTCHI Owner</span>
               </div>
               <button 
                 onClick={() => copyToClipboard(walletStore.address!)}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-3 py-1 text-sm font-bold hover:bg-[#c0c0c0]"
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-3 py-1 font-bold hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'text-sm'}`}
               >
                 Copy
               </button>
             </div>
-            <div className="p-3 bg-white border border-[#808080] shadow-win98-inner text-xs font-mono">{walletStore.address}</div>
+            <div className={`p-3 bg-white border border-[#808080] shadow-win98-inner font-mono break-all ${isMobile ? 'text-xs p-2' : 'text-xs'}`}>
+              {walletStore.address}
+            </div>
           </div>
 
-          {/* Configuration Form */}
-          <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
-            <h3 className="text-lg font-bold mb-4 border-b border-[#808080] pb-2">Configuration</h3>
+          <div className={`border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4 ${isMobile ? 'p-3' : ''}`}>
+            <h3 className={`font-bold mb-4 border-b border-[#808080] pb-2 ${isMobile ? 'text-base mb-3' : 'text-lg'}`}>Configuration</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold mb-2">
+                <label className={`block font-bold mb-2 ${isMobile ? 'text-sm' : 'text-sm'}`}>
                   WalletConnect URI:
                 </label>
                 <input
@@ -352,13 +371,12 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
                   placeholder="wc://..."
                   value={walletStore.walletConnectUri}
                   onChange={(e) => walletStore.setWalletConnectUri(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#808080] shadow-win98-inner font-mono text-sm"
+                  className={`w-full px-3 py-2 bg-white border border-[#808080] shadow-win98-inner font-mono ${isMobile ? 'text-xs py-1.5' : 'text-sm'}`}
                 />
               </div>
             </div>
           </div>
 
-          {/* Action Button */}
           <button 
             onClick={walletStore.isWalletConnectConnected ? handleDisconnect : pairWithDApp}
             disabled={!walletStore.walletConnectUri || walletStore.isWalletConnectPairing}
@@ -366,68 +384,81 @@ const WalletConnectTBA = observer(({ tbaAddress, tokenId, handleWalletConnected 
               walletStore.isWalletConnectConnected 
                 ? 'bg-[#c0c0c0] text-[#000080] hover:bg-[#d4d0c8]' 
                 : 'bg-[#c0c0c0] text-black hover:bg-[#d4d0c0]'
-            }`}
+            } ${isMobile ? 'py-2 text-sm' : ''}`}
           >
             {walletStore.isWalletConnectPairing ? (
               <>
-                <div className="w-4 h-4 border-2 border-[#808080] border-t-[#000080] animate-spin mr-2 inline-block"></div>
+                <div className={`border-2 border-[#808080] border-t-[#000080] animate-spin mr-2 inline-block ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`}></div>
                 Connecting with DApp...
               </>
             ) : walletStore.isWalletConnectConnected ? (
               <div className="flex items-center justify-center">
-                <Image src="/icons/connect.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                <Image 
+                  src="/icons/connect.png" 
+                  alt="Wallet" 
+                  width={isMobile ? 20 : 24} 
+                  height={isMobile ? 20 : 24} 
+                  className={`mr-2 ${isMobile ? 'mr-1' : ''}`} 
+                />
                 Disconnect
               </div>
             ) : (
               <div className="flex items-center justify-center">
-                <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={24} height={24} className="mr-2" />
+                <Image 
+                  src="/icons/walletconnect-logo.png" 
+                  alt="Wallet" 
+                  width={isMobile ? 20 : 24} 
+                  height={isMobile ? 20 : 24} 
+                  className={`mr-2 ${isMobile ? 'mr-1' : ''}`} 
+                />
                 Connect with DApp
               </div>
             )}
           </button>
 
-          {/* TBA Address Display */}
           {tbaAddress && (
-            <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
+            <div className={`border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4 ${isMobile ? 'p-3' : ''}`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold">TBA Address:</span>
+                <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>TBA Address:</span>
                 <button 
                   onClick={() => copyToClipboard(tbaAddress)}
-                  className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-3 py-1 text-sm font-bold hover:bg-[#c0c0c0]"
+                  className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] px-3 py-1 font-bold hover:bg-[#c0c0c0] ${isMobile ? 'px-2 py-0.5 text-xs' : 'text-sm'}`}
                 >
                   Copy
                 </button>
               </div>
-              <div className="p-3 bg-white border border-[#808080] shadow-win98-inner text-xs font-mono break-all">{tbaAddress}</div>
+              <div className={`p-3 bg-white border border-[#808080] shadow-win98-inner font-mono break-all ${isMobile ? 'text-xs p-2' : 'text-xs'}`}>
+                {tbaAddress}
+              </div>
             </div>
           )}
 
           {walletStore.walletConnectSession && walletStore.walletConnectDappMetadata && (
-            <div className="border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4">
+            <div className={`border-2 border-[#808080] shadow-win98-inner bg-[#c0c0c0] p-4 ${isMobile ? 'p-3' : ''}`}>
               <div className="flex items-center border-b border-[#808080] pb-2 mb-2">
                 <div className="relative">
-                  <div className={`w-2 h-2 mr-2 rounded-full bg-[#008000]`}></div>
-                  <div className={`absolute top-0 left-0 w-2 h-2 mr-2  rounded-full animate-ping bg-[#008000]`}></div>
+                  <div className={`rounded-full bg-[#008000] ${isMobile ? 'w-1.5 h-1.5 mr-1.5' : 'w-2 h-2 mr-2'}`}></div>
+                  <div className={`absolute top-0 left-0 rounded-full animate-ping bg-[#008000] ${isMobile ? 'w-1.5 h-1.5 mr-1.5' : 'w-2 h-2 mr-2'}`}></div>
                 </div>
-                <span className="font-bold">Connected GOTCHI to {walletStore.walletConnectDappMetadata.name}</span>
+                <span className={`font-bold ${isMobile ? 'text-sm' : ''}`}>Connected GOTCHI to {walletStore.walletConnectDappMetadata.name}</span>
               </div>
               <div className="flex items-center">
                 {walletStore.walletConnectDappMetadata.icons && walletStore.walletConnectDappMetadata.icons.length > 0 && (
                   <Image 
                     src={walletStore.walletConnectDappMetadata.icons[0]} 
                     alt={`${walletStore.walletConnectDappMetadata.name} icon`}
-                    width={48}
-                    height={48}
-                    className="w-12 h-12 mr-4 border-2 border-[#808080] shadow-win98-inner"
+                    width={isMobile ? 40 : 48}
+                    height={isMobile ? 40 : 48}
+                    className={`mr-4 border-2 border-[#808080] shadow-win98-inner ${isMobile ? 'w-10 h-10 mr-3' : 'w-12 h-12'}`}
                   />
                 )}
                 <div>
-                  <p className="font-bold text-base">{walletStore.walletConnectDappMetadata.name}</p>
+                  <p className={`font-bold ${isMobile ? 'text-sm' : 'text-base'}`}>{walletStore.walletConnectDappMetadata.name}</p>
                   <a 
                     href={walletStore.walletConnectDappMetadata.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-xs text-[#000080] hover:underline break-all"
+                    className={`text-[#000080] hover:underline break-all ${isMobile ? 'text-xs' : 'text-xs'}`}
                   >
                     {walletStore.walletConnectDappMetadata.url}
                   </a>

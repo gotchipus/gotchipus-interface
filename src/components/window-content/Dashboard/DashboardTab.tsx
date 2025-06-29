@@ -8,16 +8,17 @@ import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
 import { useSvgLayers } from "@/hooks/useSvgLayers"
 
 interface DashboardTabProps {
-  selectedTokenId: string | null
+  selectedTokenId: string
+  tokenInfo: GotchipusInfo
   pusName: string
-  isRenaming: boolean
   newName: string
   setNewName: (name: string) => void
+  isRenaming: boolean
   setIsRenaming: (isRenaming: boolean) => void
   handleRename: () => void
   handlePet: () => void
-  tokenInfoMap: GotchipusInfo
-  floatAnimation: any
+  isPetWriting: boolean
+  isMobile?: boolean
 }
 
 const AttributeValueSkeleton = () => (
@@ -30,18 +31,18 @@ const DnaValueSkeleton = () => (
 
 const DashboardTab = observer(({
   selectedTokenId,
+  tokenInfo,
   pusName,
-  isRenaming,
   newName,
   setNewName,
+  isRenaming,
   setIsRenaming,
   handleRename,
   handlePet,
-  tokenInfoMap,
-  floatAnimation
+  isPetWriting,
+  isMobile
 }: DashboardTabProps) => {
-  const tokenId = selectedTokenId || "";
-  const tokenInfo = tokenInfoMap;
+  const tokenId = selectedTokenId;
   const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
 
   const isDataLoading = !tokenInfo || 
@@ -75,96 +76,104 @@ const DashboardTab = observer(({
     icon: "dna"
   };
 
+  const floatAnimation = {
+    y: [0, -3, 0],
+    transition: {
+      duration: 1,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Left Column - Pet Display */}
-      <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-4" style={backgroundStyle}>
+    <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+      <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm ${isMobile ? 'p-3' : 'p-4'}`} style={backgroundStyle}>
         <div className="text-center mb-4 flex justify-center items-center">
           {isRenaming ? (
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="border-2 border-[#808080] shadow-win98-inner bg-white p-1 text-center w-full max-w-xs"
+              className={`border-2 border-[#808080] shadow-win98-inner bg-white p-1 text-center w-full max-w-xs ${isMobile ? 'text-sm' : ''}`}
               autoFocus
             />
           ) : (
-            <div className="font-bold text-lg flex items-center text-white">
-              <span className="mr-2">🐙</span>
+            <div className={`font-bold flex items-center text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
+              <span className={`mr-2 ${isMobile ? 'mr-1' : ''}`}>🐙</span>
               {pusName}
             </div>
           )}
         </div>
 
-        <div className="flex justify-center items-center h-64 relative mt-12">
-          {isLoading && <div className="text-sm">Loading Character...</div>}
-            {error && <div className="text-sm text-red-500">Could not load character</div>}
+        <div className={`flex justify-center items-center relative mt-12 ${isMobile ? 'h-48' : 'h-64'}`}>
+          {isLoading && <div className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Loading Character...</div>}
+            {error && <div className={`text-red-500 ${isMobile ? 'text-xs' : 'text-sm'}`}>Could not load character</div>}
             
             {!isLoading && !error && (
               <>
-                <div className="absolute w-48 h-48 bg-[#d4d0c8] rounded-full opacity-30"></div>
+                <div className={`absolute bg-[#d4d0c8] rounded-full opacity-30 ${isMobile ? 'w-32 h-32' : 'w-48 h-48'}`}></div>
                 <motion.div
                   className="w-full h-full relative flex items-center justify-center"
                   animate={floatAnimation}
                 >
-                  <SvgComposer layers={layers} width={300} height={300} />
+                  <SvgComposer layers={layers} width={isMobile ? 200 : 300} height={isMobile ? 200 : 300} />
                 </motion.div>
               </>
             )}
         </div>
 
-        <div className="flex justify-center gap-4 mt-10">
+        <div className={`flex justify-center gap-4 mt-10 ${isMobile ? 'mt-6 gap-2' : ''}`}>
           {!isRenaming ? (
             <>
               <button
                 onClick={() => setIsRenaming(true)}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-6 py-2 hover:bg-[#c0c0c0] flex items-center"
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'}`}
               >
-                <Image src="/icons/rename.png" alt="Rename" width={18} height={18} className="mr-2" />
+                <Image src="/icons/rename.png" alt="Rename" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
                 Rename
               </button>
               <button
                 onClick={handlePet}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-6 py-2 hover:bg-[#c0c0c0] flex items-center"
+                disabled={isPetWriting}
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'} ${isPetWriting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Image src="/icons/pet.png" alt="Pet" width={18} height={18} className="mr-2" />
-                Pet
+                <Image src="/icons/pet.png" alt="Pet" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
+                {isPetWriting ? 'Petting...' : 'Pet'}
               </button>
             </>
           ) : (
             <>
               <button
                 onClick={handleRename}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-6 py-2 hover:bg-[#c0c0c0] flex items-center"
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'}`}
               >
-                <span className="mr-1">✅</span> Confirm Rename
+                <span className={`mr-1 ${isMobile ? 'mr-0.5' : ''}`}>✅</span> Confirm Rename
               </button>
               <button
                 onClick={() => setIsRenaming(false)}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm px-6 py-2 hover:bg-[#c0c0c0] flex items-center"
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'}`}
               >
-                <span className="mr-1">❌</span> Cancel
+                <span className={`mr-1 ${isMobile ? 'mr-0.5' : ''}`}>❌</span> Cancel
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Right Column - Attributes */}
-      <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm p-4">
-        <div className="text-lg font-bold mb-3 flex items-center border-b border-[#808080] pb-2">
-          <Image src="/icons/attribute.png" alt="Attributes" width={18} height={18} className="mr-2"/>
+      <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm ${isMobile ? 'p-3' : 'p-4'}`}>
+        <div className={`font-bold mb-3 flex items-center border-b border-[#808080] pb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
+          <Image src="/icons/attribute.png" alt="Attributes" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`}/>
           Attributes
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className={`grid gap-4 mb-4 ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2'}`}>
           {attributes.map((attr, index) => (
-            <div key={index} className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner p-3 rounded-sm">
+            <div key={index} className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner rounded-sm ${isMobile ? 'p-2' : 'p-3'}`}>
               <div className="flex items-center mb-1">
-                <Image src={`/icons/${attr.name}.png`} alt={attr.name} width={18} height={18} className="mr-2"/>
-                <span className="font-medium text-sm">{attr.name}</span>
+                <Image src={`/icons/${attr.icon}.png`} alt={attr.name} width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`}/>
+                <span className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>{attr.name}</span>
               </div>
-              <div className="text-xl font-bold">
+              <div className={`font-bold ${isMobile ? 'text-lg' : 'text-xl'}`}>
                 {isDataLoading ? (
                   <AttributeValueSkeleton />
                 ) : (
@@ -175,14 +184,13 @@ const DashboardTab = observer(({
           ))}
         </div>
 
-        {/* DNA ID Section */}
         <div className="mb-4">
           <div className="flex items-center mb-2">
-            <Image src={`/icons/${dnaData.icon}.png`} alt={dnaData.name} width={18} height={18} className="mr-2"/>
-            <span className="font-medium">{dnaData.name}</span>
+            <Image src={`/icons/${dnaData.icon}.png`} alt={dnaData.name} width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`}/>
+            <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>{dnaData.name}</span>
           </div>
           <div className="border-t border-[#808080] my-2"></div>
-          <div className="font-mono text-xs bg-[#c0c0c0] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none">
+          <div className={`font-mono bg-[#c0c0c0] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none ${isMobile ? 'text-xs' : 'text-xs'}`}>
             {isDataLoading ? (
               <DnaValueSkeleton />
             ) : (
@@ -192,11 +200,11 @@ const DashboardTab = observer(({
         </div>
 
         <div className="mt-4 pt-4 border-t border-[#808080]">
-          <div className="text-sm text-[#000080] mb-2">Gotchipus Level: 1</div>
+          <div className={`text-[#000080] mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gotchipus Level: 1</div>
           <div className="w-full bg-[#c0c0c0] border border-[#808080] h-4">
             <div className="bg-[#000080] h-full" style={{ width: `${Number(tokenInfo.growth)}%` }}></div>
           </div>
-          <div className="text-xs text-right mt-1">XP: {tokenInfo.growth}/100</div>
+          <div className={`text-right mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>XP: {tokenInfo.growth}/100</div>
         </div>
       </div>
     </div>

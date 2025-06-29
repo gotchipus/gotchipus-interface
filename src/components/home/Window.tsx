@@ -13,9 +13,10 @@ interface WindowProps {
   onMinimize: () => void
   onActivate: () => void
   onMove: (position: { x: number; y: number }) => void
+  isMobile?: boolean
 }
 
-export default function Window({ window, isActive, onClose, onMinimize, onActivate, onMove }: WindowProps) {
+export default function Window({ window, isActive, onClose, onMinimize, onActivate, onMove, isMobile = false }: WindowProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [isAppearing, setIsAppearing] = useState(true)
@@ -70,9 +71,29 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
       setIsDragging(false)
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isDragging && isMobile) {
+        e.preventDefault()
+        const touch = e.touches[0]
+        onMove({
+          x: touch.clientX - dragOffset.x,
+          y: touch.clientY - dragOffset.y
+        })
+      }
+    }
+
+    const handleTouchEnd = () => {
+      setIsDragging(false)
+    }
+
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      if (isMobile) {
+        document.addEventListener('touchmove', handleTouchMove, { passive: false })
+        document.addEventListener('touchend', handleTouchEnd)
+      } else {
+        document.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseup', handleMouseUp)
+      }
       
       if (windowRef.current) {
         windowRef.current.style.userSelect = 'none'
@@ -80,21 +101,38 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      if (isMobile) {
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleTouchEnd)
+      } else {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
       
       if (windowRef.current) {
         windowRef.current.style.userSelect = ''
       }
     }
-  }, [isDragging, dragOffset, onMove])
+  }, [isDragging, dragOffset, onMove, isMobile])
+
+  const handleTitleBarInteraction = (clientX: number, clientY: number) => {
+    const target = event?.target as HTMLElement;
+    const clickedOnButton = 
+      target?.tagName === 'BUTTON' || 
+      target?.closest('button') !== null;
+    
+    if (!clickedOnButton) {
+      event?.preventDefault();
+      startDrag(clientX, clientY);
+    }
+  }
 
   return (
     <div
       ref={windowRef}
       className={`absolute border-2 border-[#c0c0c0] shadow-win98-outer bg-[#c0c0c0] overflow-hidden ${
         isAppearing ? "animate-window-appear origin-center" : ""
-      }`}
+      } ${isMobile ? 'touch-manipulation' : ''}`}
       style={{
         left: `${window.position.x}px`,
         top: `${window.position.y}px`,
@@ -104,48 +142,40 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
       }}
       onClick={onActivate}
     >
-      {/* Title bar */}
       <div
         ref={titleBarRef}
         className={`h-5 flex items-center justify-between px-1 cursor-move ${
           isActive ? "bg-uni-bg-02 text-white" : "bg-[#808080] text-[#c0c0c0]"
         }`}
-        onMouseDown={(e) => {
-          const target = e.target as HTMLElement;
-          const clickedOnButton = 
-            target.tagName === 'BUTTON' || 
-            target.closest('button') !== null;
-          
-          if (!clickedOnButton) {
-            e.preventDefault();
-            startDrag(e.clientX, e.clientY);
-          }
+        onMouseDown={(e) => handleTitleBarInteraction(e.clientX, e.clientY)}
+        onTouchStart={(e) => {
+          const touch = e.touches[0]
+          handleTitleBarInteraction(touch.clientX, touch.clientY)
         }}
       >
         <div className="text-sm font-bold truncate">{window.title}</div>
         <div className="flex">
           <button
-            className="w-4 h-4 mr-1 flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
+            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] ${isMobile ? 'w-5 h-5' : 'w-4 h-4 mr-1'}`}
             onClick={(e) => {
               e.stopPropagation(); 
               onMinimize();
             }}
           >
-            <Minus className="w-3 h-3 text-black" />
+            <Minus className={`text-black ${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
           </button>
           <button
-            className="w-4 h-4 flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
+            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] ${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`}
             onClick={(e) => {
               e.stopPropagation(); 
               onClose();
             }}
           >
-            <X className="w-3 h-3 text-black" />
+            <X className={`text-black ${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
           </button>
         </div>
       </div>
 
-      {/* Window content */}
       <div className={`bg-[${WINDOW_BG_COLOR[window.id as keyof typeof WINDOW_BG_COLOR]}] h-[calc(100%-20px)] overflow-auto p-2`}>{window.content}</div>
     </div>
   )
