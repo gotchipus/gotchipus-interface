@@ -76,12 +76,14 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
     if (!pusName || !stakeAmount || selectedToken === null) return;
     setIsSummoning(true);
 
+    const newTimezone = selectedTimezone + 12;
+
     const args = [
       Number(tokenId),
       pusName,
       ZERO_ADDRESS,
       ethers.parseEther(stakeAmount),
-      selectedTimezone,
+      newTimezone,
       ethers.hexlify(ethers.toUtf8Bytes(story))
     ];
 
