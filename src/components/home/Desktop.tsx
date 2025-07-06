@@ -10,6 +10,7 @@ import type { JSX } from "react/jsx-runtime"
 import MintContent from "@/components/window-content/MintContent" 
 import ClaimWearableContent from "@/src/components/window-content/ClaimWearableContent"
 import DailyTaskHallContent from "@/src/components/window-content/DailyTaskHallContent"
+import AIContent from "@/src/components/window-content/AIContent"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -18,6 +19,11 @@ interface DesktopProps {
 }
 
 const icons = [
+  {
+    id: "ai",
+    title: "Chat",
+    icon: "/ai-pus.png",
+  },
   {
     id: "mint",
     title: "Mint",
@@ -87,6 +93,9 @@ export default function Desktop({ onOpenWindow, activeWindow, isMobile = false }
         break
       case "daily-task-hall":
         onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent openWindow={handleIconClick} />)
+        break
+      case "ai":
+        onOpenWindow("ai", "Chat", <AIContent />)
         break
       default:
         break

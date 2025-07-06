@@ -77,7 +77,6 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
     setIsSummoning(true);
 
     const newTimezone = selectedTimezone + 12;
-
     const args = [
       Number(tokenId),
       pusName,
@@ -91,7 +90,7 @@ const PharosGenesisPage = observer(({ tokenId, story, previewImage, onClose }: P
     contractWrite("summonGotchipus", [args], value);
     
     toast({
-      title: "Submited Transaction",
+      title: "Transaction Submitted",
       description: "Transaction submitted successfully",
     })
   };
