@@ -7,4 +7,6 @@ export { ChatHeader } from "./ChatHeader";
 export { WelcomeScreen } from "./WelcomeScreen";
 export { ChatInterface } from "./ChatInterface";
 export { ActionButton } from "./AIActionButton";
-export type { Message } from "./types"; 
+export { default as PoolInfoComponent } from "./PoolInfoComponent";
+export { AGENT_CONFIGS, getAgentConfig } from "./agentConfig";
+export type { Message, ChatResponse, AgentConfig, PoolInfo } from "./types"; 

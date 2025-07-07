@@ -1,6 +1,7 @@
 import "@rainbow-me/rainbowkit/styles.css";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./markdown.css";
 import { Providers } from "@providers/providers";
 import { Toaster } from "@/components/ui/toaster";
 import GoogleAnalytics from "@/components/GoogleAnalytics";

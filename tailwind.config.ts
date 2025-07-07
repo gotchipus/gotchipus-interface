@@ -11,10 +11,10 @@ const config: Config = {
   ],
   theme: {
   	extend: {
-			spacing: {
-        'header': '96px', 
-        'footer': '96px', 
-      },
+		spacing: {
+			'header': '96px', 
+			'footer': '96px', 
+		},
   		backgroundColor: {
 				'uni-bg-01': "#008080",
 				'uni-bg-02': "#000080",
@@ -97,51 +97,67 @@ const config: Config = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-			boxShadow: {
-        'win98-outer': 'inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf',
-        'win98-inner': 'inset 1px 1px #0a0a0a, inset -1px -1px #fff',
-      },
-      backdropBlur: {
-        'sm': '4px',
-        'md': '8px',
-        'lg': '12px',
-      },
-      transformStyle: {
-        'preserve-3d': 'preserve-3d',
-      },
-      backfaceVisibility: {
-        'hidden': 'hidden',
-      },
-      perspective: {
-        '1000': '1000px',
-      },
-      rotate: {
-        'y-180': 'rotateY(180deg)',
-        'y-0': 'rotateY(0deg)',
-      },
-      scale: {
-        '108': '1.08',
-        '110': '1.10',
-      },
-      transitionDuration: {
-        '220': '220ms',
-        '320': '320ms',
-        '300': '300ms',
-      },
-      textShadow: {
-        'win98': '1px 1px 0 #000',
-      },
-      imageRendering: {
-        'pixelated': 'pixelated',
-      },
-  	}
-  },
+		boxShadow: {
+			'win98-outer': 'inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf',
+			'win98-inner': 'inset 1px 1px #0a0a0a, inset -1px -1px #fff',
+		},
+		backdropBlur: {
+			'sm': '4px',
+			'md': '8px',
+			'lg': '12px',
+		},
+		transformStyle: {
+			'preserve-3d': 'preserve-3d',
+		},
+		backfaceVisibility: {
+			'hidden': 'hidden',
+		},
+		perspective: {
+			'1000': '1000px',
+		},
+		rotate: {
+			'y-180': 'rotateY(180deg)',
+			'y-0': 'rotateY(0deg)',
+		},
+		scale: {
+			'108': '1.08',
+			'110': '1.10',
+		},
+		transitionDuration: {
+			'220': '220ms',
+			'320': '320ms',
+			'300': '300ms',
+		},
+		textShadow: {
+			'win98': '1px 1px 0 #000',
+		},
+		imageRendering: {
+			'pixelated': 'pixelated',
+		},
+		typography: () => ({
+			DEFAULT: {
+			  css: {
+				p: { marginTop: '0.6em', marginBottom: '0.6em' },
+				h2: { marginTop: '1.2em', marginBottom: '0.6em' },
+				h3: { marginTop: '1em',  marginBottom: '0.5em' },
+				ul: { marginTop: '0.4em', marginBottom: '0.4em' },
+	
+				'ul > li': { paddingLeft: '0.75em' },
+				'ol > li': { paddingLeft: '0.75em' },
+	
+				pre: { marginTop: '0.8em', marginBottom: '0.8em' },
+				table: { marginTop: '0.8em', marginBottom: '0.8em' },
+			  },
+			},
+		  }),
+	}
+	},
   variants: {
     extend: {
       animation: ['hover', 'focus'],
     },
   },
-  plugins: [nextui(), require("tailwindcss-animate")],
+  plugins: [nextui(), require("tailwindcss-animate"), require('@tailwindcss/typography')],
 };
 
 export default config;

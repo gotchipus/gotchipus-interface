@@ -15,14 +15,14 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
       <div
         className={cn(
           "border-2 border-[#808080] shadow-win98-outer rounded-md px-5 py-3 text-base bg-white",
-          isUser ? "ml-auto" : "mr-auto w-full"
+          isUser ? "ml-auto" : "mr-auto w-full whitespace-pre-line"
         )}
       >
         <div className="whitespace-pre-wrap">
           {isUser ? (
             message.content
           ) : (
-            <MessageContent content={message.content} />
+            <MessageContent message={message} />
           )}
         </div>
       </div>

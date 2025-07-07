@@ -1,13 +1,13 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { content } = body;
+    const { message } = body;
 
-    if (!content || typeof content !== 'string') {
+    if (!message || typeof message !== 'string') {
       return new Response(
         JSON.stringify({ error: 'Content field is required and must be a string' }), 
         { 
@@ -17,30 +17,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const upstream = `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/ollama/chat`;
-    
-    const originResp = await fetch(upstream, {
+    const getUserIntent = `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/ollama/get_user_intent`;
+
+    const getUserIntentResp = await fetch(getUserIntent, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ content }),
-      cache: 'no-store'
+      body: JSON.stringify({ message }),
     });
 
-    if (!originResp.ok) {
+    if (!getUserIntentResp.ok) {
       return new Response(
-        JSON.stringify({ error: `Upstream service error: ${originResp.status}` }), 
+        JSON.stringify({ error: `Upstream service error: ${getUserIntentResp.status}` }), 
         { 
-          status: originResp.status, 
+          status: getUserIntentResp.status, 
           headers: { 'Content-Type': 'application/json' } 
         }
       );
     }
 
-    if (!originResp.body) {
+    const getUserIntentData = await getUserIntentResp.json();
+    
+    if (Number(getUserIntentData.code) !== 0) {
       return new Response(
-        JSON.stringify({ error: 'Empty response from upstream service' }), 
+        JSON.stringify({ error: `Upstream service error: ${getUserIntentData.message}` }), 
         { 
           status: 502, 
           headers: { 'Content-Type': 'application/json' } 
@@ -48,14 +49,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const headers = new Headers({
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache, no-transform',
-      'X-Accel-Buffering': 'no',
-    });
-
-    return new Response(originResp.body, { status: 200, headers });
+    return NextResponse.json(getUserIntentData.data);
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(

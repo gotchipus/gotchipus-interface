@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { WelcomeScreen, ChatInterface, Message } from "./ai";
+import { ChatResponse } from "./ai/types";
+import useChat from "@/hooks/useChat";
 
-export default function AIContent() {
+const AIContent = () => {
   const [input, setInput] = useState("");
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -17,6 +19,8 @@ export default function AIContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { send: sendChatEvent } = useChat();
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     if (hasStartedChat) {
@@ -51,13 +55,16 @@ export default function AIContent() {
       },
     ]);
     setStatus("idle");
+    isProcessingRef.current = false;
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
     }
   };
 
-  const sendMessage = async (content: string) => {
-    if (content.trim() === "") return;
+  const sendMessage = useCallback(async (message: string) => {
+    if (message.trim() === "" || isProcessingRef.current) return;
+
+    isProcessingRef.current = true;
 
     if (!hasStartedChat) {
       setHasStartedChat(true);
@@ -66,7 +73,7 @@ export default function AIContent() {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: content,
+      content: message,
       createdAt: new Date(),
     };
 
@@ -84,46 +91,78 @@ export default function AIContent() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: content,
+          message: message,
         }),
       });
 
       if (response.ok) {
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No response body");
-        }
-
-        let assistantMessage: Message = {
+        const chatResponse: ChatResponse = await response.json();
+        
+        const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "",
+          content: chatResponse.message,
           createdAt: new Date(),
+          isCallTools: chatResponse.is_call_tools,
+          agentIndex: chatResponse.agent_index,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
 
-        const decoder = new TextDecoder();
-        let accumulatedContent = "";
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            accumulatedContent += chunk;
-
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMessage.id
-                  ? { ...msg, content: accumulatedContent }
-                  : msg
-              )
+        if (chatResponse.is_call_tools) {
+          try {
+            await sendChatEvent(
+              {
+                query: message,
+                is_call_tools: true,
+                agent_index: chatResponse.agent_index,
+                message: chatResponse.message,
+              },
+              {
+                onData: (data) => {
+                  const poolData = data.data || data;
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, data: poolData }
+                        : msg
+                    )
+                  );
+                },
+                onText: (chunk) => {
+                  setMessages(prev =>
+                    prev.map(msg => {
+                      if (msg.id !== assistantMessage.id) return msg;
+                      const prevContent = msg.content || '';
+                      let formattedChunk = chunk;
+                      if (
+                        prevContent &&
+                        !prevContent.endsWith(' ') &&
+                        !prevContent.endsWith('\n') &&
+                        !chunk.startsWith(' ') &&
+                        !chunk.startsWith('\n') &&
+                        !/^[.,;:!?*\-]/.test(chunk)
+                      ) {
+                        formattedChunk = ' ' + chunk;
+                      }
+                      return {
+                        ...msg,
+                        content: prevContent + formattedChunk,
+                        ...(msg.agentIndex === 0 && !msg.data
+                          ? { isCallTools: false, agentIndex: undefined }
+                          : {})
+                      };
+                    })
+                  );
+                },
+                onError: (error) => {
+                  console.error("Tool call error:", error);
+                },
+              }
             );
+          } catch (toolError) {
+            console.error("Tool call failed:", toolError);
           }
-        } finally {
-          reader.releaseLock();
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -144,10 +183,11 @@ export default function AIContent() {
         createdAt: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setStatus("idle");
+      isProcessingRef.current = false;
     }
-
-    setStatus("idle");
-  };
+  }, [hasStartedChat, sendChatEvent]);
 
   const handleSendMessage = () => {
     sendMessage(input);
@@ -189,4 +229,6 @@ export default function AIContent() {
       )}
     </div>
   );
-}
+};
+
+export default AIContent;
