@@ -167,7 +167,8 @@ const DashboardContent = observer(() => {
   useEffect(() => {
     if (error && isRenaming) {
       setIsRenaming(false);
-      setPusName(oldName)
+      setPusName(oldName);
+      setIsPetWriting(false);
       toast({
         title: "Transaction Cancelled",
         description: "Transaction was cancelled or failed",
