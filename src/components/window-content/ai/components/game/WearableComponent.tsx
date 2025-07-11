@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { GotchiCard } from "./GotchiCard";
+import GotchiGrid from "./GotchiGrid";
 import Image from "next/image";
 import { useEquippedItems } from "@/hooks/useEquippedItems";
 import { useContractRead } from "@/hooks/useContract";
@@ -10,6 +10,8 @@ import { observer } from "mobx-react-lite";
 import SvgIcon from "@/components/gotchiSvg/SvgIcon";
 import EquipSelectWindow from "@/components/window-content/equip/EquipSelectWindow";
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
+import { useSvgLayers } from "@/hooks/useSvgLayers";
+import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
 
 interface GotchiItem {
   id: string;
@@ -32,6 +34,8 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { walletStore } = useStores();
+
+  const { layers, backgroundSvg, isLoading: svgLoading } = useSvgLayers(selectedGotchi?.id || "");
 
   const { equippedItems, isLoading: isLoadingEquipped } = useEquippedItems(
     selectedGotchi ? parseInt(selectedGotchi.id) : 0
@@ -78,7 +82,12 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
 
   const handleGotchiSelect = (gotchi: GotchiItem) => {
     setSelectedGotchi(gotchi);
-    setShowWearableInterface(true);
+  };
+
+  const handleSelectedGotchiChange = (gotchi: GotchiItem | null) => {
+    if (gotchi) {
+      setSelectedGotchi(gotchi);
+    }
   };
 
   const handleBackToList = () => {
@@ -95,7 +104,9 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
     }
   };
 
-  const handleEquipWearable = (ids: string[]) => {
+  const handleEquipWearable = (gotchi: GotchiItem) => {
+    setSelectedGotchi(gotchi);
+    setShowWearableInterface(true);
   };
 
   const handleCloseEquipWindow = () => {
@@ -171,15 +182,28 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
                 <Image src="/icons/gotchi.png" alt="Gotchi" width={18} height={18} className="mr-2" />
                 Gotchi Preview
               </div>
-              <div className="flex items-center justify-center h-64 bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]">
+              <div className="flex items-center justify-center h-64 bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
+                   style={backgroundSvg ? { 
+                     backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">${backgroundSvg}</svg>`)}")`,
+                     backgroundSize: 'cover',
+                     backgroundPosition: 'center'
+                   } : {}}>
                 <div className="text-center">
-                  <Image 
-                    src={selectedGotchi.image || '/pus.png'} 
-                    alt={`Gotchi #${selectedGotchi.id}`}
-                    width={200}
-                    height={200}
-                    className="mx-auto"
-                  />
+                  {svgLoading ? (
+                    <div className="text-sm">Loading...</div>
+                  ) : selectedGotchi ? (
+                    <div className="relative flex items-center justify-center w-48 h-48">
+                      <SvgComposer layers={layers} />
+                    </div>
+                  ) : (
+                    <Image 
+                      src="/not-any.png" 
+                      alt="No Gotchi selected"
+                      width={200}
+                      height={200}
+                      className="mx-auto"
+                    />
+                  )}
                   <p className="text-sm font-bold mt-2">Gotchi #{selectedGotchi.id}</p>
                 </div>
               </div>
@@ -252,27 +276,22 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-lg font-bold mb-2">Select a Gotchi to Equip</h2>
-        <p className="text-sm text-[#404040]">Choose one of your Gotchis to manage their equipment.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-        {gotchiList.map((gotchi) => (
-          <div
-            key={gotchi.id}
-            onClick={() => handleGotchiSelect(gotchi)}
-            className="cursor-pointer"
-          >
-            <GotchiCard
-              name={`Gotchi #${gotchi.id}`}
-              image={gotchi.image || ''}
-              className="hover:shadow-lg transition-shadow"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+    <GotchiGrid
+      gotchiList={gotchiList}
+      onGotchiAction={handleEquipWearable}
+      onGotchiSelect={handleGotchiSelect}
+      onSelectedGotchiChange={handleSelectedGotchiChange}
+      selectedGotchiId={selectedGotchi?.id || null}
+      getButtonText={() => "Equip"}
+      isLoading={loadingGotchis}
+      emptyMessage="No Gotchis available for equipment"
+      emptySubMessage="Mint some Gotchis first to manage their equipment."
+      headerComponent={
+        <div className="mb-4">
+          <h2 className="text-lg font-bold mb-2">Select a Gotchi to Equip</h2>
+          <p className="text-sm text-[#404040]">Choose one of your Gotchis to manage their equipment.</p>
+        </div>
+      }
+    />
   );
 });

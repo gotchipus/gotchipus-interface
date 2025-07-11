@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { GotchiCard } from "./GotchiCard";
+import GotchiCard from "./GotchiCard";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { useERC20Read, useContractWrite } from "@/hooks/useContract";
@@ -527,7 +527,7 @@ export const CallComponent = ({ onCallSuccess }: CallComponentProps) => {
           >
             <GotchiCard
               name={`Gotchi #${gotchi.id}`}
-              image={gotchi.image || ''}
+              id={gotchi.id}
               className="hover:shadow-lg transition-shadow"
             />
           </div>

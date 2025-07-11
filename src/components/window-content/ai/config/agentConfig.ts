@@ -1,5 +1,5 @@
 import { AgentConfig } from '../types';
-import { PetGotchiComponent } from '../components/game/PetGotchiComponent';
+import PetGotchiComponent from '../components/game/PetGotchiComponent';
 import { SummonComponent } from '../components/game/SummonComponent';
 import { WearableComponent } from '../components/game/WearableComponent';
 import { CallComponent } from '../components/game/CallComponent';

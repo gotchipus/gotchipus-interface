@@ -31,14 +31,14 @@ export default function Home() {
       return
     }
 
-    let position = { x: 50 + openWindows.length * 20, y: 50 + openWindows.length * 20 }
     let size = { 
       width: WINDOW_SIZE[windowId as keyof typeof WINDOW_SIZE].width, 
       height: WINDOW_SIZE[windowId as keyof typeof WINDOW_SIZE].height 
     }
 
+    let position: { x: number; y: number }
+
     if (isMobile) {
-      position = { x: 10, y: 60 }
       size = {
         width: Math.min(window.innerWidth - 20, 400),
         height: Math.min(window.innerHeight - 120, 600)
@@ -51,6 +51,19 @@ export default function Home() {
           x: Math.max(5, (screenWidth - size.width) / 2),
           y: Math.max(40, (screenHeight - size.height) / 2)
         };
+      } else {
+        position = { x: 10, y: 60 }
+      }
+    } else {
+      const screenWidth = window.innerWidth
+      const screenHeight = window.innerHeight
+      const centerX = Math.max(0, (screenWidth - size.width) / 2)
+      const centerY = Math.max(0, (screenHeight - size.height) / 2)
+      
+      const offset = openWindows.length * 20
+      position = { 
+        x: centerX + offset, 
+        y: centerY + offset 
       }
     }
 

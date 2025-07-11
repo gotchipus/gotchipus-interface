@@ -97,7 +97,6 @@ const AIContent = () => {
 
       if (response.ok) {
         const chatResponse: ChatResponse = await response.json();
-        console.log('Chat response received:', chatResponse);
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -109,7 +108,6 @@ const AIContent = () => {
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
-        console.log('Assistant message added:', assistantMessage);
 
         if (!chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1)) {
           try {
@@ -187,7 +185,6 @@ const AIContent = () => {
                   );
                 },
                 onError: (error) => {
-                  console.error("Text streaming error:", error);
                   setMessages(prev =>
                     prev.map(msg => {
                       if (msg.id !== assistantMessage.id) return msg;
@@ -203,7 +200,6 @@ const AIContent = () => {
               }
             );
           } catch (textError) {
-            console.error("Text streaming failed:", textError); 
             setMessages(prev =>
               prev.map(msg => {
                 if (msg.id !== assistantMessage.id) return msg;
@@ -233,7 +229,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 4) {
-          console.log('Processing summon component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -242,7 +237,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 5) {
-          console.log('Processing wearable component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -251,7 +245,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 6) {
-          console.log('Processing call component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -260,7 +253,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 7) {
-          console.log('Processing swap component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -269,7 +261,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 8) {
-          console.log('Processing add liquidity component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -278,7 +269,6 @@ const AIContent = () => {
             )
           );
         } else if (chatResponse.is_call_tools && chatResponse.agent_index === 9) {
-          console.log('Processing remove liquidity component, agent_index:', chatResponse.agent_index);
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessage.id
@@ -391,7 +381,6 @@ const AIContent = () => {
         setMessages((prev) => [...prev, errorMessage]);
       }
     } catch (error) {
-      console.error("Chat error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",

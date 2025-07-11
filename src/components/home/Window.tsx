@@ -22,26 +22,12 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
   const [isAppearing, setIsAppearing] = useState(true)
   const windowRef = useRef<HTMLDivElement>(null)
   const titleBarRef = useRef<HTMLDivElement>(null)
-  const hasInitializedRef = useRef(false) 
-
   useEffect(() => {
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true
-      
-      const screenWidth = globalThis.window.innerWidth || document.documentElement.clientWidth
-      const screenHeight = globalThis.window.innerHeight || document.documentElement.clientHeight
-      
-      const centerX = Math.max(0, (screenWidth - window.size.width) / 2)
-      const centerY = Math.max(0, (screenHeight - window.size.height) / 2)
-      
-      onMove({ x: centerX, y: centerY })
-      
-      const timeout = setTimeout(() => {
-        setIsAppearing(false)
-      }, 300)
-      
-      return () => clearTimeout(timeout)
-    }
+    const timeout = setTimeout(() => {
+      setIsAppearing(false)
+    }, 300)
+    
+    return () => clearTimeout(timeout)
   }, []) 
 
   const startDrag = (clientX: number, clientY: number) => {

@@ -6,7 +6,7 @@ import { InputArea } from "./InputArea";
 import { Message } from "../../types";
 import PoolInfoComponent from "../defi/PoolInfoComponent";
 import { MintGotchiComponent } from "../game/MintGotchiComponent";
-import { PetGotchiComponent } from "../game/PetGotchiComponent";
+import PetGotchiComponent from "../game/PetGotchiComponent";
 import { SummonComponent } from "../game/SummonComponent";
 import { WearableComponent } from "../game/WearableComponent";
 import { CallComponent } from "../game/CallComponent";

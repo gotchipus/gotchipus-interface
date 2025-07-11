@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { GotchiCard } from "../game/GotchiCard";
+import GotchiGrid from "../game/GotchiGrid";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { useERC20Read, useContractWrite } from "@/hooks/useContract";
@@ -457,27 +457,20 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-lg font-bold mb-2">Select a Gotchi to Remove Liquidity</h2>
-        <p className="text-sm text-[#404040]">Choose one of your Gotchis to remove liquidity from pools.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-        {gotchiList.map((gotchi) => (
-          <div
-            key={gotchi.id}
-            onClick={() => handleGotchiSelect(gotchi)}
-            className="cursor-pointer"
-          >
-            <GotchiCard
-              name={`Gotchi #${gotchi.id}`}
-              image={gotchi.image || ''}
-              className="hover:shadow-lg transition-shadow"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+    <GotchiGrid
+      gotchiList={gotchiList}
+      onGotchiAction={handleGotchiSelect}
+      onGotchiSelect={handleGotchiSelect}
+      getButtonText={() => "Remove Liquidity"}
+      isLoading={loadingGotchis}
+      emptyMessage="No Gotchis available for liquidity removal"
+      emptySubMessage="Mint some Gotchis first to remove liquidity from pools."
+      headerComponent={
+        <div className="mb-4">
+          <h2 className="text-lg font-bold mb-2">Select a Gotchi to Remove Liquidity</h2>
+          <p className="text-sm text-[#404040]">Choose one of your Gotchis to remove liquidity from pools.</p>
+        </div>
+      }
+    />
   );
 };
