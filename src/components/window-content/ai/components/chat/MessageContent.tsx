@@ -1,22 +1,26 @@
 import { memo } from 'react';
-import { Message } from './types';
-import { getAgentConfig } from './agentConfig';
-import Markdown from './markdown';
+import { Message } from '../../types';
+import { getAgentConfig } from '../../config';
+import { MarkedMarkdown } from '../../markdown';
 
 interface Props { message: Message }
 
 export const MessageContent = memo(({ message }: Props) => {
+  console.log('MessageContent rendered!', message);
+  
   if (!message.isCallTools) {
-    return <Markdown content={message.content} />;
+    return <MarkedMarkdown content={message.content} />;
   }
 
   const cfg = getAgentConfig(message.agentIndex ?? 0);
 
-  if (!message.data) return null;
+  if (!message.data && message.agentIndex !== 1) return null;
 
   switch (message.agentIndex) {
     case 0:
-      return message.content ? <Markdown content={message.content} /> : null;
+      return message.content ? <MarkedMarkdown content={message.content} /> : null;
+    case 1:
+      return <MarkedMarkdown content={message.content} />;
     case 2:
       return (
         <div className="space-y-4">
@@ -26,7 +30,7 @@ export const MessageContent = memo(({ message }: Props) => {
               {JSON.stringify(message.data, null, 2)}
             </pre>
           </section>
-          <Markdown content={message.content} />
+          <MarkedMarkdown content={message.content} />
         </div>
       );
     default:
@@ -38,7 +42,7 @@ export const MessageContent = memo(({ message }: Props) => {
               {JSON.stringify(message.data, null, 2)}
             </pre>
           </section>
-          <Markdown content={message.content} />
+          <MarkedMarkdown content={message.content} />
         </div>
       );
   }

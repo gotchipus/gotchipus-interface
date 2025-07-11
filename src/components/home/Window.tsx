@@ -115,14 +115,14 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
     }
   }, [isDragging, dragOffset, onMove, isMobile])
 
-  const handleTitleBarInteraction = (clientX: number, clientY: number) => {
-    const target = event?.target as HTMLElement;
+  const handleTitleBarInteraction = (clientX: number, clientY: number, event: React.MouseEvent | React.TouchEvent) => {
+    const target = event.target as HTMLElement;
     const clickedOnButton = 
       target?.tagName === 'BUTTON' || 
       target?.closest('button') !== null;
     
     if (!clickedOnButton) {
-      event?.preventDefault();
+      event.preventDefault();
       startDrag(clientX, clientY);
     }
   }
@@ -147,10 +147,10 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
         className={`h-5 flex items-center justify-between px-1 cursor-move ${
           isActive ? "bg-uni-bg-02 text-white" : "bg-[#808080] text-[#c0c0c0]"
         }`}
-        onMouseDown={(e) => handleTitleBarInteraction(e.clientX, e.clientY)}
+        onMouseDown={(e) => handleTitleBarInteraction(e.clientX, e.clientY, e)}
         onTouchStart={(e) => {
           const touch = e.touches[0]
-          handleTitleBarInteraction(touch.clientX, touch.clientY)
+          handleTitleBarInteraction(touch.clientX, touch.clientY, e)
         }}
       >
         <div className="text-sm font-bold truncate">{window.title}</div>

@@ -15,7 +15,6 @@ const useChat = () => {
     ) => {
       let hasError = false;
       const ctrl = new AbortController();
-      let accumulated = '';
 
       try {
         await fetchEventSource('/api/chat/callIntent', {
@@ -42,36 +41,7 @@ const useChat = () => {
                 console.error('Failed to parse data event:', parseError);
               }
             } else if (ev.event === 'text') {
-              let cleanedText = ev.data
-                .replace(/\*\s+\*/g, '**')
-                .replace(/\*\s+\*\s+\*/g, '***')
-                .replace(/\*\*\*\s+\*\*\*/g, '***')
-                .replace(/\*\*\s+\*\*/g, '**')
-                
-                .replace(/\n\s*\*\s+\*/g, '\n* ')
-                .replace(/\n\s*\*\s+\*\s+\*/g, '\n* ')
-                .replace(/\n\s*\*\s+\*\s+\*\s+\*/g, '\n* ')
-                
-                .replace(/\*\*\*([^*]+):\s*\*\*\*/g, '**$1:**')
-                .replace(/\*\*([^*]+):\s*\*\*/g, '**$1:**')
-                .replace(/\*\*\*([^*]+):\s*\*\*/g, '**$1:**')
-                
-                .replace(/\*\*\*([^*]+)\*\*\*\.\*\*\*/g, '**$1.**')
-                .replace(/\*\*([^*]+)\*\*\.\*\*/g, '**$1.**')
-                
-                .replace(/\*\*\*([^*]+)\*\*\*\.\*\*\*([^*]+)\*\*\*/g, '**$1.** **$2:**')
-                .replace(/\*\*\*([^*]+)\*\*\*\.\*\*\*([^*]+)\*\*\*\.\*\*\*/g, '**$1.** **$2.**')
-                
-                .replace(/\*\*Key Features:\s*\*\*\s*\*\*/g, '**Key Features:**')
-                
-                .replace(/\n\s*\n\s*\n+/g, '\n\n')
-                
-                .replace(/\*\*([^*]+):\s*\*\*/g, '**$1:**')
-                
-                .trim();
-              
-              accumulated = cleanedText;
-              callbacks?.onText?.(cleanedText);
+              callbacks?.onText?.(ev.data);
             }
           },
 

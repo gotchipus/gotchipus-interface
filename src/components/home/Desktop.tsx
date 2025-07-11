@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useWindowRouter } from "@/hooks/useWindowRouter"
 import DesktopIcon from "@/components/home/DesktopIcon"
 import MyPharosContent from "@/src/components/window-content/MyPharosContent"
 import DashboardContent from "@/components/window-content/DashboardContent"
@@ -16,6 +16,7 @@ interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
   activeWindow: string | null
   isMobile?: boolean
+  openWindowIds?: string[]
 }
 
 const icons = [
@@ -52,10 +53,30 @@ const icons = [
 
 ]
 
-export default function Desktop({ onOpenWindow, activeWindow, isMobile = false }: DesktopProps) {
+const getWindowContent = (windowId: string, onOpenWindow: (id: string, title: string, content: JSX.Element) => void) => {
+  switch (windowId) {
+    case "mint":
+      return <MintContent />
+    case "pharos":
+      return <MyPharosContent />
+    case "dashboard":
+      return <DashboardContent />
+    case "wearable":
+      return <ClaimWearableContent />
+    case "daily-task-hall":
+      return <DailyTaskHallContent openWindow={(view: string) => {
+        onOpenWindow(view, view, <div>Loading...</div>)
+      }} />
+    case "ai":
+      return <AIContent />
+    default:
+      return <div>Unknown window: {windowId}</div>
+  }
+}
+
+export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds = [] }: DesktopProps) {
   const [activeIcon, setActiveIcon] = useState<string | null>(null)
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const windowRouter = useWindowRouter()
   
   const MAX_ICONS_PER_COLUMN = isMobile ? 6 : 6
   
@@ -68,46 +89,25 @@ export default function Desktop({ onOpenWindow, activeWindow, isMobile = false }
   })
 
   useEffect(() => {
-    const viewParam = searchParams.get('view')
-    if (viewParam) {
-      const views = viewParam.split(',')
-      views.forEach(view => {
-        openWindowByView(view)
-      })
-    }
-  }, [searchParams])
-
-  const openWindowByView = (view: string) => {
-    switch (view) {
-      case "mint":
-        onOpenWindow("mint", "Mint", <MintContent />)
-        break
-      case "pharos":
-        onOpenWindow("pharos", "My Pharos", <MyPharosContent />)
-        break
-      case "dashboard":
-        onOpenWindow("dashboard", "My Gotchipus", <DashboardContent />)
-        break
-      case "wearable":
-        onOpenWindow("wearable", "Claim Wearable", <ClaimWearableContent />)
-        break
-      case "daily-task-hall":
-        onOpenWindow("daily-task-hall", "Daily Task Hall", <DailyTaskHallContent openWindow={handleIconClick} />)
-        break
-      case "ai":
-        onOpenWindow("ai", "Chat", <AIContent />)
-        break
-      default:
-        break
-    }
-  }
+    windowRouter.openWindows.forEach(windowId => {
+      const icon = icons.find(i => i.id === windowId)
+      if (icon && !openWindowIds.includes(windowId)) {
+        const content = getWindowContent(windowId, onOpenWindow)
+        onOpenWindow(windowId, icon.title, content)
+      }
+    })
+  }, [windowRouter.openWindows])
 
   const handleIconClick = (iconId: string) => {
     setActiveIcon(iconId)
     
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('view', iconId)
-    router.push(`/?${params.toString()}`)
+    windowRouter.openWindow(iconId)
+    
+    const icon = icons.find(i => i.id === iconId)
+    if (icon) {
+      const content = getWindowContent(iconId, onOpenWindow)
+      onOpenWindow(iconId, icon.title, content)
+    }
   }
 
   return (
@@ -133,7 +133,7 @@ export default function Desktop({ onOpenWindow, activeWindow, isMobile = false }
                 title={icon.title}
                 icon={icon.icon}
                 onClick={() => handleIconClick(icon.id)}
-                isActive={activeWindow === icon.id}
+                isActive={windowRouter.activeWindow === icon.id}
                 isMobile={isMobile}
               />
             ))}

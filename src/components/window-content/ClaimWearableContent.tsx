@@ -131,13 +131,10 @@ const ClaimWearableContent = observer(() => {
             <h2 className={`text-center font-bold text-[#000080] mb-2 ${isMobile ? 'text-base' : ''}`}>Claim Your Free Wearables</h2>
             <p className={`text-center mb-4 ${isMobile ? 'text-xs' : 'text-sm'}`}>You can claim all {wearableItems.length} free wearable NFTs at once</p>
             
-            {/* Head Items */}
             {renderCategorySection(CATEGORIES[0].name, headItems)}
             
-            {/* Hands Items */}
             {renderCategorySection(CATEGORIES[1].name, handsItems)}
             
-            {/* Clothes Items */}
             {renderCategorySection(CATEGORIES[2].name, clothesItems)}
             
             <div className="flex justify-center mt-4">

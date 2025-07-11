@@ -8,7 +8,8 @@ import RehypeHighlight from "rehype-highlight";
 import { useRef, useState, useEffect, useMemo } from "react";
 import mermaid from "mermaid";
 import React from "react";
-import { cleanAIText } from '../../../utils/textCleaner';
+import { cleanAIText } from '../utils';
+import './markdown-win98.css';
 
 export function Mermaid(props: { code: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,7 +47,6 @@ export function Mermaid(props: { code: string }) {
   );
 }
 
-// Enhanced code block component
 export function PreCode(props: { children?: React.ReactNode }) {
   const ref = useRef<HTMLPreElement>(null);
   const [mermaidCode, setMermaidCode] = useState("");
@@ -209,7 +209,47 @@ function _MarkDownContent(props: { content: string }) {
       components={{
         pre: PreCode,
         code: CustomCode,
-        p: (pProps) => <p {...pProps} dir="auto" />,
+        p: (pProps) => <p {...pProps} dir="auto" style={{ margin: "0.5em 0" }} />,
+        h1: (hProps) => <h1 {...hProps} style={{ fontSize: "1.5em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
+        h2: (hProps) => <h2 {...hProps} style={{ fontSize: "1.3em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
+        h3: (hProps) => <h3 {...hProps} style={{ fontSize: "1.1em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
+        ul: (ulProps) => <ul {...ulProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em" }} />,
+        ol: (olProps) => <ol {...olProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em" }} />,
+        li: (liProps) => <li {...liProps} style={{ margin: "0.2em 0" }} />,
+        strong: (strongProps) => <strong {...strongProps} style={{ fontWeight: "bold", color: "#000080", fontSize: "1.1em" }} />,
+        em: (emProps) => <em {...emProps} style={{ fontStyle: "italic", color: "#000000" }} />,
+        blockquote: (bqProps) => (
+          <blockquote {...bqProps} style={{ 
+            margin: "1em 0", 
+            paddingLeft: "1em", 
+            borderLeft: "3px solid #808080",
+            backgroundColor: "#f0f0f0",
+            fontStyle: "italic"
+          }} />
+        ),
+        hr: (hrProps) => <hr {...hrProps} style={{ border: "1px solid #808080", margin: "1em 0" }} />,
+        table: (tableProps) => (
+          <table {...tableProps} style={{ 
+            borderCollapse: "collapse", 
+            width: "100%", 
+            margin: "1em 0",
+            border: "2px solid #808080"
+          }} />
+        ),
+        th: (thProps) => (
+          <th {...thProps} style={{ 
+            border: "1px solid #808080", 
+            padding: "0.5em",
+            backgroundColor: "#c0c0c0",
+            fontWeight: "bold"
+          }} />
+        ),
+        td: (tdProps) => (
+          <td {...tdProps} style={{ 
+            border: "1px solid #808080", 
+            padding: "0.5em"
+          }} />
+        ),
         a: (aProps) => {
           const href = aProps.href || "";
           if (/\.(aac|mp3|opus|wav)$/.test(href)) {
@@ -228,7 +268,7 @@ function _MarkDownContent(props: { content: string }) {
           }
           const isInternal = /^\/#/i.test(href);
           const target = isInternal ? "_self" : aProps.target ?? "_blank";
-          return <a {...aProps} target={target} />;
+          return <a {...aProps} target={target} style={{ color: "#0000ff", textDecoration: "underline" }} />;
         },
       }}
     >
@@ -242,15 +282,17 @@ export const MarkdownContent = React.memo(_MarkDownContent);
 export default function Markdown({ content }: { content: string }) {
   const mdRef = useRef<HTMLDivElement>(null);
   
-  // Clean the AI text before rendering
   const processedContent = cleanAIText(content);
 
   return (
     <div
       className="markdown-body"
       style={{
-        fontSize: "14px",
+        fontSize: "16px",
         fontFamily: "inherit",
+        lineHeight: "1.6",
+        color: "#000000",
+        backgroundColor: "transparent",
       }}
       ref={mdRef}
       dir="auto"

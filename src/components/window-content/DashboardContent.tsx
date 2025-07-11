@@ -168,7 +168,6 @@ const DashboardContent = observer(() => {
     if (error && isRenaming) {
       setIsRenaming(false);
       setPusName(oldName);
-      setIsPetWriting(false);
       toast({
         title: "Transaction Cancelled",
         description: "Transaction was cancelled or failed",
@@ -176,6 +175,17 @@ const DashboardContent = observer(() => {
       });
     }
   }, [error, isRenaming]);
+
+  useEffect(() => {
+    if (error && isPetWriting) {
+      setIsPetWriting(false);
+      toast({
+        title: "Transaction Cancelled",
+        description: "Transaction was cancelled or failed",
+        variant: "destructive"
+      });
+    }
+  }, [error, isPetWriting]);
 
   const handleEquipSlotClick = (index: number) => {
     setSelectedEquipSlot(index === selectedEquipSlot ? null : index)
@@ -216,14 +226,6 @@ const DashboardContent = observer(() => {
     setCurrentPage(1);
   };
   
-  const floatAnimation = {
-    y: [0, -3, 0],
-    transition: {
-      duration: 1,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  };
 
   const itemsPerPage = 12;
   const hasMore = (currentPage * itemsPerPage) < ids.length;

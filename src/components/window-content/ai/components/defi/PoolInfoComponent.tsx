@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import { PoolInfo } from './types';
+import { PoolInfo } from '../../types';
 
 function formatNumber(value: string | number) {
   const num = typeof value === 'string' ? parseFloat(value) : value;

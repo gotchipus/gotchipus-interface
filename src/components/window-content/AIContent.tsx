@@ -97,19 +97,196 @@ const AIContent = () => {
 
       if (response.ok) {
         const chatResponse: ChatResponse = await response.json();
+        console.log('Chat response received:', chatResponse);
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: chatResponse.message,
+          content: (chatResponse.is_call_tools && chatResponse.agent_index !== 1 && chatResponse.agent_index !== 0) ? chatResponse.message : "",
           createdAt: new Date(),
           isCallTools: chatResponse.is_call_tools,
           agentIndex: chatResponse.agent_index,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
+        console.log('Assistant message added:', assistantMessage);
 
-        if (chatResponse.is_call_tools) {
+        if (!chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1)) {
+          try {
+            await sendChatEvent(
+              {
+                query: message,
+                is_call_tools: chatResponse.is_call_tools,
+                agent_index: chatResponse.agent_index || 0,
+                message: chatResponse.message,
+              },
+              {
+                onText: (chunk) => {
+                  setMessages(prev =>
+                    prev.map(msg => {
+                      if (msg.id !== assistantMessage.id) return msg;
+                      const prevContent = msg.content || '';
+                      
+                      let contentToAdd = chunk;
+                      try {
+                        const jsonChunk = JSON.parse(chunk);
+                        if (jsonChunk.content) {
+                          contentToAdd = jsonChunk.content;
+                        }
+                      } catch (e) {
+                        contentToAdd = chunk;
+                      }
+                      
+                      let formattedChunk = contentToAdd;
+                      if (prevContent && contentToAdd) {
+                        if (
+                          prevContent.trim() &&
+                          /^#+\s/.test(contentToAdd) &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n\n' + contentToAdd;
+                        }
+                        else if (
+                          /\*\*[^*]+:\*\*$/.test(prevContent) &&
+                          !contentToAdd.startsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          /^\w+[^:]*:\s*/.test(contentToAdd) &&
+                          prevContent.trim() &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          /^\*\s/.test(contentToAdd) &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          !prevContent.endsWith(' ') &&
+                          !prevContent.endsWith('\n') &&
+                          !contentToAdd.startsWith(' ') &&
+                          !contentToAdd.startsWith('\n') &&
+                          !/^[.,;:!?*\-#]/.test(contentToAdd) &&
+                          !/[#*\-:]$/.test(prevContent)
+                        ) {
+                          formattedChunk = ' ' + contentToAdd;
+                        }
+                      }
+                      
+                      return {
+                        ...msg,
+                        content: prevContent + formattedChunk,
+                        isCallTools: chatResponse.agent_index === 1 ? true : false,
+                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                      };
+                    })
+                  );
+                },
+                onError: (error) => {
+                  console.error("Text streaming error:", error);
+                  setMessages(prev =>
+                    prev.map(msg => {
+                      if (msg.id !== assistantMessage.id) return msg;
+                      return {
+                        ...msg,
+                        content: chatResponse.message,
+                        isCallTools: chatResponse.agent_index === 1 ? true : false,
+                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                      };
+                    })
+                  );
+                },
+              }
+            );
+          } catch (textError) {
+            console.error("Text streaming failed:", textError); 
+            setMessages(prev =>
+              prev.map(msg => {
+                if (msg.id !== assistantMessage.id) return msg;
+                return {
+                  ...msg,
+                  content: chatResponse.message,
+                  isCallTools: chatResponse.agent_index === 1 ? true : false,
+                  agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                };
+              })
+            );
+          }
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 2) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { pet: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 3) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { mint: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 4) {
+          console.log('Processing summon component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { summon: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 5) {
+          console.log('Processing wearable component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { wearable: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 6) {
+          console.log('Processing call component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { call: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 7) {
+          console.log('Processing swap component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { swap: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 8) {
+          console.log('Processing add liquidity component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { addLiquidity: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 9) {
+          console.log('Processing remove liquidity component, agent_index:', chatResponse.agent_index);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessage.id
+                ? { ...msg, data: { removeLiquidity: true } }
+                : msg
+            )
+          );
+        } else if (chatResponse.is_call_tools) {
           try {
             await sendChatEvent(
               {
@@ -134,16 +311,55 @@ const AIContent = () => {
                     prev.map(msg => {
                       if (msg.id !== assistantMessage.id) return msg;
                       const prevContent = msg.content || '';
-                      let formattedChunk = chunk;
-                      if (
-                        prevContent &&
-                        !prevContent.endsWith(' ') &&
-                        !prevContent.endsWith('\n') &&
-                        !chunk.startsWith(' ') &&
-                        !chunk.startsWith('\n') &&
-                        !/^[.,;:!?*\-]/.test(chunk)
-                      ) {
-                        formattedChunk = ' ' + chunk;
+                      
+                      let contentToAdd = chunk;
+                      try {
+                        const jsonChunk = JSON.parse(chunk);
+                        if (jsonChunk.content) {
+                          contentToAdd = jsonChunk.content;
+                        }
+                      } catch (e) {
+                        contentToAdd = chunk;
+                      }
+                      
+                      let formattedChunk = contentToAdd;
+                      if (prevContent && contentToAdd) {  
+                        if (
+                          prevContent.trim() &&
+                          /^#+\s/.test(contentToAdd) &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n\n' + contentToAdd;
+                        }
+                        else if (
+                          /\*\*[^*]+:\*\*$/.test(prevContent) &&
+                          !contentToAdd.startsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          /^\w+[^:]*:\s*/.test(contentToAdd) &&
+                          prevContent.trim() &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          /^\*\s/.test(contentToAdd) &&
+                          !prevContent.endsWith('\n')
+                        ) {
+                          formattedChunk = '\n' + contentToAdd;
+                        }
+                        else if (
+                          !prevContent.endsWith(' ') &&
+                          !prevContent.endsWith('\n') &&
+                          !contentToAdd.startsWith(' ') &&
+                          !contentToAdd.startsWith('\n') &&
+                          !/^[.,;:!?*\-#]/.test(contentToAdd) &&
+                          !/[#*\-:]$/.test(prevContent)
+                        ) {
+                          formattedChunk = ' ' + contentToAdd;
+                        }
                       }
                       return {
                         ...msg,

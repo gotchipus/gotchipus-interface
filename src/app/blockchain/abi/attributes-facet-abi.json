@@ -1,1 +1,154 @@
-[{"type":"function","name":"aether","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"uint32","internalType":"uint32"}],"stateMutability":"view"},{"type":"function","name":"bonding","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"bond","type":"uint8","internalType":"uint8"}],"stateMutability":"view"},{"type":"function","name":"feed","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"getTokenName","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"},{"type":"function","name":"growth","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"uint32","internalType":"uint32"}],"stateMutability":"view"},{"type":"function","name":"pet","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"setName","inputs":[{"name":"newName","type":"string","internalType":"string"},{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"wisdom","inputs":[{"name":"gotchipusTokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"uint8","internalType":"uint8"}],"stateMutability":"view"},{"type":"event","name":"SetName","inputs":[{"name":"newName","type":"string","indexed":true,"internalType":"string"}],"anonymous":false}]
+[
+    {
+        "type": "function",
+        "name": "aether",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint32",
+                "internalType": "uint32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "bonding",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "bond",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "feed",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "getTokenName",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string",
+                "internalType": "string"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "growth",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint32",
+                "internalType": "uint32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "pet",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "setName",
+        "inputs": [
+            {
+                "name": "newName",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "wisdom",
+        "inputs": [
+            {
+                "name": "gotchipusTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "event",
+        "name": "SetName",
+        "inputs": [
+            {
+                "name": "newName",
+                "type": "string",
+                "indexed": true,
+                "internalType": "string"
+            }
+        ],
+        "anonymous": false
+    }
+]

@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useWindowRouter } from "@/hooks/useWindowRouter"
 import useResponsive from "@/hooks/useResponsive"
 import Desktop from "@/components/home/Desktop"
 import Taskbar from "@/components/home/Taskbar"
@@ -12,11 +12,18 @@ import { WINDOW_SIZE } from "@/lib/constant"
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<WindowType[]>([])
-  const [activeWindow, setActiveWindow] = useState<string | null>(null)
   const [zIndexCounter, setZIndexCounter] = useState(100)
   const isMobile = useResponsive()
+  const windowRouter = useWindowRouter() 
 
-  const router = useRouter() 
+  useEffect(() => {
+    setOpenWindows(prev => {
+      const shouldKeep = prev.filter(window => 
+        windowRouter.openWindows.includes(window.id)
+      )
+      return shouldKeep
+    })
+  }, [windowRouter.openWindows])
 
   const handleOpenWindow = (windowId: string, title: string, content: JSX.Element) => {
     if (openWindows.some((w) => w.id === windowId)) {
@@ -63,18 +70,17 @@ export default function Home() {
     }
 
     setOpenWindows((prev) => [...prev, newWindow])
-    setActiveWindow(windowId)
     setZIndexCounter((prev) => Math.max(prev + 1, windowZIndex + 1))
+    
+    if (!windowRouter.openWindows.includes(windowId)) {
+      windowRouter.openWindow(windowId)
+    }
   }
 
   const handleCloseWindow = (windowId: string) => {
+    windowRouter.closeWindow(windowId)
+    
     setOpenWindows((prev) => prev.filter((w) => w.id !== windowId))
-    if (activeWindow === windowId) {
-      const remainingWindows = openWindows.filter((w) => w.id !== windowId)
-      setActiveWindow(remainingWindows.length > 0 ? remainingWindows[remainingWindows.length - 1].id : null)
-    }
-
-    router.push('/', { scroll: false });
   }
 
   const handleMinimizeWindow = (windowId: string) => {
@@ -87,8 +93,6 @@ export default function Home() {
   }
 
   const handleActivateWindow = (windowId: string) => {
-    setActiveWindow(windowId)
-    
     let newZIndex = zIndexCounter;
     if (windowId === "wallet-connect-tba") {
       newZIndex = Math.max(zIndexCounter, 1000);
@@ -98,6 +102,8 @@ export default function Home() {
       prev.map((w) => (w.id === windowId ? { ...w, zIndex: newZIndex, minimized: false } : w)),
     )
     setZIndexCounter((prev) => Math.max(prev + 1, newZIndex + 1))
+    
+    windowRouter.activateWindow(windowId)
   }
 
   const handleMoveWindow = (windowId: string, position: { x: number; y: number }) => {
@@ -106,7 +112,12 @@ export default function Home() {
 
   return (
     <main className={`w-screen h-screen overflow-hidden bg-uni-bg-01 relative ${isMobile ? 'touch-manipulation' : ''}`}>
-      <Desktop onOpenWindow={handleOpenWindow} activeWindow={activeWindow} isMobile={isMobile} />
+      <Desktop 
+        onOpenWindow={handleOpenWindow} 
+        activeWindow={windowRouter.activeWindow} 
+        isMobile={isMobile} 
+        openWindowIds={openWindows.map(w => w.id)}
+      />
 
       {openWindows.map(
         (window) =>
@@ -114,7 +125,7 @@ export default function Home() {
             <Window
               key={window.id}
               window={window}
-              isActive={activeWindow === window.id}
+              isActive={windowRouter.activeWindow === window.id}
               onClose={() => handleCloseWindow(window.id)}
               onMinimize={() => handleMinimizeWindow(window.id)}
               onActivate={() => handleActivateWindow(window.id)}
@@ -127,7 +138,7 @@ export default function Home() {
       <Taskbar
         onOpenWindow={handleOpenWindow}
         openWindows={openWindows}
-        activeWindow={activeWindow}
+        activeWindow={windowRouter.activeWindow}
         onActivateWindow={handleActivateWindow}
         onRestoreWindow={handleRestoreWindow}
         isMobile={isMobile}

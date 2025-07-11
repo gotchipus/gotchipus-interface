@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { InputArea } from "./InputArea";
+import { InputArea } from "../chat/InputArea";
 import { QuickQuestions } from "./QuickQuestions";
 
 interface WelcomeScreenProps {

@@ -1210,7 +1210,7 @@
   display: none;
 }
 
-// Copy code button styles
+/* Copy code button styles */
 .copy-code-button {
   position: absolute;
   top: 8px;
@@ -1237,7 +1237,6 @@ pre:hover .copy-code-button {
   display: block;
 }
 
-// Show/hide button styles
 .show-hide-button {
   text-align: center;
   margin-top: 8px;
