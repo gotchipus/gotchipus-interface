@@ -14,8 +14,23 @@
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
   font-family: "VT323", monospace;
+}
+
+html,
+body {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+body {
+  min-width: 100vw;
+  position: relative;
+}
+
+main {
+  position: relative;
+  width: 100%;
 }
 
 
@@ -24,7 +39,15 @@ body {
     text-wrap: balance;
   }
   
-  /* FlipCard specific utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+  
   .backface-hidden {
     backface-visibility: hidden;
   }

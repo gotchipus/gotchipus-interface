@@ -4,18 +4,14 @@ import { useState, useEffect, ReactNode } from 'react';
 import GotchiCard from "./GotchiCard";
 import GotchiCompactCard from "./GotchiCompactCard";
 import GotchiPreviewCard from "./GotchiPreviewCard";
+import { GotchiItem } from '@/lib/types';
 
-interface GotchiItem {
-  id: string;
-  [key: string]: any; 
-}
 
 interface GotchiGridProps {
   gotchiList: GotchiItem[];
   onGotchiAction?: (gotchi: GotchiItem) => void;
   onGotchiSelect?: (gotchi: GotchiItem) => void;
   getButtonText?: (gotchi: GotchiItem) => string;
-  getGotchiName?: (gotchi: GotchiItem) => string;
   isLoading?: boolean;
   emptyMessage?: string;
   emptySubMessage?: string;
@@ -31,7 +27,6 @@ const GotchiGrid = ({
   onGotchiAction,
   onGotchiSelect,
   getButtonText = () => "Action",
-  getGotchiName = (gotchi) => `Gotchi #${gotchi.id}`,
   isLoading = false,
   emptyMessage = "You don't have any Gotchis yet!",
   emptySubMessage = "Mint some Gotchis first to start using them.",
@@ -97,7 +92,7 @@ const GotchiGrid = ({
           <div className="w-60">
             {selectedGotchi && (
               <GotchiPreviewCard
-                name={getGotchiName(selectedGotchi)}
+                name={selectedGotchi.info?.name || `Gotchi #${selectedGotchi.id}`}
                 id={selectedGotchi.id}
                 buttonText={getButtonText(selectedGotchi)}
                 onAction={() => handleGotchiAction(selectedGotchi)}
@@ -114,7 +109,7 @@ const GotchiGrid = ({
                 {gotchiList.map((gotchi) => (
                   <GotchiCompactCard
                     key={gotchi.id}
-                    name={getGotchiName(gotchi)}
+                    name={gotchi.info?.name || `Gotchi #${gotchi.id}`}
                     id={gotchi.id}
                     isSelected={selectedGotchiId === gotchi.id}
                     onClick={() => handleGotchiSelect(gotchi)}
@@ -129,7 +124,7 @@ const GotchiGrid = ({
           {gotchiList.map((gotchi) => (
             <GotchiCard
               key={gotchi.id}
-              name={getGotchiName(gotchi)}
+              name={gotchi.info?.name || `Gotchi #${gotchi.id}`}
               id={gotchi.id}
               className="cursor-pointer"
               buttonName={getButtonText(gotchi)}

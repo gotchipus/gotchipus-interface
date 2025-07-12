@@ -88,16 +88,6 @@ export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds 
     return icons.slice(columnStart, columnEnd)
   })
 
-  useEffect(() => {
-    windowRouter.openWindows.forEach(windowId => {
-      const icon = icons.find(i => i.id === windowId)
-      if (icon && !openWindowIds.includes(windowId)) {
-        const content = getWindowContent(windowId, onOpenWindow)
-        onOpenWindow(windowId, icon.title, content)
-      }
-    })
-  }, [windowRouter.openWindows])
-
   const handleIconClick = (iconId: string) => {
     setActiveIcon(iconId)
     
@@ -126,17 +116,20 @@ export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds 
       <div className={`relative z-10 flex flex-row gap-4 p-2 ${isMobile ? 'gap-2 p-1' : ''}`}>
         {columns.map((columnIcons, columnIndex) => (
           <div key={`column-${columnIndex}`} className={`flex flex-col gap-2 ${isMobile ? 'gap-1' : ''}`}>
-            {columnIcons.map((icon) => (
-              <DesktopIcon
-                key={icon.id}
-                id={icon.id}
-                title={icon.title}
-                icon={icon.icon}
-                onClick={() => handleIconClick(icon.id)}
-                isActive={windowRouter.activeWindow === icon.id}
-                isMobile={isMobile}
-              />
-            ))}
+            {columnIcons.map((icon) => {
+              const isActive = openWindowIds.includes(icon.id) && windowRouter.activeWindow === icon.id;
+              return (
+                <DesktopIcon
+                  key={icon.id}
+                  id={icon.id}
+                  title={icon.title}
+                  icon={icon.icon}
+                  onClick={() => handleIconClick(icon.id)}
+                  isActive={isActive}
+                  isMobile={isMobile}
+                />
+              );
+            })}
           </div>
         ))}
       </div>

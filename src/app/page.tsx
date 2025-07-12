@@ -92,8 +92,6 @@ export default function Home() {
 
   const handleCloseWindow = (windowId: string) => {
     windowRouter.closeWindow(windowId)
-    
-    setOpenWindows((prev) => prev.filter((w) => w.id !== windowId))
   }
 
   const handleMinimizeWindow = (windowId: string) => {
@@ -124,7 +122,7 @@ export default function Home() {
   }
 
   return (
-    <main className={`w-screen h-screen overflow-hidden bg-uni-bg-01 relative ${isMobile ? 'touch-manipulation' : ''}`}>
+    <main className={`w-full min-w-[800px] min-h-screen overflow-auto bg-uni-bg-01 relative ${isMobile ? 'touch-manipulation' : ''}`}>
       <Desktop 
         onOpenWindow={handleOpenWindow} 
         activeWindow={windowRouter.activeWindow} 

@@ -1,56 +1,44 @@
+"use client"
+
 import { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 import GotchiGrid from "../game/GotchiGrid";
 import Image from "next/image";
 import { ethers } from "ethers";
-import { useERC20Read, useContractWrite } from "@/hooks/useContract";
+import { useERC20Read, useContractWrite, useContractRead } from "@/hooks/useContract";
 import { useToast } from '@/hooks/use-toast';
 import { Token } from "@/lib/types";
 import { ArrowUpDown, Settings, ChevronDown } from "lucide-react";
-
-interface GotchiItem {
-  id: string;
-  image?: string;
-}
+import { observer } from "mobx-react-lite";
+import { useStores } from "@stores/context";
+import { GotchiItem } from "@/lib/types";
+import { ArrowLeft } from "lucide-react";
+import { getPharosNativeBalance } from "@/src/utils/contractHepler"
+import { SelectToken } from "@/components/window-content/Dashboard/WalletTabContent/SelectToken"
+import { Tokens } from "@/lib/constant"
 
 interface SwapComponentProps {
   onSwapSuccess?: (tokenId: string, txHash: string) => void;
 }
 
-const SWAP_TOKENS: Token[] = [
-  { name: "Pharos", symbol: "PHRS", icon: "/tokens/pharos.png", contract: "0x0000000000000000000000000000000000000000", balance: "0", decimals: 18, popular: true },
-  { name: "USD Coin", symbol: "USDC", icon: "/tokens/usdc.png", contract: "0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED", balance: "0", decimals: 6, popular: true },
-  { name: "Wrapped Ether", symbol: "WETH", icon: "/tokens/eth.png", contract: "0x4E28826d32F1C398DED160DC16Ac6873357d048f", balance: "0", decimals: 18, popular: true },
-  { name: "Tether USD", symbol: "USDT", icon: "/tokens/usdt.png", contract: "0xD4071393f8716661958F766DF660033b3d35fD29", balance: "0", decimals: 6, popular: true },
-  { name: "Wrapped BTC", symbol: "WBTC", icon: "/tokens/wbtc.png", contract: "0x8275c526d1bCEc59a31d673929d3cE8d108fF5c7", balance: "0", decimals: 8, popular: false },
-  { name: "Wrapped PHRS", symbol: "WPHRS", icon: "/tokens/pharos.png", contract: "0x3019B247381c850ab53Dc0EE53bCe7A07Ea9155f", balance: "0", decimals: 8, popular: false },
-];
 
-export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
+const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
   const [gotchiList, setGotchiList] = useState<GotchiItem[]>([]);
   const [loadingGotchis, setLoadingGotchis] = useState(true);
   const [selectedGotchi, setSelectedGotchi] = useState<GotchiItem | null>(null);
   const [showSwapInterface, setShowSwapInterface] = useState(false);
   
-  const [fromToken, setFromToken] = useState<Token>(SWAP_TOKENS[0]);
-  const [toToken, setToToken] = useState<Token>(SWAP_TOKENS[1]);
+  const [fromToken, setFromToken] = useState<Token>(Tokens[0]);
+  const [toToken, setToToken] = useState<Token>(Tokens[1]);
   const [fromAmount, setFromAmount] = useState("");
   const [toAmount, setToAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [slippage, setSlippage] = useState("0.5");
-  const [showSettings, setShowSettings] = useState(false);
-  const [showFromTokenSelector, setShowFromTokenSelector] = useState(false);
-  const [showToTokenSelector, setShowToTokenSelector] = useState(false);
-  const [isSwapping, setIsSwapping] = useState(false);
-  const [priceImpact, setPriceImpact] = useState("0.01");
-  
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
+  const [tbaAddress, setTbaAddress] = useState<`0x${string}`>("0x0000000000000000000000000000000000000000");
+  const [showTokenSelector, setShowTokenSelector] = useState(false);
+  const [selectorType, setSelectorType] = useState<'from' | 'to'>('from');
+
+  const { walletStore } = useStores();
   const { toast } = useToast();
   const { contractWrite, isConfirmed, error } = useContractWrite();
-
-  const tbaAddress = selectedGotchi ? `0x${selectedGotchi.id.padStart(40, '0')}` : "";
   
   const [nativeBalance, setNativeBalance] = useState("0");
   
@@ -67,6 +55,20 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     [tbaAddress],
     { enabled: !!toToken.contract && toToken.contract !== "0x0000000000000000000000000000000000000000" && !!tbaAddress }
   );
+
+  const { data: tbaAddressData } = useContractRead("account", [selectedGotchi?.id], { enabled: !!selectedGotchi?.id });
+
+  useEffect(() => {
+    const fetchPharosBalance = async () => {
+      if (tbaAddressData) {
+        const balance = await getPharosNativeBalance(tbaAddressData as `0x${string}`);
+        const formattedBalance = ethers.formatEther(balance);
+        setNativeBalance((Number(formattedBalance)).toFixed(4));
+        setTbaAddress(tbaAddressData as `0x${string}`);
+      }
+    };
+    fetchPharosBalance();
+  }, [tbaAddressData]);
 
   const formattedFromBalance = useMemo(() => {
     if (fromToken.contract === "0x0000000000000000000000000000000000000000") {
@@ -89,7 +91,7 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
   }, [toToken, nativeBalance, toTokenBalance]);
 
   useEffect(() => {
-    if (!isConnected || !address) {
+    if (!walletStore.isConnected || !walletStore.address) {
       setGotchiList([]);
       setLoadingGotchis(false);
       return;
@@ -98,12 +100,12 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}`);
         if (response.ok) {
           const data = await response.json();
-          const gotchis = data.filteredIds.map((id: string) => ({
+          const gotchis = data.ids.map((id: string, index: number) => ({
             id,
-            image: `/pus.png`
+            info: data.gotchipusInfo[index]
           }));
           setGotchiList(gotchis);
         }
@@ -115,7 +117,7 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     };
 
     fetchGotchis();
-  }, [address, isConnected]);
+  }, [walletStore.address, walletStore.isConnected]);
 
   useEffect(() => {
     if (fromAmount && parseFloat(fromAmount) > 0) {
@@ -133,11 +135,8 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
       const calculatedAmount = (parseFloat(fromAmount) * fromRate / toRate).toFixed(6);
       setToAmount(calculatedAmount);
       
-      const impact = Math.min(parseFloat(fromAmount) * 0.001, 3);
-      setPriceImpact(impact.toFixed(2));
     } else {
       setToAmount("");
-      setPriceImpact("0.01");
     }
   }, [fromAmount, fromToken, toToken]);
 
@@ -161,29 +160,37 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     setToAmount(fromAmount);
   };
 
-  const handleFromTokenSelect = (token: Token) => {
-    if (token.symbol !== toToken.symbol) {
-      setFromToken(token);
-      setFromAmount("");
-      setToAmount("");
+  const handleTokenSelect = (token: Token | null) => {
+    if (!token) {
+      setShowTokenSelector(false);
+      return;
     }
-    setShowFromTokenSelector(false);
+
+    if (selectorType === 'from') {
+      if (token.symbol !== toToken.symbol) {
+        setFromToken(token);
+        setFromAmount("");
+        setToAmount("");
+      }
+    } else {
+      if (token.symbol !== fromToken.symbol) {
+        setToToken(token);
+        setFromAmount("");
+        setToAmount("");
+      }
+    }
+    setShowTokenSelector(false);
   };
 
-  const handleToTokenSelect = (token: Token) => {
-    if (token.symbol !== fromToken.symbol) {
-      setToToken(token);
-      setFromAmount("");
-      setToAmount("");
-    }
-    setShowToTokenSelector(false);
+  const handleSelectTokenModalClose = () => {
+    setShowTokenSelector(false);
   };
 
+    
   const handleSwap = async () => {
     if (!selectedGotchi || !fromAmount || !toAmount) return;
     
     setIsLoading(true);
-    setIsSwapping(true);
     
     try {
       const mockSwapCalldata = "0x";
@@ -203,14 +210,12 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     } catch (error) {
       console.error('Swap failed:', error);
       setIsLoading(false);
-      setIsSwapping(false);
     }
   };
 
   useEffect(() => {
     if (isConfirmed) {
       setIsLoading(false);
-      setIsSwapping(false);
       toast({
         title: "Swap Successful",
         description: `Successfully swapped ${fromAmount} ${fromToken.symbol} for ${toAmount} ${toToken.symbol}`,
@@ -226,7 +231,6 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
   useEffect(() => {
     if (error) {
       setIsLoading(false);
-      setIsSwapping(false);
       toast({
         title: "Swap Failed",
         description: "Swap transaction was cancelled or failed",
@@ -235,23 +239,6 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     }
   }, [error, toast]);
 
-  if (!isConnected) {
-    return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
-        <div className="bg-[#0078d4] text-white px-3 py-1 mb-4 flex items-center">
-          <div className="mr-2 font-bold">⚠️</div>
-          <div className="text-sm font-bold">Connect Required</div>
-        </div>
-        <p className="text-sm text-[#404040] mb-4">Please connect your wallet to swap tokens</p>
-        <button
-          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
-          onClick={() => openConnectModal?.()}
-        >
-          Connect Wallet
-        </button>
-      </div>
-    );
-  }
 
   if (loadingGotchis) {
     return (
@@ -272,51 +259,31 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
 
   if (showSwapInterface && selectedGotchi) {
     return (
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md">
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
-            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-outer hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] flex items-center gap-2"
           >
-            ← Back to List
+            <ArrowLeft size={16} /> Back to List
           </button>
-          <h2 className="text-lg font-bold">Swap with Gotchi #{selectedGotchi.id}</h2>
-        </div>
-
-        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold">Swap</h3>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
-            >
-              <Settings size={16} />
-            </button>
-          </div>
-
-          {showSettings && (
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold">Slippage Tolerance</label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={slippage}
-                    onChange={(e) => setSlippage(e.target.value)}
-                    className="w-16 px-2 py-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-white text-sm"
-                  />
-                  <span className="text-sm">%</span>
-                </div>
+          <div className="flex flex-col items-end">
+            <div className="text-sm font-bold flex items-center gap-2">
+              Call from
+              <div className="text-base text-[#000080]">
+                [{selectedGotchi.info?.name || `Gotchi #${selectedGotchi.id}`}]
               </div>
             </div>
-          )}
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">From</label>
-              <span className="text-xs text-[#808080]">Balance: {formattedFromBalance}</span>
+            <div className="text-sm text-[#000080]">
+              Balance: {nativeBalance} PHRS
             </div>
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+          </div>
+        </div>
+
+        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4">
+          <div className="relative">
+            {/* From Token Section */}
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 space-y-2 mb-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -326,8 +293,11 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
                   className="flex-1 bg-transparent text-lg font-bold focus:outline-none"
                 />
                 <button
-                  onClick={() => setShowFromTokenSelector(true)}
-                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  onClick={() => {
+                    setSelectorType('from');
+                    setShowTokenSelector(true);
+                  }}
+                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
                 >
                   <Image src={fromToken.icon} alt={fromToken.symbol} width={20} height={20} />
                   <span className="font-bold">{fromToken.symbol}</span>
@@ -340,27 +310,13 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
                   onClick={() => setFromAmount(formattedFromBalance)}
                   className="text-xs font-bold text-[#000080] hover:underline"
                 >
-                  Max
+                  <span className="text-xs text-[#000080]">Balance: {formattedFromBalance}</span>
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-center">
-            <button
-              onClick={handleSwapTokens}
-              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-full"
-            >
-              <ArrowUpDown size={20} />
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-bold">To</label>
-              <span className="text-xs text-[#808080]">Balance: {formattedToBalance}</span>
-            </div>
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            {/* To Token Section */}
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 space-y-2 mt-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -370,41 +326,37 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
                   className="flex-1 bg-transparent text-lg font-bold focus:outline-none"
                 />
                 <button
-                  onClick={() => setShowToTokenSelector(true)}
-                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  onClick={() => {
+                    setSelectorType('to');
+                    setShowTokenSelector(true);
+                  }}
+                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
                 >
                   <Image src={toToken.icon} alt={toToken.symbol} width={20} height={20} />
                   <span className="font-bold">{toToken.symbol}</span>
                   <ChevronDown size={16} />
                 </button>
               </div>
-              <div className="text-xs text-[#808080]">~$0.00</div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-[#808080]">~$0.00</span>
+                <span className="text-xs text-[#000080]">Balance: {formattedToBalance}</span>
+              </div>
+            </div>
+
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+              <button
+                onClick={handleSwapTokens}
+                className="p-3 border-4 border-[#c0c0c0] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-outer rounded-full transition-colors"
+              >
+                <ArrowUpDown size={20} />
+              </button>
             </div>
           </div>
-
-          {fromAmount && toAmount && (
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Rate</span>
-                <span>1 {fromToken.symbol} = {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(4)} {toToken.symbol}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Price Impact</span>
-                <span className={parseFloat(priceImpact) > 1 ? "text-red-600" : "text-green-600"}>
-                  {priceImpact}%
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Minimum received</span>
-                <span>{(parseFloat(toAmount) * (1 - parseFloat(slippage) / 100)).toFixed(6)} {toToken.symbol}</span>
-              </div>
-            </div>
-          )}
 
           <button
             onClick={handleSwap}
             disabled={!fromAmount || !toAmount || isLoading || parseFloat(fromAmount) > parseFloat(formattedFromBalance)}
-            className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 font-bold text-lg transition-colors ${
+            className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 mt-2 font-bold text-lg transition-colors ${
               !fromAmount || !toAmount || isLoading || parseFloat(fromAmount) > parseFloat(formattedFromBalance)
                 ? 'bg-[#a0a0a0] text-[#606060] cursor-not-allowed'
                 : 'bg-[#000080] text-white hover:bg-[#000060]'
@@ -422,64 +374,21 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
           </button>
         </div>
 
-        {showFromTokenSelector && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 w-80 max-h-96 overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold">Select Token</h3>
-                <button
-                  onClick={() => setShowFromTokenSelector(false)}
-                  className="text-lg font-bold hover:text-red-600"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="space-y-2">
-                {SWAP_TOKENS.filter(token => token.symbol !== toToken.symbol).map((token) => (
-                  <button
-                    key={token.symbol}
-                    onClick={() => handleFromTokenSelect(token)}
-                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-left"
-                  >
-                    <Image src={token.icon} alt={token.symbol} width={24} height={24} />
-                    <div>
-                      <div className="font-bold">{token.symbol}</div>
-                      <div className="text-xs text-[#808080]">{token.name}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showToTokenSelector && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 w-80 max-h-96 overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold">Select Token</h3>
-                <button
-                  onClick={() => setShowToTokenSelector(false)}
-                  className="text-lg font-bold hover:text-red-600"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="space-y-2">
-                {SWAP_TOKENS.filter(token => token.symbol !== fromToken.symbol).map((token) => (
-                  <button
-                    key={token.symbol}
-                    onClick={() => handleToTokenSelect(token)}
-                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-left"
-                  >
-                    <Image src={token.icon} alt={token.symbol} width={24} height={24} />
-                    <div>
-                      <div className="font-bold">{token.symbol}</div>
-                      <div className="text-xs text-[#808080]">{token.name}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+        {showTokenSelector && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleSelectTokenModalClose}
+          >
+            <div 
+              className="w-96 h-[600px] bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SelectToken 
+                onAction={handleTokenSelect}
+                tokens={Tokens}
+                popularTokens={["PHRS", "USDC", "USDT"]}
+                nativeBalance={nativeBalance}
+              />
             </div>
           </div>
         )}
@@ -491,7 +400,6 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
     <GotchiGrid
       gotchiList={gotchiList}
       onGotchiAction={handleGotchiSelect}
-      onGotchiSelect={handleGotchiSelect}
       getButtonText={() => "Swap"}
       isLoading={loadingGotchis}
       emptyMessage="No Gotchis available for swapping"
@@ -504,4 +412,6 @@ export const SwapComponent = ({ onSwapSuccess }: SwapComponentProps) => {
       }
     />
   );
-};
+});
+
+export default SwapComponent;

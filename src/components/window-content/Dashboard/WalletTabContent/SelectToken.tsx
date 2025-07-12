@@ -87,7 +87,7 @@ export const SelectToken: React.FC<SelectTokenProps> = observer(({ onAction, tok
   const renderTokenIcon = (token: Token) => {
     if (token.icon) {
       return (
-        <div className="w-8 h-8 mr-3 border-2 border-[#808080] shadow-win98-inner bg-white flex items-center justify-center">
+        <div className="w-8 h-8 mr-3 border-2 border-[#808080] shadow-win98-outer bg-white flex items-center justify-center">
           <Image
             src={token.icon}
             alt={token.name}
@@ -201,7 +201,7 @@ export const SelectToken: React.FC<SelectTokenProps> = observer(({ onAction, tok
                 className="bg-white hover:bg-[#000080] hover:text-white border-2 border-[#808080] shadow-win98-outer py-1 px-3 text-sm flex items-center justify-center transition-colors"
                 onClick={() => handleTokenSelect(token)}
               >
-                <div className="w-4 h-4 mr-2 border border-[#808080] bg-white flex items-center justify-center">
+                <div className="w-4 h-4 mr-2 border border-[#808080] bg-white flex items-center justify-center shadow-win98-outer">
                   {token.icon ? (
                     <Image
                       src={token.icon}

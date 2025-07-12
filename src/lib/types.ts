@@ -40,7 +40,7 @@ export interface GotchipusInfo {
   story: string; 
   owner: string;
   collateral: string;
-  collateralAmount: bigint;
+  collateralAmount: string;
   level: number;
   status: number;
   evolution: number;
@@ -53,8 +53,13 @@ export interface GotchipusInfo {
   wisdom: number;
   aether: number;
   singer: string;
-  nonces: bigint;
+  nonces: string;
   element?: number;
+}
+
+export interface GotchiItem {
+  id: string;
+  info?: GotchipusInfo;
 }
 
 
@@ -110,7 +115,7 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
       story: result.story || "",
       owner: result.owner || "",
       collateral: result.collateral || "",
-      collateralAmount: BigInt(result.collateralAmount || 0),
+      collateralAmount: (result.collateralAmount || BigInt(0)).toString(),
       level: Number(result.level || 0),
       status: Number(result.status || 0),
       evolution: Number(result.evolution || 0),
@@ -123,7 +128,7 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
       wisdom: Number(result.wisdom || 0),
       aether: Number(result.aether || 0),
       singer: result.singer || "",
-      nonces: BigInt(result.nonces || 0)
+      nonces: (result.nonces || BigInt(0)).toString()
     };
   } catch (error) {
     console.error("error::", error);

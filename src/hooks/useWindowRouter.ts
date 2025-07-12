@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   parseWindowsFromUrl, 
@@ -23,11 +23,15 @@ export function useWindowRouter(): UseWindowRouterReturn {
   const searchParams = useSearchParams()
   const [openWindows, setOpenWindows] = useState<string[]>([])
   const [activeWindow, setActiveWindow] = useState<string | null>(null)
+  const isInitialized = useRef(false)
 
   useEffect(() => {
-    const routeState = parseWindowsFromUrl(searchParams)
-    setOpenWindows(routeState.windows.map(w => w.id))
-    setActiveWindow(routeState.activeWindow)
+    if (!isInitialized.current) {
+      const routeState = parseWindowsFromUrl(searchParams)
+      setOpenWindows(routeState.windows.map(w => w.id))
+      setActiveWindow(routeState.activeWindow)
+      isInitialized.current = true
+    }
   }, [searchParams])
 
   const openWindow = useCallback((windowId: string) => {
@@ -36,30 +40,27 @@ export function useWindowRouter(): UseWindowRouterReturn {
       return
     }
 
-    setOpenWindows(prev => {
-      const newWindows = prev.includes(windowId) ? prev : [...prev, windowId]
-      const newUrl = addWindowToUrl(newWindows, windowId, activeWindow)
-      router.push(newUrl, { scroll: false })
-      return newWindows
-    })
+    const newWindows = openWindows.includes(windowId) ? openWindows : [...openWindows, windowId]
     
+    setOpenWindows(newWindows)
     setActiveWindow(windowId)
-  }, [router, activeWindow])
+    
+    const newUrl = addWindowToUrl(newWindows, windowId, activeWindow)
+    router.push(newUrl, { scroll: false })
+  }, [router, activeWindow, openWindows])
 
   const closeWindow = useCallback((windowId: string) => {
-    setOpenWindows(prev => {
-      const newWindows = prev.filter(id => id !== windowId)
-      const newUrl = removeWindowFromUrl(prev, windowId, activeWindow)
-      router.push(newUrl, { scroll: false })
-      
-      if (activeWindow === windowId) {
-        const newActiveWindow = newWindows.length > 0 ? newWindows[newWindows.length - 1] : null
-        setActiveWindow(newActiveWindow)
-      }
-      
-      return newWindows
-    })
-  }, [router, activeWindow])
+    const newWindows = openWindows.filter(id => id !== windowId)
+    const newActiveWindow = activeWindow === windowId ? 
+      (newWindows.length > 0 ? newWindows[newWindows.length - 1] : null) : 
+      activeWindow
+    
+    setOpenWindows(newWindows)
+    setActiveWindow(newActiveWindow)
+    
+    const newUrl = removeWindowFromUrl(openWindows, windowId, activeWindow)
+    router.push(newUrl, { scroll: false })
+  }, [router, activeWindow, openWindows])
 
   const activateWindow = useCallback((windowId: string) => {
     if (!openWindows.includes(windowId)) {
@@ -68,6 +69,7 @@ export function useWindowRouter(): UseWindowRouterReturn {
     }
 
     setActiveWindow(windowId)
+    
     const newUrl = updateActiveWindowUrl(openWindows, windowId)
     router.push(newUrl, { scroll: false })
   }, [router, openWindows, openWindow])

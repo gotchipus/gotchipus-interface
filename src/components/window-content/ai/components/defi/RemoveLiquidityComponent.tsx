@@ -1,6 +1,6 @@
+"use client"
+
 import { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 import GotchiGrid from "../game/GotchiGrid";
 import Image from "next/image";
 import { ethers } from "ethers";
@@ -8,11 +8,11 @@ import { useERC20Read, useContractWrite } from "@/hooks/useContract";
 import { useToast } from '@/hooks/use-toast';
 import { Token } from "@/lib/types";
 import { Minus, Settings, Info, Percent } from "lucide-react";
-
-interface GotchiItem {
-  id: string;
-  image?: string;
-}
+import { GotchiItem } from "@/lib/types";
+import { SelectToken } from "@/components/window-content/Dashboard/WalletTabContent/SelectToken"
+import { Tokens } from "@/lib/constant"
+import { observer } from "mobx-react-lite";
+import { useStores } from "@stores/context";
 
 interface RemoveLiquidityComponentProps {
   onSuccess?: (tokenId: string, txHash: string) => void;
@@ -36,9 +36,8 @@ const LIQUIDITY_TOKENS: Token[] = [
   { name: "Wrapped BTC", symbol: "WBTC", icon: "/tokens/wbtc.png", contract: "0x8275c526d1bCEc59a31d673929d3cE8d108fF5c7", balance: "0", decimals: 8, popular: false },
 ];
 
-export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponentProps) => {
-  console.log('RemoveLiquidityComponent rendered!');
-  
+const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityComponentProps) => {
+  const { walletStore } = useStores();
   const [gotchiList, setGotchiList] = useState<GotchiItem[]>([]);
   const [loadingGotchis, setLoadingGotchis] = useState(true);
   const [selectedGotchi, setSelectedGotchi] = useState<GotchiItem | null>(null);
@@ -52,8 +51,7 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
   const [showSettings, setShowSettings] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
+
   const { toast } = useToast();
   const { contractWrite, isConfirmed, error } = useContractWrite();
 
@@ -71,7 +69,7 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
   }, [selectedPosition, removePercentage]);
 
   useEffect(() => {
-    if (!isConnected || !address) {
+    if (!walletStore.isConnected || !walletStore.address) {
       setGotchiList([]);
       setLoadingGotchis(false);
       return;
@@ -80,12 +78,12 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}`);
         if (response.ok) {
           const data = await response.json();
-          const gotchis = data.filteredIds.map((id: string) => ({
+          const gotchis = data.ids.map((id: string, index: number) => ({
             id,
-            image: `/pus.png`
+            info: data.gotchipusInfo[index]
           }));
           setGotchiList(gotchis);
         }
@@ -97,7 +95,7 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
     };
 
     fetchGotchis();
-  }, [address, isConnected]);
+  }, [walletStore.address, walletStore.isConnected]);
 
   useEffect(() => {
     if (!selectedGotchi) return;
@@ -210,24 +208,6 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
       });
     }
   }, [error, toast]);
-
-  if (!isConnected) {
-    return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
-        <div className="bg-[#0078d4] text-white px-3 py-1 mb-4 flex items-center">
-          <div className="mr-2 font-bold">⚠️</div>
-          <div className="text-sm font-bold">Connect Required</div>
-        </div>
-        <p className="text-sm text-[#404040] mb-4">Please connect your wallet to remove liquidity</p>
-        <button
-          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
-          onClick={() => openConnectModal?.()}
-        >
-          Connect Wallet
-        </button>
-      </div>
-    );
-  }
 
   if (loadingGotchis) {
     return (
@@ -473,4 +453,6 @@ export const RemoveLiquidityComponent = ({ onSuccess }: RemoveLiquidityComponent
       }
     />
   );
-};
+});
+
+export default RemoveLiquidityComponent;

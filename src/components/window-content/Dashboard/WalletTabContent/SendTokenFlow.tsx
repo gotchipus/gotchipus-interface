@@ -10,15 +10,7 @@ import { useERC20Read, useContractWrite } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
 import { checkAndCompleteTask } from "@/src/utils/taskUtils"
 import { useStores } from "@stores/context"
-
-const Tokens: Token[] = [
-  { name: "Pharos", symbol: "PHRS", icon: "/tokens/pharos.png", contract: "0x0000000000000000000000000000000000000000", balance: "0", decimals: 18, popular: false },
-  { name: "USD Coin", symbol: "USDC", icon: "/tokens/usdc.png", contract: "0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED", balance: "0", decimals: 6, popular: false },
-  { name: "Wrapped Ether", symbol: "WETH", icon: "/tokens/eth.png", contract: "0x4E28826d32F1C398DED160DC16Ac6873357d048f", balance: "0", decimals: 18, popular: false },
-  { name: "Tether USD", symbol: "USDT", icon: "/tokens/usdt.png", contract: "0xD4071393f8716661958F766DF660033b3d35fD29", balance: "0", decimals: 6, popular: false },
-  { name: "Wrapped BTC", symbol: "WBTC", icon: "/tokens/wbtc.png", contract: "0x8275c526d1bCEc59a31d673929d3cE8d108fF5c7", balance: "0", decimals: 8, popular: false },
-  { name: "Wrapped PHRS", symbol: "WPHRS", icon: "/tokens/pharos.png", contract: "0x3019B247381c850ab53Dc0EE53bCe7A07Ea9155f", balance: "0", decimals: 8, popular: false },
-];
+import { Tokens } from "@/lib/constant"
 
 const popularTokens = ["PHRS", "USDC", "USDT"];
 

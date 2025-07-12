@@ -1,11 +1,11 @@
 import { AgentConfig } from '../types';
 import PetGotchiComponent from '../components/game/PetGotchiComponent';
-import { SummonComponent } from '../components/game/SummonComponent';
-import { WearableComponent } from '../components/game/WearableComponent';
-import { CallComponent } from '../components/game/CallComponent';
-import { SwapComponent } from '../components/defi/SwapComponent';
-import { AddLiquidityComponent } from '../components/defi/AddLiquidityComponent';
-import { RemoveLiquidityComponent } from '../components/defi/RemoveLiquidityComponent';
+import SummonComponent from '../components/game/SummonComponent';
+import WearableComponent from '../components/game/WearableComponent';
+import CallComponent from '../components/game/CallComponent';
+import SwapComponent from '../components/defi/SwapComponent';
+import AddLiquidityComponent from '../components/defi/AddLiquidityComponent';
+import RemoveLiquidityComponent from '../components/defi/RemoveLiquidityComponent';
 
 export const AGENT_CONFIGS: AgentConfig[] = [
   {
@@ -29,8 +29,8 @@ export const AGENT_CONFIGS: AgentConfig[] = [
   },
   {
     index: 3,
-    name: 'Mint Gotchi',
-    description: 'Mint Gotchipus NFT',
+    name: 'Free Mint',
+    description: 'Free Mint Pharos NFT',
     renderAsText: false,
   },
   {

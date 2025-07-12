@@ -5,14 +5,14 @@ import { LoadingIndicator } from "../ui/LoadingIndicator";
 import { InputArea } from "./InputArea";
 import { Message } from "../../types";
 import PoolInfoComponent from "../defi/PoolInfoComponent";
-import { MintGotchiComponent } from "../game/MintGotchiComponent";
+import MintGotchiComponent from "../game/MintGotchiComponent";
 import PetGotchiComponent from "../game/PetGotchiComponent";
-import { SummonComponent } from "../game/SummonComponent";
-import { WearableComponent } from "../game/WearableComponent";
-import { CallComponent } from "../game/CallComponent";
-import { SwapComponent } from "../defi/SwapComponent";
-import { AddLiquidityComponent } from "../defi/AddLiquidityComponent";
-import { RemoveLiquidityComponent } from "../defi/RemoveLiquidityComponent";
+import SummonComponent from "../game/SummonComponent";
+import WearableComponent from "../game/WearableComponent";
+import CallComponent from "../game/CallComponent";
+import SwapComponent from "../defi/SwapComponent";
+import AddLiquidityComponent from "../defi/AddLiquidityComponent";
+import RemoveLiquidityComponent from "../defi/RemoveLiquidityComponent";
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -42,13 +42,12 @@ export const ChatInterface = memo(({
   status,
 }: ChatInterfaceProps) => {
   const visibleMessages = messages.filter((m) => m.role !== "system");
-  console.log('Visible messages in ChatInterface:', visibleMessages);
 
   return (
     <div className="h-full flex flex-col" ref={chatContainerRef}>
       <ChatHeader onBackClick={onBackClick} />
       
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex flex-col gap-6">
             {visibleMessages.map((msg) => (

@@ -12,17 +12,14 @@ import EquipSelectWindow from "@/components/window-content/equip/EquipSelectWind
 import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
 import { useSvgLayers } from "@/hooks/useSvgLayers";
 import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
-
-interface GotchiItem {
-  id: string;
-  image?: string;
-}
+import { ArrowLeft } from "lucide-react";
+import { GotchiItem } from '@/lib/types';
 
 interface WearableComponentProps {
   onEquipSuccess?: (tokenId: string, txHash: string) => void;
 }
 
-export const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) => {
+const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) => {
   const [gotchiList, setGotchiList] = useState<GotchiItem[]>([]);
   const [loadingGotchis, setLoadingGotchis] = useState(true);
   const [selectedGotchi, setSelectedGotchi] = useState<GotchiItem | null>(null);
@@ -64,9 +61,11 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
         const response = await fetch(`/api/tokens/gotchipus?owner=${address}`);
         if (response.ok) {
           const data = await response.json();
-          const gotchis = data.filteredIds.map((id: string) => ({
+          console.log('data', data);
+
+          const gotchis = data.ids.map((id: string, index: number) => ({
             id,
-            image: `/pus.png`
+            info: data.gotchipusInfo[index]
           }));
           setGotchiList(gotchis);
         }
@@ -136,7 +135,7 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
         </div>
         <p className="text-sm text-[#404040] mb-4">Please connect your wallet to view your Gotchis</p>
         <button
-          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-outer hover:bg-[#d0d0d0] active:shadow-win98-inner"
           onClick={() => openConnectModal?.()}
         >
           Connect Wallet
@@ -168,21 +167,17 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
-            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-outer hover:bg-[#d0d0d0] active:shadow-win98-inner flex items-center"
           >
-            ← Back to List
+            <ArrowLeft size={18} className="mr-2" />
+            Back to List
           </button>
-          <h2 className="text-lg font-bold">Equip Gotchi #{selectedGotchi.id}</h2>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-2/5 flex flex-col gap-4">
-            <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-[#d4d0c8] p-4">
-              <div className="font-bold mb-3 flex items-center border-b border-[#808080] pb-2">
-                <Image src="/icons/gotchi.png" alt="Gotchi" width={18} height={18} className="mr-2" />
-                Gotchi Preview
-              </div>
-              <div className="flex items-center justify-center h-64 bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff]"
+            <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-4">
+              <div className="flex items-center justify-center h-64 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-inner"
                    style={backgroundSvg ? { 
                      backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">${backgroundSvg}</svg>`)}")`,
                      backgroundSize: 'cover',
@@ -204,14 +199,14 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
                       className="mx-auto"
                     />
                   )}
-                  <p className="text-sm font-bold mt-2">Gotchi #{selectedGotchi.id}</p>
+                  <p className="text-sm font-bold mt-2 text-white">{selectedGotchi.info?.name || `Gotchi #${selectedGotchi.id}`}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="w-full md:w-3/5">
-            <div className="border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-[#d4d0c8] p-4">
+            <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-4">
               <div className="font-bold mb-4 flex items-center border-b border-[#808080] pb-2">
                 <Image src="/icons/equip.png" alt="Equip" width={18} height={18} className="mr-2" />
                 Equipment Slots
@@ -228,7 +223,7 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
                       onClick={() => slot.canEquip && handleEquipSlotClick(index)}
                     >
                       <div
-                        className={`aspect-square border-2 ${selectedEquipSlot === index ? "border-[#000080] bg-[#e0e0e0]" : "border-[#808080] bg-[#c0c0c0]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] flex items-center justify-center p-3`}
+                        className={`aspect-square border-2 ${selectedEquipSlot === index ? "border-[#000080] bg-[#e0e0e0]" : "border-[#808080] bg-[#c0c0c0]"} shadow-win98-inner flex items-center justify-center p-3`}
                       >
                         <div className="relative w-full h-full flex items-center justify-center">
                           {slot.svgString ? (
@@ -246,7 +241,7 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
                         </div>
                       </div>
                       <div
-                        className={`border-2 border-t-0 ${selectedEquipSlot === index ? "border-[#000080] bg-[#e0e0e0]" : "border-[#808080] bg-[#d4d0c8]"} shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-center font-medium p-2`}
+                        className={`border-2 border-t-0 ${selectedEquipSlot === index ? "border-[#000080] bg-[#e0e0e0]" : "border-[#808080] bg-[#d4d0c8]"} shadow-win98-inner text-center font-medium p-2`}
                       >
                         <div className="text-sm">{slot.name}</div>
                         {slot.canEquip && (
@@ -295,3 +290,5 @@ export const WearableComponent = observer(({ onEquipSuccess }: WearableComponent
     />
   );
 });
+
+export default WearableComponent;

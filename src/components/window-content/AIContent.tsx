@@ -1,11 +1,21 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { WelcomeScreen, ChatInterface, Message } from "./ai";
 import { ChatResponse } from "./ai/types";
 import useChat from "@/hooks/useChat";
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { observer } from "mobx-react-lite";
+import { useStores } from "@stores/context";
+import { CustomConnectButton } from "../footer/CustomConnectButton";
+import useResponsive from "@/src/hooks/useResponsive";
 
-const AIContent = () => {
+const AIContent = observer(() => {
+  const { walletStore } = useStores();
+  const { openConnectModal } = useConnectModal();
+  const isMobile = useResponsive();
+
   const [input, setInput] = useState("");
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -405,6 +415,25 @@ const AIContent = () => {
     }
   };
 
+  if (!walletStore.isConnected) {
+    return (
+      <div className={`h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className="text-center flex flex-col items-center">
+          <div className={`mb-4 ${isMobile ? 'mb-2' : ''}`}>
+            <Image src="/not-any.png" alt="No NFTs" width={isMobile ? 80 : 120} height={isMobile ? 80 : 120} />
+          </div>
+          <h3 className={`font-bold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>No Wallet Connected</h3>
+          <p className={`text-[#000080] mb-4 ${isMobile ? 'text-sm' : ''}`}>Please connect your wallet to continue.</p>
+          <div
+            className={`text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner ${isMobile ? 'h-8' : 'h-10'}`}
+          >
+            <CustomConnectButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#c0c0c0] w-full h-full">
       {!hasStartedChat ? (
@@ -434,6 +463,6 @@ const AIContent = () => {
       )}
     </div>
   );
-};
+});
 
 export default AIContent;

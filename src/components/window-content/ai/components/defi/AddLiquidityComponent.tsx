@@ -33,7 +33,7 @@ const POPULAR_PAIRS = [
   { token0: "WETH", token1: "WBTC" },
 ];
 
-export const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
+const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
   console.log('AddLiquidityComponent rendered!');
   
   const [gotchiList, setGotchiList] = useState<GotchiItem[]>([]);
@@ -559,3 +559,5 @@ export const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps)
     />
   );
 };
+
+export default AddLiquidityComponent;
