@@ -6,7 +6,9 @@ export interface Message {
   updatedAt?: Date;
   isCallTools?: boolean;
   agentIndex?: number;
-  data?: any; 
+  data?: any;
+  isLoading?: boolean;
+  isStreaming?: boolean;
 }
 
 export interface ChatResponse {

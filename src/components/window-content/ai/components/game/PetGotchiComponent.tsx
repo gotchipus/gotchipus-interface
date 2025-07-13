@@ -89,7 +89,7 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
       })
 
       const upsertData = async () => {
-        await checkAndCompleteTask(walletStore.address!, 4);
+        await checkAndCompleteTask(walletStore.address!, 5);
       }
 
       upsertData();

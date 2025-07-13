@@ -8,6 +8,7 @@ import PoolInfoComponent from "../defi/PoolInfoComponent";
 import MintGotchiComponent from "../game/MintGotchiComponent";
 import PetGotchiComponent from "../game/PetGotchiComponent";
 import SummonComponent from "../game/SummonComponent";
+import SummonSuccessComponent from "../game/SummonSuccessComponent";
 import WearableComponent from "../game/WearableComponent";
 import CallComponent from "../game/CallComponent";
 import SwapComponent from "../defi/SwapComponent";
@@ -26,6 +27,8 @@ interface ChatInterfaceProps {
   messagesEndRef: RefObject<HTMLDivElement>;
   isDisabled: boolean;
   status: "idle" | "streaming";
+  onSummonSuccess?: (tokenId: string, txHash: string, pusName: string, pusStory: string) => void;
+  onSummonDataReady?: (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => void;
 }
 
 export const ChatInterface = memo(({
@@ -40,6 +43,8 @@ export const ChatInterface = memo(({
   messagesEndRef,
   isDisabled,
   status,
+  onSummonSuccess,
+  onSummonDataReady,
 }: ChatInterfaceProps) => {
   const visibleMessages = messages.filter((m) => m.role !== "system");
 
@@ -65,7 +70,16 @@ export const ChatInterface = memo(({
                   <MintGotchiComponent />
                 )}
                 {msg.isCallTools && msg.agentIndex === 4 && (
-                  <SummonComponent />
+                  <SummonComponent onSummonSuccess={onSummonSuccess} />
+                )}
+                {msg.data?.summonSuccess && (
+                  <SummonSuccessComponent 
+                    tokenId={msg.data.summonSuccess.tokenId}
+                    txHash={msg.data.summonSuccess.txHash}
+                    pusName={msg.data.summonSuccess.pusName}
+                    pusStory={msg.data.summonSuccess.pusStory}
+                    onDataReady={() => onSummonDataReady?.(msg.id, msg.data.summonSuccess)}
+                  />
                 )}
                 {msg.isCallTools && msg.agentIndex === 5 && (
                   <WearableComponent />

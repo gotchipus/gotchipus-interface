@@ -5,7 +5,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { WelcomeScreen, ChatInterface, Message } from "./ai";
 import { ChatResponse } from "./ai/types";
 import useChat from "@/hooks/useChat";
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
 import { CustomConnectButton } from "../footer/CustomConnectButton";
@@ -13,7 +12,6 @@ import useResponsive from "@/src/hooks/useResponsive";
 
 const AIContent = observer(() => {
   const { walletStore } = useStores();
-  const { openConnectModal } = useConnectModal();
   const isMobile = useResponsive();
 
   const [input, setInput] = useState("");
@@ -44,6 +42,12 @@ const AIContent = observer(() => {
     }
   }, [hasStartedChat, status]);
 
+  useEffect(() => {
+    return () => {
+      streamingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     adjustTextareaHeight(e.target);
@@ -55,6 +59,10 @@ const AIContent = observer(() => {
   };
 
   const handleBackToInput = () => {
+    streamingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    streamingTimeoutsRef.current = [];
+    setProcessedSummonIds(new Set());
+    
     setHasStartedChat(false);
     setInput("");
     setMessages([
@@ -115,6 +123,7 @@ const AIContent = observer(() => {
           createdAt: new Date(),
           isCallTools: chatResponse.is_call_tools,
           agentIndex: chatResponse.agent_index,
+          isLoading: !chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1),
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
@@ -146,41 +155,8 @@ const AIContent = observer(() => {
                       }
                       
                       let formattedChunk = contentToAdd;
-                      if (prevContent && contentToAdd) {
-                        if (
-                          prevContent.trim() &&
-                          /^#+\s/.test(contentToAdd) &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n\n' + contentToAdd;
-                        }
-                        else if (
-                          /\*\*[^*]+:\*\*$/.test(prevContent) &&
-                          !contentToAdd.startsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          /^\w+[^:]*:\s*/.test(contentToAdd) &&
-                          prevContent.trim() &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          /^\*\s/.test(contentToAdd) &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          !prevContent.endsWith(' ') &&
-                          !prevContent.endsWith('\n') &&
-                          !contentToAdd.startsWith(' ') &&
-                          !contentToAdd.startsWith('\n') &&
-                          !/^[.,;:!?*\-#]/.test(contentToAdd) &&
-                          !/[#*\-:]$/.test(prevContent)
-                        ) {
+                      if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
+                        if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
                           formattedChunk = ' ' + contentToAdd;
                         }
                       }
@@ -189,7 +165,9 @@ const AIContent = observer(() => {
                         ...msg,
                         content: prevContent + formattedChunk,
                         isCallTools: chatResponse.agent_index === 1 ? true : false,
-                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+                        isLoading: false,
+                        isStreaming: true,
                       };
                     })
                   );
@@ -202,7 +180,20 @@ const AIContent = observer(() => {
                         ...msg,
                         content: chatResponse.message,
                         isCallTools: chatResponse.agent_index === 1 ? true : false,
-                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+                        isLoading: false,
+                        isStreaming: false,
+                      };
+                    })
+                  );
+                },
+                onComplete: () => {
+                  setMessages(prev =>
+                    prev.map(msg => {
+                      if (msg.id !== assistantMessage.id) return msg;
+                      return {
+                        ...msg,
+                        isStreaming: false,
                       };
                     })
                   );
@@ -217,7 +208,9 @@ const AIContent = observer(() => {
                   ...msg,
                   content: chatResponse.message,
                   isCallTools: chatResponse.agent_index === 1 ? true : false,
-                  agentIndex: chatResponse.agent_index === 1 ? 1 : undefined
+                  agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+                  isLoading: false,
+                  isStreaming: false,
                 };
               })
             );
@@ -323,47 +316,16 @@ const AIContent = observer(() => {
                       }
                       
                       let formattedChunk = contentToAdd;
-                      if (prevContent && contentToAdd) {  
-                        if (
-                          prevContent.trim() &&
-                          /^#+\s/.test(contentToAdd) &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n\n' + contentToAdd;
-                        }
-                        else if (
-                          /\*\*[^*]+:\*\*$/.test(prevContent) &&
-                          !contentToAdd.startsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          /^\w+[^:]*:\s*/.test(contentToAdd) &&
-                          prevContent.trim() &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          /^\*\s/.test(contentToAdd) &&
-                          !prevContent.endsWith('\n')
-                        ) {
-                          formattedChunk = '\n' + contentToAdd;
-                        }
-                        else if (
-                          !prevContent.endsWith(' ') &&
-                          !prevContent.endsWith('\n') &&
-                          !contentToAdd.startsWith(' ') &&
-                          !contentToAdd.startsWith('\n') &&
-                          !/^[.,;:!?*\-#]/.test(contentToAdd) &&
-                          !/[#*\-:]$/.test(prevContent)
-                        ) {
+                      if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
+                        if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
                           formattedChunk = ' ' + contentToAdd;
                         }
                       }
                       return {
                         ...msg,
                         content: prevContent + formattedChunk,
+                        isLoading: false,
+                        isStreaming: true,
                         ...(msg.agentIndex === 0 && !msg.data
                           ? { isCallTools: false, agentIndex: undefined }
                           : {})
@@ -373,6 +335,17 @@ const AIContent = observer(() => {
                 },
                 onError: (error) => {
                   console.error("Tool call error:", error);
+                },
+                onComplete: () => {
+                  setMessages(prev =>
+                    prev.map(msg => {
+                      if (msg.id !== assistantMessage.id) return msg;
+                      return {
+                        ...msg,
+                        isStreaming: false,
+                      };
+                    })
+                  );
                 },
               }
             );
@@ -414,6 +387,134 @@ const AIContent = observer(() => {
       handleSendMessage();
     }
   };
+
+  const handleSummonSuccess = useCallback(async (
+    tokenId: string,
+    txHash: string,
+    pusName: string,
+    pusStory: string
+  ) => {
+    const summonDataMessage: Message = {
+      id: Date.now().toString(),
+      role: "assistant",
+      content: "",
+      createdAt: new Date(),
+      data: {
+        summonSuccess: {
+          tokenId,
+          txHash,
+          pusName,
+          pusStory
+        }
+      }
+    };
+
+    setMessages((prev) => {
+      const filteredMessages = prev.filter(msg => !msg.data?.summon);
+      return [...filteredMessages, summonDataMessage];
+    });
+  }, []);
+
+  const [processedSummonIds, setProcessedSummonIds] = useState<Set<string>>(new Set());
+  const streamingTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const handleSummonDataReady = useCallback(async (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => {
+    if (processedSummonIds.has(messageId)) {
+      return;
+    }
+
+    setProcessedSummonIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(messageId);
+      return newSet;
+    });
+
+    const { tokenId, txHash, pusName, pusStory } = summonData;
+
+    const loadingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: "",
+      createdAt: new Date(),
+      isLoading: true,
+    };
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
+    try {
+      await sendChatEvent(
+        {
+          query: `Successfully summoned ${tokenId}! Summon ${pusName} with ${pusStory}`,
+          is_call_tools: true,
+          agent_index: 4,
+          message: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+        },
+        {
+          onText: (chunk) => {
+            setMessages(prev =>
+              prev.map(msg => {
+                if (msg.id !== loadingMessage.id) return msg;
+                const prevContent = msg.content || '';
+                
+                let formattedChunk = chunk;
+                if (prevContent && chunk && !prevContent.endsWith(' ') && !chunk.startsWith(' ')) {
+                  if (!/^[.,;:!?\-\n]/.test(chunk) && !/[\n]$/.test(prevContent)) {
+                    formattedChunk = ' ' + chunk;
+                  }
+                }
+                
+                return {
+                  ...msg,
+                  content: prevContent + formattedChunk,
+                  isLoading: false,
+                  isStreaming: true,
+                };
+              })
+            );
+          },
+          onError: (error) => {
+            console.error("Failed to call intent API:", error);
+            setMessages(prev =>
+              prev.map(msg => {
+                if (msg.id !== loadingMessage.id) return msg;
+                return {
+                  ...msg,
+                  content: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+                  isLoading: false,
+                  isStreaming: false,
+                };
+              })
+            );
+          },
+          onComplete: () => {
+            setMessages(prev =>
+              prev.map(msg => {
+                if (msg.id !== loadingMessage.id) return msg;
+                return {
+                  ...msg,
+                  isStreaming: false,
+                };
+              })
+            );
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Failed to call intent API:", error);
+      
+      setMessages(prev =>
+        prev.map(msg => {
+          if (msg.id !== loadingMessage.id) return msg;
+          return {
+            ...msg,
+            content: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+            isLoading: false,
+            isStreaming: false,
+          };
+        })
+      );
+    }
+  }, [processedSummonIds, sendChatEvent]);
 
   if (!walletStore.isConnected) {
     return (
@@ -459,6 +560,8 @@ const AIContent = observer(() => {
           messagesEndRef={messagesEndRef}
           isDisabled={status === "streaming"}
           status={status}
+          onSummonSuccess={handleSummonSuccess}
+          onSummonDataReady={handleSummonDataReady}
         />
       )}
     </div>

@@ -2,14 +2,36 @@ import { memo } from 'react';
 import { Message } from '../../types';
 import { getAgentConfig } from '../../config';
 import { MarkedMarkdown } from '../../markdown';
+import { LoadingIndicator, StreamingText } from '../ui';
 
 interface Props { message: Message }
 
 export const MessageContent = memo(({ message }: Props) => {
   console.log('MessageContent rendered!', message);
   
+  if (message.isLoading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <LoadingIndicator />
+        <span className="text-gray-600">Preparing response...</span>
+      </div>
+    );
+  }
+  
   if (!message.isCallTools) {
-    return <MarkedMarkdown content={message.content} />;
+    const hasMarkdown = /[#*_`\[\]!]/.test(message.content);
+    
+    if (hasMarkdown && !message.isStreaming) {
+      return <MarkedMarkdown content={message.content} />;
+    }
+    
+    return (
+      <StreamingText 
+        text={message.content} 
+        isStreaming={message.isStreaming}
+        className="whitespace-pre-wrap"
+      />
+    );
   }
 
   const cfg = getAgentConfig(message.agentIndex ?? 0);
@@ -18,9 +40,33 @@ export const MessageContent = memo(({ message }: Props) => {
 
   switch (message.agentIndex) {
     case 0:
-      return message.content ? <MarkedMarkdown content={message.content} /> : null;
+      if (!message.content) return null;
+      
+      const hasMarkdown0 = /[#*_`\[\]!]/.test(message.content);
+      if (hasMarkdown0 && !message.isStreaming) {
+        return <MarkedMarkdown content={message.content} />;
+      }
+      
+      return (
+        <StreamingText 
+          text={message.content} 
+          isStreaming={message.isStreaming}
+          className="whitespace-pre-wrap"
+        />
+      );
     case 1:
-      return <MarkedMarkdown content={message.content} />;
+      const hasMarkdown1 = /[#*_`\[\]!]/.test(message.content);
+      if (hasMarkdown1 && !message.isStreaming) {
+        return <MarkedMarkdown content={message.content} />;
+      }
+      
+      return (
+        <StreamingText 
+          text={message.content} 
+          isStreaming={message.isStreaming}
+          className="whitespace-pre-wrap"
+        />
+      );
     case 2:
       return (
         <div className="space-y-4">
@@ -30,7 +76,21 @@ export const MessageContent = memo(({ message }: Props) => {
               {JSON.stringify(message.data, null, 2)}
             </pre>
           </section>
-          <MarkedMarkdown content={message.content} />
+          {message.content && (
+            (() => {
+              const hasMarkdown2 = /[#*_`\[\]!]/.test(message.content);
+              if (hasMarkdown2 && !message.isStreaming) {
+                return <MarkedMarkdown content={message.content} />;
+              }
+              return (
+                <StreamingText 
+                  text={message.content} 
+                  isStreaming={message.isStreaming}
+                  className="whitespace-pre-wrap"
+                />
+              );
+            })()
+          )}
         </div>
       );
     default:
@@ -42,7 +102,21 @@ export const MessageContent = memo(({ message }: Props) => {
               {JSON.stringify(message.data, null, 2)}
             </pre>
           </section>
-          <MarkedMarkdown content={message.content} />
+          {message.content && (
+            (() => {
+              const hasMarkdownDefault = /[#*_`\[\]!]/.test(message.content);
+              if (hasMarkdownDefault && !message.isStreaming) {
+                return <MarkedMarkdown content={message.content} />;
+              }
+              return (
+                <StreamingText 
+                  text={message.content} 
+                  isStreaming={message.isStreaming}
+                  className="whitespace-pre-wrap"
+                />
+              );
+            })()
+          )}
         </div>
       );
   }
