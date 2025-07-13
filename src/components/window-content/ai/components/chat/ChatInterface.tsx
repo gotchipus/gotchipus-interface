@@ -29,6 +29,8 @@ interface ChatInterfaceProps {
   status: "idle" | "streaming";
   onSummonSuccess?: (tokenId: string, txHash: string, pusName: string, pusStory: string) => void;
   onSummonDataReady?: (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => void;
+  onMintDataReady?: (messageId: string, mintData: { txHash: string }) => void;
+  onPetDataReady?: (messageId: string, petData: { tokenId: string, txHash: string }) => void;
 }
 
 export const ChatInterface = memo(({
@@ -45,6 +47,8 @@ export const ChatInterface = memo(({
   status,
   onSummonSuccess,
   onSummonDataReady,
+  onMintDataReady,
+  onPetDataReady,
 }: ChatInterfaceProps) => {
   const visibleMessages = messages.filter((m) => m.role !== "system");
 
@@ -64,10 +68,14 @@ export const ChatInterface = memo(({
                   <MessageItem message={msg} />
                 )}
                 {msg.isCallTools && msg.agentIndex === 2 && (
-                  <PetGotchiComponent />
+                  <PetGotchiComponent 
+                    onPetSuccess={(tokenId, txHash) => onPetDataReady?.(msg.id, { tokenId, txHash })}
+                  />
                 )}
                 {msg.isCallTools && msg.agentIndex === 3 && (
-                  <MintGotchiComponent />
+                  <MintGotchiComponent 
+                    onMintSuccess={(txHash) => onMintDataReady?.(msg.id, { txHash })}
+                  />
                 )}
                 {msg.isCallTools && msg.agentIndex === 4 && (
                   <SummonComponent onSummonSuccess={onSummonSuccess} />

@@ -79,6 +79,85 @@ const AIContent = observer(() => {
     }
   };
 
+  const getToolData = useCallback((agentIndex: number) => {
+    const toolDataMap: Record<number, object> = {
+      2: { pet: true },
+      3: { mint: true },
+      4: { summon: true },
+      5: { wearable: true },
+      6: { call: true },
+      7: { swap: true },
+      8: { addLiquidity: true },
+      9: { removeLiquidity: true },
+    };
+    return toolDataMap[agentIndex] || null;
+  }, []);
+
+  const updateMessage = useCallback((messageId: string, updates: Partial<Message>) => {
+    setMessages(prev =>
+      prev.map(msg => 
+        msg.id === messageId ? { ...msg, ...updates } : msg
+      )
+    );
+  }, []);
+
+  const processTextChunk = useCallback((chunk: string) => {
+    let contentToAdd = chunk;
+    try {
+      const jsonChunk = JSON.parse(chunk);
+      if (jsonChunk.content) {
+        contentToAdd = jsonChunk.content;
+      }
+    } catch (e) {
+      contentToAdd = chunk;
+    }
+    return contentToAdd;
+  }, []);
+
+  const formatTextChunk = useCallback((prevContent: string, contentToAdd: string) => {
+    if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
+      if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
+        return ' ' + contentToAdd;
+      }
+    }
+    return contentToAdd;
+  }, []);
+
+  const createTextHandler = useCallback((messageId: string, chatResponse: ChatResponse) => {
+    return (chunk: string) => {
+      setMessages(prev =>
+        prev.map(msg => {
+          if (msg.id !== messageId) return msg;
+          const prevContent = msg.content || '';
+          const contentToAdd = processTextChunk(chunk);
+          const formattedChunk = formatTextChunk(prevContent, contentToAdd);
+          
+          return {
+            ...msg,
+            content: prevContent + formattedChunk,
+            isCallTools: chatResponse.agent_index === 1 ? true : false,
+            agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+            isLoading: false,
+            isStreaming: true,
+            ...(msg.agentIndex === 0 && !msg.data
+              ? { isCallTools: false, agentIndex: undefined }
+              : {})
+          };
+        })
+      );
+    };
+  }, [processTextChunk, formatTextChunk]);
+
+  const addErrorMessage = useCallback((content: string) => {
+    const errorMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content,
+      createdAt: new Date(),
+    };
+    setMessages((prev) => [...prev, errorMessage]);
+  }, []);
+
   const sendMessage = useCallback(async (message: string) => {
     if (message.trim() === "" || isProcessingRef.current) return;
 
@@ -138,147 +217,35 @@ const AIContent = observer(() => {
                 message: chatResponse.message,
               },
               {
-                onText: (chunk) => {
-                  setMessages(prev =>
-                    prev.map(msg => {
-                      if (msg.id !== assistantMessage.id) return msg;
-                      const prevContent = msg.content || '';
-                      
-                      let contentToAdd = chunk;
-                      try {
-                        const jsonChunk = JSON.parse(chunk);
-                        if (jsonChunk.content) {
-                          contentToAdd = jsonChunk.content;
-                        }
-                      } catch (e) {
-                        contentToAdd = chunk;
-                      }
-                      
-                      let formattedChunk = contentToAdd;
-                      if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
-                        if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
-                          formattedChunk = ' ' + contentToAdd;
-                        }
-                      }
-                      
-                      return {
-                        ...msg,
-                        content: prevContent + formattedChunk,
-                        isCallTools: chatResponse.agent_index === 1 ? true : false,
-                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
-                        isLoading: false,
-                        isStreaming: true,
-                      };
-                    })
-                  );
-                },
+                onText: createTextHandler(assistantMessage.id, chatResponse),
                 onError: (error) => {
-                  setMessages(prev =>
-                    prev.map(msg => {
-                      if (msg.id !== assistantMessage.id) return msg;
-                      return {
-                        ...msg,
-                        content: chatResponse.message,
-                        isCallTools: chatResponse.agent_index === 1 ? true : false,
-                        agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
-                        isLoading: false,
-                        isStreaming: false,
-                      };
-                    })
-                  );
+                  updateMessage(assistantMessage.id, {
+                    content: chatResponse.message,
+                    isCallTools: chatResponse.agent_index === 1 ? true : false,
+                    agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+                    isLoading: false,
+                    isStreaming: false,
+                  });
                 },
                 onComplete: () => {
-                  setMessages(prev =>
-                    prev.map(msg => {
-                      if (msg.id !== assistantMessage.id) return msg;
-                      return {
-                        ...msg,
-                        isStreaming: false,
-                      };
-                    })
-                  );
+                  updateMessage(assistantMessage.id, { isStreaming: false });
                 },
               }
             );
           } catch (textError) {
-            setMessages(prev =>
-              prev.map(msg => {
-                if (msg.id !== assistantMessage.id) return msg;
-                return {
-                  ...msg,
-                  content: chatResponse.message,
-                  isCallTools: chatResponse.agent_index === 1 ? true : false,
-                  agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
-                  isLoading: false,
-                  isStreaming: false,
-                };
-              })
-            );
+            updateMessage(assistantMessage.id, {
+              content: chatResponse.message,
+              isCallTools: chatResponse.agent_index === 1 ? true : false,
+              agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
+              isLoading: false,
+              isStreaming: false,
+            });
           }
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 2) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { pet: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 3) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { mint: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 4) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { summon: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 5) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { wearable: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 6) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { call: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 7) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { swap: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 8) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { addLiquidity: true } }
-                : msg
-            )
-          );
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index === 9) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, data: { removeLiquidity: true } }
-                : msg
-            )
-          );
+        } else if (chatResponse.is_call_tools && chatResponse.agent_index >= 2 && chatResponse.agent_index <= 9) {
+          const toolData = getToolData(chatResponse.agent_index);
+          if (toolData) {
+            updateMessage(assistantMessage.id, { data: toolData });
+          }
         } else if (chatResponse.is_call_tools) {
           try {
             await sendChatEvent(
@@ -291,61 +258,14 @@ const AIContent = observer(() => {
               {
                 onData: (data) => {
                   const poolData = data.data || data;
-                  setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === assistantMessage.id
-                        ? { ...msg, data: poolData }
-                        : msg
-                    )
-                  );
+                  updateMessage(assistantMessage.id, { data: poolData });
                 },
-                onText: (chunk) => {
-                  setMessages(prev =>
-                    prev.map(msg => {
-                      if (msg.id !== assistantMessage.id) return msg;
-                      const prevContent = msg.content || '';
-                      
-                      let contentToAdd = chunk;
-                      try {
-                        const jsonChunk = JSON.parse(chunk);
-                        if (jsonChunk.content) {
-                          contentToAdd = jsonChunk.content;
-                        }
-                      } catch (e) {
-                        contentToAdd = chunk;
-                      }
-                      
-                      let formattedChunk = contentToAdd;
-                      if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
-                        if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
-                          formattedChunk = ' ' + contentToAdd;
-                        }
-                      }
-                      return {
-                        ...msg,
-                        content: prevContent + formattedChunk,
-                        isLoading: false,
-                        isStreaming: true,
-                        ...(msg.agentIndex === 0 && !msg.data
-                          ? { isCallTools: false, agentIndex: undefined }
-                          : {})
-                      };
-                    })
-                  );
-                },
+                onText: createTextHandler(assistantMessage.id, chatResponse),
                 onError: (error) => {
                   console.error("Tool call error:", error);
                 },
                 onComplete: () => {
-                  setMessages(prev =>
-                    prev.map(msg => {
-                      if (msg.id !== assistantMessage.id) return msg;
-                      return {
-                        ...msg,
-                        isStreaming: false,
-                      };
-                    })
-                  );
+                  updateMessage(assistantMessage.id, { isStreaming: false });
                 },
               }
             );
@@ -355,27 +275,15 @@ const AIContent = observer(() => {
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: errorData.error || "Network error! Please try again.",
-          createdAt: new Date(),
-        };
-        setMessages((prev) => [...prev, errorMessage]);
+        addErrorMessage(errorData.error || "Network error! Please try again.");
       }
     } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Network error! Please try again.",
-        createdAt: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      addErrorMessage("Network error! Please try again.");
     } finally {
       setStatus("idle");
       isProcessingRef.current = false;
     }
-  }, [hasStartedChat, sendChatEvent]);
+  }, [hasStartedChat, sendChatEvent, createTextHandler, updateMessage, getToolData, addErrorMessage]);
 
   const handleSendMessage = () => {
     sendMessage(input);
@@ -418,7 +326,14 @@ const AIContent = observer(() => {
   const [processedSummonIds, setProcessedSummonIds] = useState<Set<string>>(new Set());
   const streamingTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  const handleSummonDataReady = useCallback(async (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => {
+  const handleDataReady = useCallback(async (
+    messageId: string, 
+    config: {
+      query: string;
+      agentIndex: number;
+      message: string;
+    }
+  ) => {
     if (processedSummonIds.has(messageId)) {
       return;
     }
@@ -428,8 +343,6 @@ const AIContent = observer(() => {
       newSet.add(messageId);
       return newSet;
     });
-
-    const { tokenId, txHash, pusName, pusStory } = summonData;
 
     const loadingMessage: Message = {
       id: (Date.now() + 1).toString(),
@@ -444,10 +357,10 @@ const AIContent = observer(() => {
     try {
       await sendChatEvent(
         {
-          query: `Successfully summoned ${tokenId}! Summon ${pusName} with ${pusStory}`,
+          query: config.query,
           is_call_tools: true,
-          agent_index: 4,
-          message: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+          agent_index: config.agentIndex,
+          message: config.message,
         },
         {
           onText: (chunk) => {
@@ -479,7 +392,7 @@ const AIContent = observer(() => {
                 if (msg.id !== loadingMessage.id) return msg;
                 return {
                   ...msg,
-                  content: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+                  content: config.message,
                   isLoading: false,
                   isStreaming: false,
                 };
@@ -507,7 +420,7 @@ const AIContent = observer(() => {
           if (msg.id !== loadingMessage.id) return msg;
           return {
             ...msg,
-            content: `Successfully summoned ${pusName}! Your Gotchipus is ready.`,
+            content: config.message,
             isLoading: false,
             isStreaming: false,
           };
@@ -515,6 +428,31 @@ const AIContent = observer(() => {
       );
     }
   }, [processedSummonIds, sendChatEvent]);
+
+  const handleMintDataReady = useCallback(async (messageId: string, mintData: { txHash: string }) => {
+    await handleDataReady(messageId, {
+      query: `Successfully minted Pharos NFT! Transaction hash: ${mintData.txHash}`,
+      agentIndex: 3,
+      message: `Successfully minted Pharos NFT! Your transaction is confirmed.`,
+    });
+  }, [handleDataReady]);
+
+  const handlePetDataReady = useCallback(async (messageId: string, petData: { tokenId: string, txHash: string }) => {
+    await handleDataReady(messageId, {
+      query: `Successfully petted Gotchi #${petData.tokenId}! Transaction hash: ${petData.txHash}`,
+      agentIndex: 2,
+      message: `Successfully petted Gotchi #${petData.tokenId}! Your Gotchi is happy.`,
+    });
+  }, [handleDataReady]);
+
+  const handleSummonDataReady = useCallback(async (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => {
+    await handleDataReady(messageId, {
+      query: `Successfully summoned ${summonData.tokenId}! Summon ${summonData.pusName} with ${summonData.pusStory}`,
+      agentIndex: 4,
+      message: `Successfully summoned ${summonData.pusName}! Your Gotchipus is ready.`,
+    });
+  }, [handleDataReady]);
+
 
   if (!walletStore.isConnected) {
     return (
@@ -562,6 +500,8 @@ const AIContent = observer(() => {
           status={status}
           onSummonSuccess={handleSummonSuccess}
           onSummonDataReady={handleSummonDataReady}
+          onMintDataReady={handleMintDataReady}
+          onPetDataReady={handlePetDataReady}
         />
       )}
     </div>
