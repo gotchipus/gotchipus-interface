@@ -394,6 +394,7 @@ const MyPharosContent = observer(() => {
       {viewState === "genesis" && selectedPreviewIndex >= 0 && gotchipusPreviews[selectedPreviewIndex] && (
         <PharosGenesisPage 
           tokenId={selectedPharos as string} 
+          name={storyStore.gotchiName}
           story={storyStore.gotchiStory} 
           previewImage={gotchipusPreviews[selectedPreviewIndex].image}
           onClose={handleBack}

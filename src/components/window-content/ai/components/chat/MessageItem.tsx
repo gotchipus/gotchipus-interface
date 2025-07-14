@@ -28,7 +28,7 @@ export const MessageItem = memo(({ message }: MessageItemProps) => {
           </div>
         ) : (
           <div className="border-2 border-[#808080] shadow-win98-outer bg-white rounded-sm">
-            <div className="p-3">
+            <div className="p-3 min-h-[24px]">
               <MessageContent message={message} />
             </div>
           </div>

@@ -37,12 +37,17 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
   const [isInsufficientBalance, setIsInsufficientBalance] = useState(false)
   const [showBalanceWarning, setShowBalanceWarning] = useState(false)
   const [pusStory, setPusStory] = useState("")
+  const [isVisible, setIsVisible] = useState(false)
 
   const { walletStore } = useStores();
   const { toast } = useToast();
 
   const {contractWrite, hash, isConfirmed, error, receipt} = useContractWrite();
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!walletStore.isConnected || !walletStore.address) {
@@ -172,7 +177,19 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">Loading your Pharos...</p>
       </div>
     );
@@ -180,7 +197,19 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">You don't have any Pharos yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Pharos first to start summoning them.</p>
       </div>
@@ -189,7 +218,19 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
 
   if (selectedGotchi) {
     return (
-      <div className="flex flex-col gap-4 p-1 max-w-2xl mx-auto">
+      <div 
+        className={`flex flex-col gap-4 p-1 max-w-2xl mx-auto transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer py-1 px-2 flex items-center">
           <button
             onClick={() => setSelectedGotchi(null)}
@@ -344,17 +385,36 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
   }
 
   return (
-    <div className="w-full">
+    <div 
+      className={`w-full transition-all duration-800 ease-out origin-top-left ${
+        isVisible 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-0'
+      }`}
+      style={{
+        clipPath: isVisible 
+          ? 'circle(150% at 0% 0%)' 
+          : 'circle(0% at 0% 0%)',
+        transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+      }}
+    >
       <div className="mb-4">
         <h2 className="text-lg font-bold mb-2">Select a Pharos to Summon</h2>
         <p className="text-sm text-[#404040]">Choose one of your Pharos to begin the summoning process.</p>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
-        {gotchiList.map((gotchi) => (
+        {gotchiList.map((gotchi, index) => (
           <div
             key={gotchi.id}
-            className="bg-[#c0c0c0] border-2 shadow-win98-outer p-4 text-center hover:bg-[#d0d0d0] cursor-pointer flex flex-col items-center justify-center"
+            className={`bg-[#c0c0c0] border-2 shadow-win98-outer p-4 text-center hover:bg-[#d0d0d0] cursor-pointer flex flex-col items-center justify-center transition-all duration-600 ease-out ${
+              isVisible 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-8'
+            }`}
+            style={{
+              transitionDelay: `${300 + index * 100}ms`
+            }}
             onClick={() => setSelectedGotchi(gotchi)}
           >
             <Image src="/pharos.png" alt="Pharos" width={100} height={100} />

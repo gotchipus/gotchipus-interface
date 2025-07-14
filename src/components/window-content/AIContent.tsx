@@ -32,21 +32,27 @@ const AIContent = observer(() => {
 
   useEffect(() => {
     if (hasStartedChat) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages, hasStartedChat]);
+
+  useEffect(() => {
+    if (hasStartedChat && status === "streaming") {
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      };
+      
+      const intervalId = setInterval(scrollToBottom, 300);
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [hasStartedChat, status]);
 
   useEffect(() => {
     if (hasStartedChat && inputRef.current && status === "idle") {
       inputRef.current.focus();
     }
   }, [hasStartedChat, status]);
-
-  useEffect(() => {
-    return () => {
-      streamingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    };
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -59,10 +65,6 @@ const AIContent = observer(() => {
   };
 
   const handleBackToInput = () => {
-    streamingTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    streamingTimeoutsRef.current = [];
-    setProcessedSummonIds(new Set());
-    
     setHasStartedChat(false);
     setInput("");
     setMessages([
@@ -114,27 +116,33 @@ const AIContent = observer(() => {
     return contentToAdd;
   }, []);
 
-  const formatTextChunk = useCallback((prevContent: string, contentToAdd: string) => {
-    if (prevContent && contentToAdd && !prevContent.endsWith(' ') && !contentToAdd.startsWith(' ')) {
-      if (!/^[.,;:!?\-\n]/.test(contentToAdd) && !/[\n]$/.test(prevContent)) {
-        return ' ' + contentToAdd;
-      }
-    }
-    return contentToAdd;
-  }, []);
-
   const createTextHandler = useCallback((messageId: string, chatResponse: ChatResponse) => {
     return (chunk: string) => {
-      setMessages(prev =>
-        prev.map(msg => {
+      const contentToAdd = processTextChunk(chunk);
+      
+      setMessages(prev => {
+        return prev.map(msg => {
           if (msg.id !== messageId) return msg;
-          const prevContent = msg.content || '';
-          const contentToAdd = processTextChunk(chunk);
-          const formattedChunk = formatTextChunk(prevContent, contentToAdd);
+          
+          const currentContent = msg.content || '';
+          let newContent;
+          
+          if (currentContent === '') {
+            newContent = contentToAdd;
+          } else {
+            const needsSpace = !currentContent.endsWith(' ') && 
+                             !currentContent.endsWith('\n') && 
+                             !contentToAdd.startsWith(' ') && 
+                             !contentToAdd.startsWith('\n') &&
+                             !contentToAdd.startsWith('*') &&
+                             !contentToAdd.startsWith('#');
+            
+            newContent = currentContent + (needsSpace ? ' ' : '') + contentToAdd;
+          }
           
           return {
             ...msg,
-            content: prevContent + formattedChunk,
+            content: newContent,
             isCallTools: chatResponse.agent_index === 1 ? true : false,
             agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
             isLoading: false,
@@ -143,10 +151,10 @@ const AIContent = observer(() => {
               ? { isCallTools: false, agentIndex: undefined }
               : {})
           };
-        })
-      );
+        });
+      });
     };
-  }, [processTextChunk, formatTextChunk]);
+  }, [processTextChunk]);
 
   const addErrorMessage = useCallback((content: string) => {
     const errorMessage: Message = {
@@ -202,12 +210,14 @@ const AIContent = observer(() => {
           createdAt: new Date(),
           isCallTools: chatResponse.is_call_tools,
           agentIndex: chatResponse.agent_index,
-          isLoading: !chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1),
+          isLoading: false,
+          isStreaming: !chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1),
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
 
         if (!chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1)) {
+
           try {
             await sendChatEvent(
               {
@@ -217,7 +227,9 @@ const AIContent = observer(() => {
                 message: chatResponse.message,
               },
               {
-                onText: createTextHandler(assistantMessage.id, chatResponse),
+                onText: (chunk) => {
+                  createTextHandler(assistantMessage.id, chatResponse)(chunk);
+                },
                 onError: (error) => {
                   updateMessage(assistantMessage.id, {
                     content: chatResponse.message,
@@ -296,162 +308,71 @@ const AIContent = observer(() => {
     }
   };
 
-  const handleSummonSuccess = useCallback(async (
+  const handleSummonSuccess = useCallback((
     tokenId: string,
     txHash: string,
     pusName: string,
     pusStory: string
   ) => {
-    const summonDataMessage: Message = {
-      id: Date.now().toString(),
-      role: "assistant",
-      content: "",
-      createdAt: new Date(),
-      data: {
-        summonSuccess: {
-          tokenId,
-          txHash,
-          pusName,
-          pusStory
-        }
-      }
-    };
-
-    setMessages((prev) => {
-      const filteredMessages = prev.filter(msg => !msg.data?.summon);
-      return [...filteredMessages, summonDataMessage];
-    });
+    setMessages((prev) => 
+      prev.map(msg => 
+        msg.isCallTools && msg.agentIndex === 4 
+          ? { ...msg, data: { ...msg.data, summonSuccess: { tokenId, txHash, pusName, pusStory } } }
+          : msg
+      )
+    );
   }, []);
 
-  const [processedSummonIds, setProcessedSummonIds] = useState<Set<string>>(new Set());
-  const streamingTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  const handleMintSuccess = useCallback((txHash: string) => {
+    setMessages((prev) => 
+      prev.map(msg => 
+        msg.isCallTools && msg.agentIndex === 3 
+          ? { ...msg, data: { ...msg.data, mintSuccess: { txHash } } }
+          : msg
+      )
+    );
+  }, []);
 
-  const handleDataReady = useCallback(async (
-    messageId: string, 
-    config: {
-      query: string;
-      agentIndex: number;
-      message: string;
-    }
-  ) => {
-    if (processedSummonIds.has(messageId)) {
-      return;
-    }
+  const handlePetSuccess = useCallback((tokenId: string, txHash: string) => {
+    setMessages((prev) => 
+      prev.map(msg => 
+        msg.isCallTools && msg.agentIndex === 2 
+          ? { ...msg, data: { ...msg.data, petSuccess: { tokenId, txHash } } }
+          : msg
+      )
+    );
+  }, []);
 
-    setProcessedSummonIds(prev => {
-      const newSet = new Set(prev);
-      newSet.add(messageId);
-      return newSet;
-    });
 
-    const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: "",
-      createdAt: new Date(),
-      isLoading: true,
-    };
+  const handleMintDataReady = useCallback((messageId: string, mintData: { txHash: string }) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: `Successfully minted Pharos NFT! Your transaction is confirmed.` }
+          : msg
+      )
+    );
+  }, []);
 
-    setMessages((prev) => [...prev, loadingMessage]);
+  const handlePetDataReady = useCallback((messageId: string, petData: { tokenId: string, txHash: string }) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: `Successfully petted Gotchi #${petData.tokenId}! Your Gotchi is happy.` }
+          : msg
+      )
+    );
+  }, []);
 
-    try {
-      await sendChatEvent(
-        {
-          query: config.query,
-          is_call_tools: true,
-          agent_index: config.agentIndex,
-          message: config.message,
-        },
-        {
-          onText: (chunk) => {
-            setMessages(prev =>
-              prev.map(msg => {
-                if (msg.id !== loadingMessage.id) return msg;
-                const prevContent = msg.content || '';
-                
-                let formattedChunk = chunk;
-                if (prevContent && chunk && !prevContent.endsWith(' ') && !chunk.startsWith(' ')) {
-                  if (!/^[.,;:!?\-\n]/.test(chunk) && !/[\n]$/.test(prevContent)) {
-                    formattedChunk = ' ' + chunk;
-                  }
-                }
-                
-                return {
-                  ...msg,
-                  content: prevContent + formattedChunk,
-                  isLoading: false,
-                  isStreaming: true,
-                };
-              })
-            );
-          },
-          onError: (error) => {
-            console.error("Failed to call intent API:", error);
-            setMessages(prev =>
-              prev.map(msg => {
-                if (msg.id !== loadingMessage.id) return msg;
-                return {
-                  ...msg,
-                  content: config.message,
-                  isLoading: false,
-                  isStreaming: false,
-                };
-              })
-            );
-          },
-          onComplete: () => {
-            setMessages(prev =>
-              prev.map(msg => {
-                if (msg.id !== loadingMessage.id) return msg;
-                return {
-                  ...msg,
-                  isStreaming: false,
-                };
-              })
-            );
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Failed to call intent API:", error);
-      
-      setMessages(prev =>
-        prev.map(msg => {
-          if (msg.id !== loadingMessage.id) return msg;
-          return {
-            ...msg,
-            content: config.message,
-            isLoading: false,
-            isStreaming: false,
-          };
-        })
-      );
-    }
-  }, [processedSummonIds, sendChatEvent]);
-
-  const handleMintDataReady = useCallback(async (messageId: string, mintData: { txHash: string }) => {
-    await handleDataReady(messageId, {
-      query: `Successfully minted Pharos NFT! Transaction hash: ${mintData.txHash}`,
-      agentIndex: 3,
-      message: `Successfully minted Pharos NFT! Your transaction is confirmed.`,
-    });
-  }, [handleDataReady]);
-
-  const handlePetDataReady = useCallback(async (messageId: string, petData: { tokenId: string, txHash: string }) => {
-    await handleDataReady(messageId, {
-      query: `Successfully petted Gotchi #${petData.tokenId}! Transaction hash: ${petData.txHash}`,
-      agentIndex: 2,
-      message: `Successfully petted Gotchi #${petData.tokenId}! Your Gotchi is happy.`,
-    });
-  }, [handleDataReady]);
-
-  const handleSummonDataReady = useCallback(async (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => {
-    await handleDataReady(messageId, {
-      query: `Successfully summoned ${summonData.tokenId}! Summon ${summonData.pusName} with ${summonData.pusStory}`,
-      agentIndex: 4,
-      message: `Successfully summoned ${summonData.pusName}! Your Gotchipus is ready.`,
-    });
-  }, [handleDataReady]);
+  const handleSummonDataReady = useCallback((messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: `Successfully summoned ${summonData.pusName}! Your Gotchipus is ready.` }
+          : msg
+      )
+    );
+  }, []);
 
 
   if (!walletStore.isConnected) {
@@ -502,6 +423,8 @@ const AIContent = observer(() => {
           onSummonDataReady={handleSummonDataReady}
           onMintDataReady={handleMintDataReady}
           onPetDataReady={handlePetDataReady}
+          onMintSuccess={handleMintSuccess}
+          onPetSuccess={handlePetSuccess}
         />
       )}
     </div>

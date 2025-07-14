@@ -17,9 +17,10 @@ interface EquipSelectWindowProps {
   selectedType?: string
   selectedTokenId?: string
   isMobile?: boolean
+  onSuccess?: (tokenId: string, txHash: string) => void
 }
 
-const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, selectedTokenId, isMobile = false }: EquipSelectWindowProps) => {
+const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, selectedType, selectedTokenId, isMobile = false }: EquipSelectWindowProps) => {
   const getTypeFromIndex = (type?: string) => {
     if (type === undefined) return HAND_BYTES32;
     return type;
@@ -44,7 +45,7 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
 
   const availableEquipments = getAvailableEquipments(activeTab);
     
-  const {contractWrite, isConfirmed, isConfirming, isPending, error, receipt} = useContractWrite();
+  const {contractWrite, hash, isConfirmed, error} = useContractWrite();
   const [equipIndex, setEquipIndex] = useState<number>(0);
   const [isEquiping, setIsEquiping] = useState<boolean>(false);
   const { toast } = useToast()
@@ -134,8 +135,6 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
             throw new Error(`API CALL ERROR: ${backendResponse.status}`);
           }
           
-          const result = await backendResponse.json();
-          
           wearableStore.setImageVersion(wearableStore.imageVersion + 1);
           setTimeout(onClose, 500);
           
@@ -143,7 +142,11 @@ const EquipSelectWindow = observer(({ onClose, wearableBalances, selectedType, s
           setTimeout(onClose, 500);
         }
       };
-      
+    
+      if (onSuccess) {
+        onSuccess(selectedTokenId || "", hash as `0x${string}`);
+      }
+
       const timer = setTimeout(sendDataToBackend, 1000);
       return () => clearTimeout(timer); 
     }

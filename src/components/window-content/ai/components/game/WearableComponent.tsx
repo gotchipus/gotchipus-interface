@@ -1,6 +1,6 @@
+'use client'
+
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
-import { useConnectModal } from '@rainbow-me/rainbowkit';
 import GotchiGrid from "./GotchiGrid";
 import Image from "next/image";
 import { useEquippedItems } from "@/hooks/useEquippedItems";
@@ -28,8 +28,6 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   const [showEquipWindow, setShowEquipWindow] = useState(false);
   const [wearableBalances, setWearableBalances] = useState<string[]>([]);
   
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const { walletStore } = useStores();
 
   const { layers, backgroundSvg, isLoading: svgLoading } = useSvgLayers(selectedGotchi?.id || "");
@@ -49,7 +47,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   }, [balances]);
 
   useEffect(() => {
-    if (!isConnected || !address) {
+    if (!walletStore.isConnected || !walletStore.address) {
       setGotchiList([]);
       setLoadingGotchis(false);
       return;
@@ -58,7 +56,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}`);
         if (response.ok) {
           const data = await response.json();
           console.log('data', data);
@@ -77,7 +75,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
     };
 
     fetchGotchis();
-  }, [address, isConnected]);
+  }, [walletStore.address, walletStore.isConnected]);
 
   const handleGotchiSelect = (gotchi: GotchiItem) => {
     setSelectedGotchi(gotchi);
@@ -126,23 +124,6 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
     return EQUIPMENT_TYPES[selectedEquipSlot];
   };
 
-  if (!isConnected) {
-    return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
-        <div className="bg-[#0078d4] text-white px-3 py-1 mb-4 flex items-center">
-          <div className="mr-2 font-bold">⚠️</div>
-          <div className="text-sm font-bold">Connect Required</div>
-        </div>
-        <p className="text-sm text-[#404040] mb-4">Please connect your wallet to view your Gotchis</p>
-        <button
-          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-outer hover:bg-[#d0d0d0] active:shadow-win98-inner"
-          onClick={() => openConnectModal?.()}
-        >
-          Connect Wallet
-        </button>
-      </div>
-    );
-  }
 
   if (loadingGotchis) {
     return (
@@ -264,6 +245,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
             wearableBalances={wearableBalances}
             selectedType={getSelectedEquipType()}
             selectedTokenId={selectedGotchi.id}
+            onSuccess={onEquipSuccess}
           />
         )}
       </div>
@@ -281,12 +263,6 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
       isLoading={loadingGotchis}
       emptyMessage="No Gotchis available for equipment"
       emptySubMessage="Mint some Gotchis first to manage their equipment."
-      headerComponent={
-        <div className="mb-4">
-          <h2 className="text-lg font-bold mb-2">Select a Gotchi to Equip</h2>
-          <p className="text-sm text-[#404040]">Choose one of your Gotchis to manage their equipment.</p>
-        </div>
-      }
     />
   );
 });

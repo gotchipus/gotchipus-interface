@@ -6,6 +6,8 @@ import CallComponent from '../components/game/CallComponent';
 import SwapComponent from '../components/defi/SwapComponent';
 import AddLiquidityComponent from '../components/defi/AddLiquidityComponent';
 import RemoveLiquidityComponent from '../components/defi/RemoveLiquidityComponent';
+import MintGotchiComponent from '../components/game/MintGotchiComponent';
+
 
 export const AGENT_CONFIGS: AgentConfig[] = [
   {
@@ -31,6 +33,7 @@ export const AGENT_CONFIGS: AgentConfig[] = [
     index: 3,
     name: 'Free Mint',
     description: 'Free Mint Pharos NFT',
+    component: MintGotchiComponent,
     renderAsText: false,
   },
   {

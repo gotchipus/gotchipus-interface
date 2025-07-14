@@ -21,11 +21,16 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingGotchis, setLoadingGotchis] = useState(true);
   const [pettingTokenId, setPettingTokenId] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const { openConnectModal } = useConnectModal();
   const { toast } = useToast()
 
   const {contractWrite, hash, isConfirmed, error} = useContractWrite();
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!walletStore.isConnected || !walletStore.address) {
@@ -117,7 +122,19 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -125,7 +142,19 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to start petting them.</p>
       </div>
@@ -133,7 +162,19 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
   }
 
   return (
-    <>
+    <div 
+      className={`transition-all duration-800 ease-out origin-top-left ${
+        isVisible 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-0'
+      }`}
+      style={{
+        clipPath: isVisible 
+          ? 'circle(150% at 0% 0%)' 
+          : 'circle(0% at 0% 0%)',
+        transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+      }}
+    >
       <GotchiGrid
         gotchiList={gotchiList}
         onGotchiAction={handlePet}
@@ -142,8 +183,7 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
         emptyMessage="You don't have any Gotchis yet!"
         emptySubMessage="Mint some Gotchis first to start petting them."
       />
-      
-    </>
+    </div>
   );
 });
 
