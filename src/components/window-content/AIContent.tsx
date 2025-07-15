@@ -343,6 +343,15 @@ const AIContent = observer(() => {
     );
   }, []);
 
+  const handleWearableSuccess = useCallback((tokenId: string, txHash: string) => {
+    setMessages((prev) => 
+      prev.map(msg => 
+        msg.isCallTools && msg.agentIndex === 5 
+          ? { ...msg, data: { ...msg.data, wearableSuccess: { tokenId, txHash } } }
+          : msg
+      )
+    );
+  }, []);
 
   const handleMintDataReady = useCallback((messageId: string, mintData: { txHash: string }) => {
     setMessages(prev => 
@@ -374,6 +383,36 @@ const AIContent = observer(() => {
     );
   }, []);
 
+  const handleWearableDataReady = useCallback((messageId: string, wearableData: { tokenId: string, txHash: string }) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: `Successfully equipped Gotchi #${wearableData.tokenId}! Your Gotchi is ready.` }
+          : msg
+      )
+    );
+  }, []);
+
+  const handleCallSuccess = useCallback((tokenId: string, txHash: string) => {
+
+    setMessages((prev) => 
+      prev.map(msg => 
+        msg.isCallTools && msg.agentIndex === 6 
+          ? { ...msg, data: { ...msg.data, callSuccess: { tokenId, txHash } } }
+          : msg
+      )
+    );
+  }, []);
+
+  const handleCallDataReady = useCallback((messageId: string, callData: { tokenId: string, txHash: string }) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: `Successfully called ${callData.tokenId}! Your Gotchi is ready.` }
+          : msg
+      )
+    );
+  }, []);
 
   if (!walletStore.isConnected) {
     return (
@@ -395,38 +434,56 @@ const AIContent = observer(() => {
   }
 
   return (
-    <div className="bg-[#c0c0c0] w-full h-full">
-      {!hasStartedChat ? (
-        <WelcomeScreen
-          input={input}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onSendMessage={handleSendMessage}
-          inputRef={inputRef}
-          isDisabled={status === "streaming"}
-          onQuestionClick={sendMessage}
-        />
-      ) : (
-        <ChatInterface
-          messages={messages}
-          input={input}
-          onInputChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onSendMessage={handleSendMessage}
-          onBackClick={handleBackToInput}
-          inputRef={inputRef}
-          chatContainerRef={chatContainerRef}
-          messagesEndRef={messagesEndRef}
-          isDisabled={status === "streaming"}
-          status={status}
-          onSummonSuccess={handleSummonSuccess}
-          onSummonDataReady={handleSummonDataReady}
-          onMintDataReady={handleMintDataReady}
-          onPetDataReady={handlePetDataReady}
-          onMintSuccess={handleMintSuccess}
-          onPetSuccess={handlePetSuccess}
-        />
-      )}
+    <div className="bg-[#c0c0c0] w-full h-full relative">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md">
+        <div className="bg-white/95 backdrop-blur-sm border border-amber-200 rounded-lg shadow-lg px-4 py-3">
+          <div className="flex items-center gap-2 text-sm">
+            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+            <span className="text-amber-700 font-medium">Testing Phase</span>
+          </div>
+          <p className="text-gray-600 text-base mt-1 leading-relaxed">
+            AI responses may be slower as we optimize performance. Thanks for your patience! 🚀
+          </p>
+        </div>
+      </div>
+      
+      <div className="pt-52">
+        {!hasStartedChat ? (
+          <WelcomeScreen
+            input={input}
+            onInputChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onSendMessage={handleSendMessage}
+            inputRef={inputRef}
+            isDisabled={status === "streaming"}
+            onQuestionClick={sendMessage}
+          />
+        ) : (
+          <ChatInterface
+            messages={messages}
+            input={input}
+            onInputChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onSendMessage={handleSendMessage}
+            onBackClick={handleBackToInput}
+            inputRef={inputRef}
+            chatContainerRef={chatContainerRef}
+            messagesEndRef={messagesEndRef}
+            isDisabled={status === "streaming"}
+            status={status}
+            onSummonSuccess={handleSummonSuccess}
+            onSummonDataReady={handleSummonDataReady}
+            onMintDataReady={handleMintDataReady}
+            onPetDataReady={handlePetDataReady}
+            onMintSuccess={handleMintSuccess}
+            onPetSuccess={handlePetSuccess}
+            onWearableSuccess={handleWearableSuccess}
+            onWearableDataReady={handleWearableDataReady}
+            onCallSuccess={handleCallSuccess}
+            onCallDataReady={handleCallDataReady}
+          />
+        )}
+      </div>
     </div>
   );
 });

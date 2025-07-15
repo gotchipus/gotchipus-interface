@@ -27,6 +27,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   const [selectedEquipSlot, setSelectedEquipSlot] = useState<number | null>(null);
   const [showEquipWindow, setShowEquipWindow] = useState(false);
   const [wearableBalances, setWearableBalances] = useState<string[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
   
   const { walletStore } = useStores();
 
@@ -39,6 +40,11 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   const owners = new Array(54).fill(walletStore.address);
   const tokenIds = Array.from({ length: 54 }, (_, i) => i);
   const { data: balances } = useContractRead("wearableBalanceOfBatch", [owners, tokenIds]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (balances) {
@@ -127,7 +133,19 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -135,7 +153,19 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to equip them with wearables.</p>
       </div>
@@ -144,7 +174,19 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
 
   if (showWearableInterface && selectedGotchi) {
     return (
-      <div className="w-full">
+      <div 
+        className={`w-full transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
@@ -253,17 +295,31 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   }
 
   return (
-    <GotchiGrid
-      gotchiList={gotchiList}
-      onGotchiAction={handleEquipWearable}
-      onGotchiSelect={handleGotchiSelect}
-      onSelectedGotchiChange={handleSelectedGotchiChange}
-      selectedGotchiId={selectedGotchi?.id || null}
-      getButtonText={() => "Equip"}
-      isLoading={loadingGotchis}
-      emptyMessage="No Gotchis available for equipment"
-      emptySubMessage="Mint some Gotchis first to manage their equipment."
-    />
+    <div 
+      className={`transition-all duration-800 ease-out origin-top-left ${
+        isVisible 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-0'
+      }`}
+      style={{
+        clipPath: isVisible 
+          ? 'circle(150% at 0% 0%)' 
+          : 'circle(0% at 0% 0%)',
+        transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+      }}
+    >
+      <GotchiGrid
+        gotchiList={gotchiList}
+        onGotchiAction={handleEquipWearable}
+        onGotchiSelect={handleGotchiSelect}
+        onSelectedGotchiChange={handleSelectedGotchiChange}
+        selectedGotchiId={selectedGotchi?.id || null}
+        getButtonText={() => "Equip"}
+        isLoading={loadingGotchis}
+        emptyMessage="No Gotchis available for equipment"
+        emptySubMessage="Mint some Gotchis first to manage their equipment."
+      />
+    </div>
   );
 });
 

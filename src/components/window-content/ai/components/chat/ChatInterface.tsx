@@ -34,6 +34,10 @@ interface ChatInterfaceProps {
   onMintSuccess?: (txHash: string) => void;
   onPetSuccess?: (tokenId: string, txHash: string) => void;
   onPetDataReady?: (messageId: string, petData: { tokenId: string, txHash: string }) => void;
+  onWearableSuccess?: (tokenId: string, txHash: string) => void;
+  onWearableDataReady?: (messageId: string, wearableData: { tokenId: string, txHash: string }) => void;
+  onCallSuccess?: (tokenId: string, txHash: string) => void;
+  onCallDataReady?: (messageId: string, callData: { tokenId: string, txHash: string }) => void;
 }
 
 export const ChatInterface = memo(({
@@ -54,6 +58,10 @@ export const ChatInterface = memo(({
   onPetDataReady,
   onMintSuccess,
   onPetSuccess,
+  onWearableSuccess,
+  onWearableDataReady,
+  onCallSuccess,
+  onCallDataReady,
 }: ChatInterfaceProps) => {
   const visibleMessages = messages.filter((m) => m.role !== "system");
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -69,8 +77,14 @@ export const ChatInterface = memo(({
       if (msg.data?.summonSuccess && msg.content === "") {
         onSummonDataReady?.(msg.id, msg.data.summonSuccess);
       }
+      if (msg.data?.wearableSuccess && msg.content === "") {
+        onWearableDataReady?.(msg.id, msg.data.wearableSuccess);
+      }
+      if (msg.data?.callSuccess && msg.content === "") {
+        onCallDataReady?.(msg.id, msg.data.callSuccess);
+      }
     });
-  }, [messages, onMintDataReady, onPetDataReady, onSummonDataReady]);
+  }, [messages, onMintDataReady, onPetDataReady, onSummonDataReady, onWearableDataReady, onCallDataReady]);
 
   useEffect(() => {
     const hasStreamingMessage = visibleMessages.some(msg => msg.isStreaming);
@@ -163,13 +177,27 @@ export const ChatInterface = memo(({
                 {msg.isCallTools && msg.agentIndex === 5 && (
                   <>
                     <AgentCallIndicator agentIndex={5} />
-                    <WearableComponent />
+                    {!msg.data?.wearableSuccess && (
+                      <WearableComponent 
+                        onEquipSuccess={onWearableSuccess}
+                      />
+                    )}
+                    {msg.data?.wearableSuccess && msg.content && (
+                      <MessageItem message={msg} />
+                    )}
                   </>
                 )}
                 {msg.isCallTools && msg.agentIndex === 6 && (
                   <>
                     <AgentCallIndicator agentIndex={6} />
-                    <CallComponent />
+                    {!msg.data?.callSuccess && (
+                      <CallComponent 
+                        onCallSuccess={onCallSuccess}
+                      />
+                    )}
+                    {msg.data?.callSuccess && msg.content && (
+                      <MessageItem message={msg} />
+                    )}
                   </>
                 )}
                 {msg.isCallTools && msg.agentIndex === 7 && (

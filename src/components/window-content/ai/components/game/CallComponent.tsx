@@ -31,6 +31,7 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
   const [showCallInterface, setShowCallInterface] = useState(false);
   const [callType, setCallType] = useState<CallType>('transfer');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   
   const [selectedToken, setSelectedToken] = useState<Token>(Tokens[0]);
   const [amount, setAmount] = useState("");
@@ -48,7 +49,7 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
   const [tbaAddress, setTbaAddress] = useState<`0x${string}`>("0x0000000000000000000000000000000000000000");
 
   const { toast } = useToast();
-  const { contractWrite, isConfirmed, error } = useContractWrite();
+  const { contractWrite, hash, isConfirmed, error } = useContractWrite();
 
   
   const [nativeBalance, setNativeBalance] = useState("0");
@@ -62,6 +63,11 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
   );
 
   const { data: tbaAddressData } = useContractRead("account", [selectedGotchi?.id], { enabled: !!selectedGotchi?.id });
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fetchPharosBalance = async () => {
@@ -291,7 +297,7 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
       });
       resetForm();
       if (onCallSuccess && selectedGotchi) {
-        onCallSuccess(selectedGotchi.id, "transaction_hash");
+        onCallSuccess(selectedGotchi.id, hash as `0x${string}`);
       }
     }
   }, [isConfirmed, onCallSuccess, selectedGotchi, toast]);
@@ -309,7 +315,19 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -317,7 +335,19 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center">
+      <div 
+        className={`bg-[#c0c0c0] border-2 shadow-win98-outer p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to make calls.</p>
       </div>
@@ -326,7 +356,19 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
 
   if (showCallInterface && selectedGotchi) {
     return (
-      <div className="w-full">
+      <div 
+        className={`w-full transition-all duration-800 ease-out origin-top-left ${
+          isVisible 
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-0'
+        }`}
+        style={{
+          clipPath: isVisible 
+            ? 'circle(150% at 0% 0%)' 
+            : 'circle(0% at 0% 0%)',
+          transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+        }}
+      >
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
@@ -550,7 +592,19 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
   }
 
   return (
-    <>
+    <div 
+      className={`transition-all duration-800 ease-out origin-top-left ${
+        isVisible 
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-0'
+      }`}
+      style={{
+        clipPath: isVisible 
+          ? 'circle(150% at 0% 0%)' 
+          : 'circle(0% at 0% 0%)',
+        transition: 'clip-path 800ms ease-out, opacity 800ms ease-out, transform 800ms ease-out'
+      }}
+    >
       <GotchiGrid
         gotchiList={gotchiList}
         onGotchiAction={handleGotchiSelect}
@@ -558,7 +612,7 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
         emptyMessage="You don't have any Gotchis yet!"
         emptySubMessage="Mint some Gotchis first to make calls."
       />
-    </>
+    </div>
   );
 });
 
