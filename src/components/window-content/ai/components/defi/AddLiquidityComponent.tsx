@@ -258,14 +258,14 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
 
   if (!isConnected) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <div className="bg-[#0078d4] text-white px-3 py-1 mb-4 flex items-center">
           <div className="mr-2 font-bold">⚠️</div>
           <div className="text-sm font-bold">Connect Required</div>
         </div>
         <p className="text-sm text-[#404040] mb-4">Please connect your wallet to add liquidity</p>
         <button
-          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+          className="px-6 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-innerhover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
           onClick={() => openConnectModal?.()}
         >
           Connect Wallet
@@ -276,7 +276,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -284,7 +284,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to add liquidity.</p>
       </div>
@@ -297,26 +297,26 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
-            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-innerhover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
           >
             ← Back to List
           </button>
           <h2 className="text-lg font-bold">Add Liquidity</h2>
         </div>
 
-        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 space-y-4">
+        <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-4 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Add Liquidity</h3>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-innerrounded-sm"
             >
               <Settings size={16} />
             </button>
           </div>
 
           {showSettings && (
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold">Slippage Tolerance</label>
                 <div className="flex items-center space-x-2">
@@ -324,7 +324,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                     type="text"
                     value={slippage}
                     onChange={(e) => setSlippage(e.target.value)}
-                    className="w-16 px-2 py-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-white text-sm"
+                    className="w-16 px-2 py-1 border-2 border-[#808080] shadow-win98-innerbg-white text-sm"
                   />
                   <span className="text-sm">%</span>
                 </div>
@@ -339,7 +339,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                 <button
                   key={index}
                   onClick={() => handleSelectPair(pair)}
-                  className="px-3 py-1 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-sm rounded-sm"
+                  className="px-3 py-1 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-innertext-sm rounded-sm"
                 >
                   {pair.token0}/{pair.token1}
                 </button>
@@ -352,7 +352,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
               <label className="text-sm font-bold">Token A</label>
               <span className="text-xs text-[#808080]">Balance: {formattedTokenABalance}</span>
             </div>
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -363,7 +363,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                 />
                 <button
                   onClick={() => setShowTokenASelector(true)}
-                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-win98-innerrounded-sm"
                 >
                   <Image src={tokenA.icon} alt={tokenA.symbol} width={20} height={20} />
                   <span className="font-bold">{tokenA.symbol}</span>
@@ -383,7 +383,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
           </div>
 
           <div className="flex justify-center">
-            <div className="p-2 border-2 border-[#808080] bg-[#d4d0c8] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-full">
+            <div className="p-2 border-2 border-[#808080] bg-[#d4d0c8] shadow-win98-innerrounded-full">
               <Plus size={20} />
             </div>
           </div>
@@ -393,7 +393,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
               <label className="text-sm font-bold">Token B</label>
               <span className="text-xs text-[#808080]">Balance: {formattedTokenBBalance}</span>
             </div>
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -405,7 +405,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                 />
                 <button
                   onClick={() => setShowTokenBSelector(true)}
-                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  className="flex items-center space-x-2 px-3 py-2 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-win98-innerrounded-sm"
                 >
                   <Image src={tokenB.icon} alt={tokenB.symbol} width={20} height={20} />
                   <span className="font-bold">{tokenB.symbol}</span>
@@ -427,7 +427,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
           </div>
 
           {amountA && amountB && (
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-2">
               <div className="flex items-center space-x-2 mb-2">
                 <Info size={16} />
                 <span className="text-sm font-bold">Pool Information</span>
@@ -454,7 +454,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
             disabled={!amountA || !amountB || isLoading || 
               parseFloat(amountA) > parseFloat(formattedTokenABalance) || 
               parseFloat(amountB) > parseFloat(formattedTokenBBalance)}
-            className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 font-bold text-lg transition-colors ${
+            className={`w-full border-2 border-[#808080] shadow-win98-innerp-4 font-bold text-lg transition-colors ${
               !amountA || !amountB || isLoading || 
               parseFloat(amountA) > parseFloat(formattedTokenABalance) || 
               parseFloat(amountB) > parseFloat(formattedTokenBBalance)
@@ -478,7 +478,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
 
         {showTokenASelector && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 w-80 max-h-96 overflow-y-auto">
+            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-innerp-4 w-80 max-h-96 overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold">Select Token A</h3>
                 <button
@@ -493,7 +493,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                   <button
                     key={token.symbol}
                     onClick={() => handleTokenASelect(token)}
-                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-left"
+                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-innertext-left"
                   >
                     <Image src={token.icon} alt={token.symbol} width={24} height={24} />
                     <div>
@@ -509,7 +509,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
 
         {showTokenBSelector && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 w-80 max-h-96 overflow-y-auto">
+            <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-innerp-4 w-80 max-h-96 overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold">Select Token B</h3>
                 <button
@@ -524,7 +524,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
                   <button
                     key={token.symbol}
                     onClick={() => handleTokenBSelect(token)}
-                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] text-left"
+                    className="w-full flex items-center space-x-3 p-3 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-innertext-left"
                   >
                     <Image src={token.icon} alt={token.symbol} width={24} height={24} />
                     <div>

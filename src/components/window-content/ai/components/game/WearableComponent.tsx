@@ -134,7 +134,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   if (loadingGotchis) {
     return (
       <div 
-        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+        className={`bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center transition-all duration-800 ease-out origin-top-left ${
           isVisible 
             ? 'opacity-100 scale-100' 
             : 'opacity-0 scale-0'
@@ -154,7 +154,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   if (gotchiList.length === 0) {
     return (
       <div 
-        className={`bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center transition-all duration-800 ease-out origin-top-left ${
+        className={`bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center transition-all duration-800 ease-out origin-top-left ${
           isVisible 
             ? 'opacity-100 scale-100' 
             : 'opacity-0 scale-0'

@@ -142,7 +142,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
         <div className="text-sm font-bold truncate">{window.title}</div>
         <div className="flex">
           <button
-            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] ${isMobile ? 'w-5 h-5' : 'w-4 h-4 mr-1'}`}
+            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-win98-inner${isMobile ? 'w-5 h-5' : 'w-4 h-4 mr-1'}`}
             onClick={(e) => {
               e.stopPropagation(); 
               onMinimize();
@@ -151,7 +151,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
             <Minus className={`text-black ${isMobile ? 'w-4 h-4' : 'w-3 h-3'}`} />
           </button>
           <button
-            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] ${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`}
+            className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-win98-inner${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`}
             onClick={(e) => {
               e.stopPropagation(); 
               onClose();

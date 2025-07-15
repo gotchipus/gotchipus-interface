@@ -66,7 +66,7 @@ const GotchiGrid = ({
 
   if (isLoading) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -74,7 +74,7 @@ const GotchiGrid = ({
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">{emptyMessage}</p>
         <p className="text-xs text-[#808080] mt-2">{emptySubMessage}</p>
       </div>

@@ -267,7 +267,7 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
                 />
                 {pusName && !isSummoning && (
                   <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] px-2 py-1 text-xs"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
                     onClick={() => setPusName("")}
                   >
                     Clear
@@ -328,7 +328,7 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
                 />
                 {!isSummoning && (
                   <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] px-2 py-1 text-xs"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
                     onClick={() => {
                       const maxAmount = walletStore.formattedPharos(18)
                       setStakeAmount(maxAmount)

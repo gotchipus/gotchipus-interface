@@ -242,7 +242,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -250,7 +250,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to start swapping.</p>
       </div>
@@ -280,10 +280,10 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
           </div>
         </div>
 
-        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4">
+        <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-4">
           <div className="relative">
             {/* From Token Section */}
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 space-y-2 mb-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-2 space-y-2 mb-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -297,7 +297,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
                     setSelectorType('from');
                     setShowTokenSelector(true);
                   }}
-                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-win98-innerrounded-sm"
                 >
                   <Image src={fromToken.icon} alt={fromToken.symbol} width={20} height={20} />
                   <span className="font-bold">{fromToken.symbol}</span>
@@ -316,7 +316,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
             </div>
 
             {/* To Token Section */}
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 space-y-2 mt-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-2 space-y-2 mt-2">
               <div className="flex items-center justify-between">
                 <input
                   type="text"
@@ -330,7 +330,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
                     setSelectorType('to');
                     setShowTokenSelector(true);
                   }}
-                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+                  className="flex items-center space-x-2 px-3 py-1 border-2 border-[#808080] bg-[#c0c0c0] hover:bg-[#b0b0b0] shadow-win98-innerrounded-sm"
                 >
                   <Image src={toToken.icon} alt={toToken.symbol} width={20} height={20} />
                   <span className="font-bold">{toToken.symbol}</span>
@@ -356,7 +356,7 @@ const SwapComponent = observer(({ onSwapSuccess }: SwapComponentProps) => {
           <button
             onClick={handleSwap}
             disabled={!fromAmount || !toAmount || isLoading || parseFloat(fromAmount) > parseFloat(formattedFromBalance)}
-            className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-2 mt-2 font-bold text-lg transition-colors ${
+            className={`w-full border-2 border-[#808080] shadow-win98-innerp-2 mt-2 font-bold text-lg transition-colors ${
               !fromAmount || !toAmount || isLoading || parseFloat(fromAmount) > parseFloat(formattedFromBalance)
                 ? 'bg-[#a0a0a0] text-[#606060] cursor-not-allowed'
                 : 'bg-[#000080] text-white hover:bg-[#000060]'

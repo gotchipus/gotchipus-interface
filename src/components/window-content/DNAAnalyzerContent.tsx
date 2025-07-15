@@ -184,7 +184,7 @@ const DNAAnalyzerContent = () => {
             <button
               onClick={handleAnalyze}
               disabled={isLoading}
-              className="px-4 py-2 bg-[#c0c0c0] border-2 border-[#dfdfdf] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a] disabled:opacity-50"
+              className="px-4 py-2 bg-[#c0c0c0] border-2 border-[#dfdfdf] shadow-win98-innerhover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a] disabled:opacity-50"
             >
               {isLoading ? 'Analyzing...' : 'Analyze'}
             </button>

@@ -211,7 +211,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
 
   if (loadingGotchis) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">Loading your Gotchis...</p>
       </div>
     );
@@ -219,7 +219,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
 
   if (gotchiList.length === 0) {
     return (
-      <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-6 text-center">
+      <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-6 text-center">
         <p className="text-sm text-[#404040]">You don't have any Gotchis yet!</p>
         <p className="text-xs text-[#808080] mt-2">Mint some Gotchis first to remove liquidity.</p>
       </div>
@@ -232,26 +232,26 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToPositions}
-            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-innerhover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
           >
             ← Back
           </button>
           <h2 className="text-lg font-bold">Remove Liquidity</h2>
         </div>
 
-        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 space-y-4">
+        <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-4 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Remove Liquidity</h3>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] rounded-sm"
+              className="p-2 border-2 border-[#808080] bg-[#d4d0c8] hover:bg-[#c0c0c0] shadow-win98-innerrounded-sm"
             >
               <Settings size={16} />
             </button>
           </div>
 
           {showSettings && (
-            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-2">
+            <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold">Slippage Tolerance</label>
                 <div className="flex items-center space-x-2">
@@ -259,7 +259,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
                     type="text"
                     value={slippage}
                     onChange={(e) => setSlippage(e.target.value)}
-                    className="w-16 px-2 py-1 border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-white text-sm"
+                    className="w-16 px-2 py-1 border-2 border-[#808080] shadow-win98-innerbg-white text-sm"
                   />
                   <span className="text-sm">%</span>
                 </div>
@@ -267,7 +267,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
             </div>
           )}
 
-          <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3">
+          <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Image src={selectedPosition.token0.icon} alt={selectedPosition.token0.symbol} width={24} height={24} />
@@ -304,7 +304,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
                 <button
                   key={percent}
                   onClick={() => setRemovePercentage(percent)}
-                  className={`flex-1 px-3 py-2 border-2 font-bold text-sm rounded-sm shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] transition-colors ${
+                  className={`flex-1 px-3 py-2 border-2 font-bold text-sm rounded-sm shadow-win98-innertransition-colors ${
                     removePercentage === percent
                       ? 'bg-[#000080] text-white border-[#000080]'
                       : 'bg-[#d4d0c8] border-[#808080] text-black hover:bg-[#c0c0c0]'
@@ -316,7 +316,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
             </div>
           </div>
 
-          <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-3 space-y-3">
+          <div className="bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-innerp-3 space-y-3">
             <div className="flex items-center space-x-2 mb-2">
               <Info size={16} />
               <span className="text-sm font-bold">You will receive</span>
@@ -355,7 +355,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
           <button
             onClick={handleRemoveLiquidity}
             disabled={removePercentage === 0 || isLoading}
-            className={`w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 font-bold text-lg transition-colors ${
+            className={`w-full border-2 border-[#808080] shadow-win98-innerp-4 font-bold text-lg transition-colors ${
               removePercentage === 0 || isLoading
                 ? 'bg-[#a0a0a0] text-[#606060] cursor-not-allowed'
                 : 'bg-[#dc2626] text-white hover:bg-[#b91c1c] border-[#dc2626]'
@@ -380,14 +380,14 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={handleBackToList}
-            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] hover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
+            className="px-4 py-2 border-2 font-bold text-sm bg-[#c0c0c0] border-[#dfdfdf] text-black shadow-win98-innerhover:bg-[#d0d0d0] active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]"
           >
             ← Back to List
           </button>
           <h2 className="text-lg font-bold">Your Liquidity Positions</h2>
         </div>
 
-        <div className="bg-[#c0c0c0] border-2 shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] p-4 space-y-4">
+        <div className="bg-[#c0c0c0] border-2 shadow-win98-innerp-4 space-y-4">
           {liquidityPositions.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-4xl mb-4">💧</div>
@@ -401,7 +401,7 @@ const RemoveLiquidityComponent = observer(({ onSuccess }: RemoveLiquidityCompone
                 <button
                   key={index}
                   onClick={() => handlePositionSelect(position)}
-                  className="w-full border-2 border-[#808080] shadow-[inset_-1px_-1px_#0a0a0a,inset_1px_1px_#fff] bg-[#d4d0c8] hover:bg-[#c0c0c0] p-4 text-left transition-colors"
+                  className="w-full border-2 border-[#808080] shadow-win98-innerbg-[#d4d0c8] hover:bg-[#c0c0c0] p-4 text-left transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
