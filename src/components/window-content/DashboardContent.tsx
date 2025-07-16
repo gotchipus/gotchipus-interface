@@ -67,6 +67,7 @@ const DashboardContent = observer(() => {
   const [selectedType, setSelectedType] = useState<string>("")
   const [isPetWriting, setIsPetWriting] = useState<boolean>(false)
   const [showWalletConnectTBA, setShowWalletConnectTBA] = useState<boolean>(false)
+  const [petSuccessTimestamp, setPetSuccessTimestamp] = useState<number>(0)
   
   const { walletStore } = useStores()
   const walletAddress = walletStore.address;
@@ -125,6 +126,7 @@ const DashboardContent = observer(() => {
 
       if (isPetWriting) {
         setIsPetWriting(false);
+        setPetSuccessTimestamp(Date.now());
 
         const updateTask = async () => {
           await checkAndCompleteTask(walletStore.address!, 5);
@@ -421,6 +423,7 @@ const DashboardContent = observer(() => {
           handlePet={handlePet} 
           isPetWriting={isPetWriting}
           isMobile={isMobile}
+          petSuccessTimestamp={petSuccessTimestamp}
         />
       )}
       

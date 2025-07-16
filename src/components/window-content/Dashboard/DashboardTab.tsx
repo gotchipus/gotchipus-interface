@@ -6,6 +6,8 @@ import { GotchipusInfo } from "@/lib/types"
 import { observer } from "mobx-react-lite"
 import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
 import { useSvgLayers } from "@/hooks/useSvgLayers"
+import { useContractRead } from "@/hooks/useContract"
+import { useEffect, useState } from "react"
 
 interface DashboardTabProps {
   selectedTokenId: string
@@ -19,6 +21,7 @@ interface DashboardTabProps {
   handlePet: () => void
   isPetWriting: boolean
   isMobile?: boolean
+  petSuccessTimestamp?: number
 }
 
 const AttributeValueSkeleton = () => (
@@ -40,10 +43,25 @@ const DashboardTab = observer(({
   handleRename,
   handlePet,
   isPetWriting,
-  isMobile
+  isMobile,
+  petSuccessTimestamp
 }: DashboardTabProps) => {
   const tokenId = selectedTokenId;
   const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [canPet, setCanPet] = useState<boolean>(true);
+  
+  const { data: lastPetTime, refetch: refetchLastPetTime } = useContractRead(
+    'getLastPetTime',
+    [tokenId],
+    { enabled: !!tokenId }
+  );
+  
+  useEffect(() => {
+    if (petSuccessTimestamp) {
+      refetchLastPetTime();
+    }
+  }, [petSuccessTimestamp, refetchLastPetTime]);
 
   const isDataLoading = !tokenInfo || 
     (tokenInfo.aether === undefined && 
@@ -83,6 +101,37 @@ const DashboardTab = observer(({
       repeat: Infinity,
       ease: "easeInOut"
     }
+  };
+
+  useEffect(() => {
+    if (!lastPetTime) return;
+    
+    const updateCountdown = () => {
+      const now = Math.floor(Date.now() / 1000);
+      const lastPetTimestamp = Number(lastPetTime);
+      const cooldownEnd = lastPetTimestamp + (24 * 60 * 60); // 24 hours
+      const remainingTime = cooldownEnd - now;
+      
+      if (remainingTime > 0) {
+        setTimeLeft(remainingTime);
+        setCanPet(false);
+      } else {
+        setTimeLeft(0);
+        setCanPet(true);
+      }
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    
+    return () => clearInterval(interval);
+  }, [lastPetTime]);
+  
+  const formatCountdown = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -134,11 +183,11 @@ const DashboardTab = observer(({
               </button>
               <button
                 onClick={handlePet}
-                disabled={isPetWriting}
-                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'} ${isPetWriting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isPetWriting || !canPet}
+                className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-3 py-1 text-sm' : 'px-6 py-2'} ${(isPetWriting || !canPet) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Image src="/icons/pet.png" alt="Pet" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
-                {isPetWriting ? 'Petting...' : 'Pet'}
+                {isPetWriting ? 'Petting...' : !canPet ? formatCountdown(timeLeft) : 'Pet'}
               </button>
             </>
           ) : (

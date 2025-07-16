@@ -65,7 +65,9 @@ const getWindowContent = (windowId: string, onOpenWindow: (id: string, title: st
       return <ClaimWearableContent />
     case "daily-task-hall":
       return <DailyTaskHallContent openWindow={(view: string) => {
-        onOpenWindow(view, view, <div>Loading...</div>)
+        const icon = icons.find(i => i.id === view)
+        const content = getWindowContent(view, onOpenWindow)
+        onOpenWindow(view, icon?.title || view, content)
       }} />
     case "ai":
       return <AIContent />
