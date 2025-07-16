@@ -18,15 +18,9 @@ import RemoveLiquidityComponent from "../defi/RemoveLiquidityComponent";
 
 interface ChatInterfaceProps {
   messages: Message[];
-  input: string;
-  onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  onSendMessage: () => void;
   onBackClick: () => void;
-  inputRef: RefObject<HTMLTextAreaElement>;
   chatContainerRef: RefObject<HTMLDivElement>;
   messagesEndRef: RefObject<HTMLDivElement>;
-  isDisabled: boolean;
   status: "idle" | "streaming";
   onSummonSuccess?: (tokenId: string, txHash: string, pusName: string, pusStory: string) => void;
   onSummonDataReady?: (messageId: string, summonData: { tokenId: string, txHash: string, pusName: string, pusStory: string }) => void;
@@ -42,15 +36,9 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = memo(({
   messages,
-  input,
-  onInputChange,
-  onKeyDown,
-  onSendMessage,
   onBackClick,
-  inputRef,
   chatContainerRef,
   messagesEndRef,
-  isDisabled,
   status,
   onSummonSuccess,
   onSummonDataReady,
@@ -111,9 +99,9 @@ export const ChatInterface = memo(({
     <div className="h-full flex flex-col" ref={chatContainerRef}>
       <ChatHeader onBackClick={onBackClick} />
       
-      <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex flex-col gap-6 pb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex flex-col gap-6">
             {visibleMessages.map((msg) => (
               <div key={msg.id}>
                 {msg.isCallTools && msg.agentIndex === 0 && (
@@ -226,23 +214,10 @@ export const ChatInterface = memo(({
             {status === "streaming" && !visibleMessages.some(msg => msg.isLoading) && (
               <LoadingIndicator />
             )}
-            <div ref={messagesEndRef} className="h-32" />
+            <div ref={messagesEndRef} className="pb-32" />
           </div>
         </div>
       </div>
-
-      <footer className="py-4 px-4">
-        <div className="max-w-2xl mx-auto">
-          <InputArea
-            value={input}
-            onChange={onInputChange}
-            onKeyDown={onKeyDown}
-            onSendMessage={onSendMessage}
-            inputRef={inputRef}
-            isDisabled={isDisabled}
-          />
-        </div>
-      </footer>
     </div>
   );
 });

@@ -62,7 +62,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}&includeGotchipusInfo=true`);
         if (response.ok) {
           const data = await response.json();
           console.log('data', data);

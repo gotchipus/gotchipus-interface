@@ -101,7 +101,7 @@ const CallComponent = observer(({ onCallSuccess }: CallComponentProps) => {
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${walletStore.address}&includeGotchipusInfo=true`);
         if (response.ok) {
           const data = await response.json();
           const gotchis = data.ids.map((id: string, index: number) => ({

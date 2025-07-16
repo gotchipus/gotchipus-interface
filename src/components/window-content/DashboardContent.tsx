@@ -21,7 +21,8 @@ import useResponsive from "@/hooks/useResponsive"
 
 interface ListApiData {
   balance: string;
-  filteredIds: string[];
+  ids: string[];
+  filteredIds?: string[];
 }
 
 interface DetailsApiData {
@@ -72,9 +73,9 @@ const DashboardContent = observer(() => {
   const { toast } = useToast()
   const isMobile = useResponsive()
   
-  const listApiUrl = walletAddress && activeTab === null ? `/api/tokens/gotchipus?owner=${walletAddress}` : null;
+  const listApiUrl = walletAddress && activeTab === null ? `/api/tokens/gotchipus?owner=${walletAddress}&includeGotchipusInfo=false` : null;
 
-  const { data: listData, error: listError, isLoading: isListLoading, mutate: mutateList } = useSWR<ListApiData>(listApiUrl, fetcher, {
+  const { data: listData, isLoading: isListLoading } = useSWR<ListApiData>(listApiUrl, fetcher, {
     refreshInterval: 10000,
     keepPreviousData: true,
     errorRetryCount: 5,
@@ -84,20 +85,15 @@ const DashboardContent = observer(() => {
     revalidateOnReconnect: false,
     dedupingInterval: 2000,
   });
-
-  const ids = listData?.filteredIds || [];
+  
+  const ids = listData?.ids || [];
   const balances = parseInt(listData?.balance || '0');
 
   const detailsApiUrl = selectedTokenId && walletAddress 
     ? `/api/tokens/gotchipus-details?owner=${walletAddress}&tokenId=${selectedTokenId}` 
     : null; 
 
-  const { 
-    data: detailsData, 
-    error: detailsError, 
-    isLoading: isDetailsLoading,
-    mutate: mutateDetails 
-  } = useSWR<DetailsApiData>(detailsApiUrl, fetcher);
+  const { data: detailsData } = useSWR<DetailsApiData>(detailsApiUrl, fetcher);
 
   useEffect(() => {
     if (detailsData) {
@@ -329,7 +325,7 @@ const DashboardContent = observer(() => {
       <div className={`bg-[#c0c0c0] h-full overflow-auto ${isMobile ? 'p-3' : 'p-6'}`}>
         <div className="flex flex-col h-full">
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`}>
-            {getCurrentPageItems().map((id) => (
+            {getCurrentPageItems().map((id: string) => (
               <NftCard 
                 key={id} 
                 id={id} 

@@ -54,7 +54,7 @@ const MyPharosContent = observer(() => {
   }, []);
 
   const apiUrl = walletStore.isConnected && walletStore.address 
-    ? `/api/tokens/pharos?owner=${walletStore.address}` 
+    ? `/api/tokens/pharos?owner=${walletStore.address}&includePharosInfo=false&format=simple` 
     : null;
 
   const { data: filteredIds, error, isLoading: isInitialLoading, mutate } = useSWR<string[]>(apiUrl, fetcher, {

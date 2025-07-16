@@ -107,10 +107,10 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/gotchipus?owner=${address}`);
+        const response = await fetch(`/api/tokens/gotchipus?owner=${address}&includeGotchipusInfo=false`);
         if (response.ok) {
           const data = await response.json();
-          const gotchis = data.filteredIds.map((id: string) => ({
+          const gotchis = data.ids.map((id: string) => ({
             id,
             image: `/pus.png`
           }));

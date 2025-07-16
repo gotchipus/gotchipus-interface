@@ -59,7 +59,7 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
     const fetchGotchis = async () => {
       try {
         setLoadingGotchis(true);
-        const response = await fetch(`/api/tokens/pharos?owner=${walletStore.address}`);
+        const response = await fetch(`/api/tokens/pharos?owner=${walletStore.address}&format=simple`);
 
         if (response.ok) {
           const data = await response.json();

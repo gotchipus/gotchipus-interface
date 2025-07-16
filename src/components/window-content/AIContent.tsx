@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { WelcomeScreen, ChatInterface, Message } from "./ai";
+import { InputArea } from "./ai/components/chat/InputArea";
 import { ChatResponse } from "./ai/types";
 import useChat from "@/hooks/useChat";
 import { observer } from "mobx-react-lite";
@@ -434,56 +435,68 @@ const AIContent = observer(() => {
   }
 
   return (
-    <div className="bg-[#c0c0c0] w-full h-full relative">
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md">
-        <div className="bg-white/95 backdrop-blur-sm border border-amber-200 rounded-lg shadow-lg px-4 py-3">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-            <span className="text-amber-700 font-medium">Testing Phase</span>
-          </div>
-          <p className="text-gray-600 text-base mt-1 leading-relaxed">
-            AI responses may be slower as we optimize performance. Thanks for your patience! 🚀
-          </p>
-        </div>
-      </div>
-      
-      <div className="pt-52">
+    <div className="bg-[#c0c0c0] w-full h-full relative flex flex-col">
+      <div className={`flex-1 overflow-hidden ${!hasStartedChat ? 'pt-28' : 'pt-2'}`}>
         {!hasStartedChat ? (
-          <WelcomeScreen
-            input={input}
-            onInputChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onSendMessage={handleSendMessage}
-            inputRef={inputRef}
-            isDisabled={status === "streaming"}
-            onQuestionClick={sendMessage}
-          />
+          <>
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md">
+              <div className="bg-white/95 backdrop-blur-sm border border-amber-200 rounded-lg shadow-lg px-4 py-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  <span className="text-amber-700 font-medium">Testing Phase</span>
+                </div>
+                <p className="text-gray-600 text-base mt-1 leading-relaxed">
+                  AI responses may be slower as we optimize performance. Thanks for your patience! 🚀
+                </p>
+              </div>
+            </div>
+            <WelcomeScreen
+              input={input}
+              onInputChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onSendMessage={handleSendMessage}
+              inputRef={inputRef}
+              isDisabled={status === "streaming"}
+              onQuestionClick={sendMessage}
+            />
+          </>
         ) : (
-          <ChatInterface
-            messages={messages}
-            input={input}
-            onInputChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onSendMessage={handleSendMessage}
-            onBackClick={handleBackToInput}
-            inputRef={inputRef}
-            chatContainerRef={chatContainerRef}
-            messagesEndRef={messagesEndRef}
-            isDisabled={status === "streaming"}
-            status={status}
-            onSummonSuccess={handleSummonSuccess}
-            onSummonDataReady={handleSummonDataReady}
-            onMintDataReady={handleMintDataReady}
-            onPetDataReady={handlePetDataReady}
-            onMintSuccess={handleMintSuccess}
-            onPetSuccess={handlePetSuccess}
-            onWearableSuccess={handleWearableSuccess}
-            onWearableDataReady={handleWearableDataReady}
-            onCallSuccess={handleCallSuccess}
-            onCallDataReady={handleCallDataReady}
-          />
+          <div className="h-full flex flex-col">
+            <ChatInterface
+              messages={messages}
+              onBackClick={handleBackToInput}
+              chatContainerRef={chatContainerRef}
+              messagesEndRef={messagesEndRef}
+              status={status}
+              onSummonSuccess={handleSummonSuccess}
+              onSummonDataReady={handleSummonDataReady}
+              onMintDataReady={handleMintDataReady}
+              onPetDataReady={handlePetDataReady}
+              onMintSuccess={handleMintSuccess}
+              onPetSuccess={handlePetSuccess}
+              onWearableSuccess={handleWearableSuccess}
+              onWearableDataReady={handleWearableDataReady}
+              onCallSuccess={handleCallSuccess}
+              onCallDataReady={handleCallDataReady}
+            />
+          </div>
         )}
       </div>
+      
+      {hasStartedChat && (
+        <footer className="shrink-0 py-4 px-4">
+          <div className="max-w-2xl mx-auto">
+            <InputArea
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onSendMessage={handleSendMessage}
+              inputRef={inputRef}
+              isDisabled={status === "streaming"}
+            />
+          </div>
+        </footer>
+      )}
     </div>
   );
 });
