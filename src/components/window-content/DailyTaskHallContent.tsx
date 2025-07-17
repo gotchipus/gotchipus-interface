@@ -51,14 +51,6 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   const timeNow = Math.floor(Date.now() / 1000);
   const checkedInToday = timeNow < userInfo.latest_check_in_at + 86400;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1500)
-    
-    return () => clearTimeout(timer)
-  }, [])
-
   const fetchAllData = React.useCallback(async () => {
     if (!currentAddress) {
       setLoading(false);
@@ -102,27 +94,24 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
       }
       const allTasks: Task[] = allTasksResult.data;
 
-      const completedStatus = await Promise.all(
-        allTasks.map(async (task) => {
-          try {
-            const res = await fetch("/api/tasks/task-completed", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ "user_id": userData.id, "task_id": task.task_id }),
-              cache: 'no-store'
-            });
-            if (!res.ok) return false;
-            const result = await res.json();
-            return result.code === 0 && Array.isArray(result.data) && result.data.length > 0;
-          } catch {
-            return false;
-          }
-        })
-      );
+      const completionStatusResponse = await fetch("/api/tasks/task-completed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "user_id": userData.id }),
+        cache: 'no-store'
+      });
+      
+      let completedTaskIds: number[] = [];
+      if (completionStatusResponse.ok) {
+        const completionResult = await completionStatusResponse.json();
+        if (completionResult.code === 0 && Array.isArray(completionResult.data)) {
+          completedTaskIds = completionResult.data.map((task: any) => task.task_id);
+        }
+      }
 
-      const finalTasks = allTasks.map((task, idx) => ({
+      const finalTasks = allTasks.map((task) => ({
         ...task,
-        completed: completedStatus[idx]
+        completed: completedTaskIds.includes(task.task_id)
       }));
       setTasks(finalTasks);
       setLoading(false);
@@ -155,8 +144,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
     }
   }, [currentAddress, walletStore.isTaskRefreshing, searchParams, fetchAllData]);
 
-
-  const { checkIn, isCheckingIn, error: checkInError } = useCheckIn({
+  const { checkIn } = useCheckIn({
     onSuccess: (data) => {      
       if (data.code === 0 && data.status === "success" && data.data === true) {
         const handleCheckIn = async () => {

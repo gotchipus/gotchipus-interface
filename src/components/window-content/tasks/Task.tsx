@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useStores } from "@stores/context"
 import Image from 'next/image'
 
@@ -65,7 +64,6 @@ const taskTypeIcons: Record<string, string> = {
 const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskTypeChange, openWindow, isMobile }) => {
   const [fixedTasksState, setFixedTasksState] = useState(fixedTasks)
   const { walletStore } = useStores()
-  const router = useRouter()
 
   useEffect(() => {
     const checkFixedTasksStatus = async () => {
