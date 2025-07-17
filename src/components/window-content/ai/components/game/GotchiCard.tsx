@@ -12,6 +12,7 @@ interface GotchiCardProps {
   className?: string;
   buttonName?: string;
   buttonAction?: () => void;
+  buttonDisabled?: boolean;
 }
 
 const GotchiCard = ({
@@ -20,6 +21,7 @@ const GotchiCard = ({
   className,
   buttonName,
   buttonAction,
+  buttonDisabled = false,
 }: GotchiCardProps) => {
   const { layers, backgroundSvg, isLoading } = useSvgLayers(id || "");
   
@@ -58,7 +60,12 @@ const GotchiCard = ({
         {buttonName && (
           <button
             onClick={buttonAction}
-            className="w-full rounded-sm py-2 font-bold text-sm border-2 border-[#b0b0b0] bg-[#c0c0c0] text-black hover:bg-[#d0d0d0] shadow-win98-outer active:shadow-win98-inner transition-all duration-75"
+            disabled={buttonDisabled}
+            className={`w-full rounded-sm py-2 font-bold text-sm border-2 border-[#b0b0b0] text-black transition-all duration-75 ${
+              buttonDisabled 
+                ? 'bg-[#a0a0a0] text-[#808080] cursor-not-allowed shadow-win98-inner' 
+                : 'bg-[#c0c0c0] hover:bg-[#d0d0d0] shadow-win98-outer active:shadow-win98-inner'
+            }`}
           >
             {buttonName}
           </button>

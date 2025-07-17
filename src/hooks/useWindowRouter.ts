@@ -26,7 +26,10 @@ export function useWindowRouter(): UseWindowRouterReturn {
   const isInitialized = useRef(false)
 
   useEffect(() => {
-    if (!isInitialized.current) {
+    const refreshParam = searchParams.get('refresh')
+    const hasRefresh = !!refreshParam
+    
+    if (!isInitialized.current || hasRefresh) {
       const routeState = parseWindowsFromUrl(searchParams)
       setOpenWindows(routeState.windows.map(w => w.id))
       setActiveWindow(routeState.activeWindow)

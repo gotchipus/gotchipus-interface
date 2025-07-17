@@ -5,7 +5,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit';
 import GotchiGrid from "./GotchiGrid";
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
-import { useContractWrite } from "@/src/hooks/useContract"
+import { useContractWrite, useContractRead } from "@/src/hooks/useContract"
 import { useToast } from '@/hooks/use-toast'
 import { checkAndCompleteTask } from "@/src/utils/taskUtils"
 import { GotchiItem } from '@/lib/types';
@@ -22,14 +22,31 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
   const [loadingGotchis, setLoadingGotchis] = useState(true);
   const [pettingTokenId, setPettingTokenId] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedGotchi, setSelectedGotchi] = useState<GotchiItem | null>(null);
+  const [petSuccessTimestamp, setPetSuccessTimestamp] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(Math.floor(Date.now() / 1000));
   const { openConnectModal } = useConnectModal();
   const { toast } = useToast()
 
   const {contractWrite, hash, isConfirmed, error} = useContractWrite();
+  
+  const { data: lastPetTime, refetch: refetchLastPetTime } = useContractRead(
+    'getLastPetTime',
+    selectedGotchi ? [selectedGotchi.id] : [],
+    { enabled: !!selectedGotchi }
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
+  }, []);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Math.floor(Date.now() / 1000));
+    }, 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -66,6 +83,19 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
       openConnectModal?.();
       return;
     }
+    
+    if (gotchi.id !== selectedGotchi?.id) {
+      setSelectedGotchi(gotchi);
+    }
+    
+    if (gotchi.id === selectedGotchi?.id && !canPetSelectedGotchi()) {
+      toast({
+        title: "Cannot Pet Yet",
+        description: "Please wait for the cooldown to end",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -88,6 +118,8 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
   useEffect(() => {
     if (isConfirmed) {
       setIsLoading(false);
+      setPetSuccessTimestamp(Date.now());
+      refetchLastPetTime();
       toast({
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",
@@ -101,7 +133,7 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
       walletStore.setIsTaskRefreshing(true);
       onPetSuccess?.(pettingTokenId!, hash as `0x${string}`);
     }
-  }, [isConfirmed])
+  }, [isConfirmed, refetchLastPetTime])
 
   useEffect(() => {
     if (error) {
@@ -115,10 +147,45 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
   }, [error, toast]);
 
 
+  useEffect(() => {
+    if (gotchiList.length > 0 && !selectedGotchi) {
+      setSelectedGotchi(gotchiList[0]);
+    }
+  }, [gotchiList, selectedGotchi]);
+  
+  const canPetSelectedGotchi = () => {
+    if (!selectedGotchi || !lastPetTime) return true;
+    
+    const lastPetTimestamp = Number(lastPetTime);
+    const cooldownEnd = lastPetTimestamp + (24 * 60 * 60); // 24 hours
+    return currentTime >= cooldownEnd;
+  };
+  
+  const getTimeLeftForSelected = () => {
+    if (!selectedGotchi || !lastPetTime) return 0;
+    
+    const lastPetTimestamp = Number(lastPetTime);
+    const cooldownEnd = lastPetTimestamp + (24 * 60 * 60); // 24 hours
+    const remainingTime = cooldownEnd - currentTime;
+    return Math.max(0, remainingTime);
+  };
+  
+  const formatCountdown = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
   const getButtonText = (gotchi: GotchiItem) => {
     if (pettingTokenId === gotchi.id && isLoading) return 'Petting...';
+    
+    if (gotchi.id === selectedGotchi?.id && !canPetSelectedGotchi()) {
+      return formatCountdown(getTimeLeftForSelected());
+    }
+    
     return 'Pet';
-  }
+  };
 
   if (loadingGotchis) {
     return (
@@ -176,7 +243,12 @@ const PetGotchiComponent = observer(({ onPetSuccess }: PetGotchiComponentProps) 
       }}
     >
       <GotchiGrid
-        gotchiList={gotchiList}
+        gotchiList={gotchiList.map(gotchi => ({
+          ...gotchi,
+          canPet: gotchi.id === selectedGotchi?.id ? canPetSelectedGotchi() : true
+        }))}
+        onGotchiSelect={setSelectedGotchi}
+        selectedGotchiId={selectedGotchi?.id || null}
         onGotchiAction={handlePet}
         getButtonText={getButtonText}
         isLoading={loadingGotchis}

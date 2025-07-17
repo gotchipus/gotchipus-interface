@@ -8,12 +8,12 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
 
   if (!code) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
   }
 
   const token = request.cookies.get('discord_auth_jwt')?.value;
   if (!token) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
   }
 
   let decodedToken: any;
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { payload } = await jose.jwtVerify(token, secret);
     decodedToken = payload;
   } catch (err) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
   }
   const walletAddress = decodedToken.address;
 
@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
 
     console.log(`User ${discordUsername} (${discordUserId}) has successfully joined the Discord server.`);
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
 
   } catch (error) {
     console.error(error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?view=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
   }
 }

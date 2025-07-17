@@ -8,6 +8,7 @@ import { useCheckIn } from '@/hooks/useSign'
 import TaskList from './tasks/Task'
 import { useSearchParams } from 'next/navigation'
 import useResponsive from "@/hooks/useResponsive"
+import { useAccount } from 'wagmi'
 
 interface Task {
   task_id: number
@@ -27,9 +28,9 @@ interface DailyTaskHallContentProps {
 }
 
 const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedTaskType, setSelectedTaskType] = useState<string>('all')
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTaskType, setSelectedTaskType] = useState<string>('all');
   const [userInfo, setUserInfo] = useState({
     id: 0,
     level: 0,
@@ -39,9 +40,12 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
     badges: [] as any[]
   });
 
-  const { walletStore } = useStores()
-  const searchParams = useSearchParams()
-  const isMobile = useResponsive()
+  const { walletStore } = useStores();
+  const searchParams = useSearchParams();
+  const isMobile = useResponsive();
+  const { address: wagmiAddress } = useAccount();
+  
+  const currentAddress = wagmiAddress || walletStore.address;
 
   const experienceToNextLevel = Math.floor(100 * ((userInfo.level + 1) ** 1.5));
   const timeNow = Math.floor(Date.now() / 1000);
@@ -56,7 +60,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
   }, [])
 
   const fetchAllData = React.useCallback(async () => {
-    if (!walletStore.address) {
+    if (!currentAddress) {
       setLoading(false);
       walletStore.setIsTaskRefreshing(false);
       return;
@@ -66,7 +70,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
       const infoResponse = await fetch("/api/tasks/info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "address": walletStore.address }),
+        body: JSON.stringify({ "address": currentAddress }),
         cache: 'no-store'
       });
 
@@ -128,27 +132,28 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
       setLoading(false);
       walletStore.setIsTaskRefreshing(false);
     }
-  }, [walletStore.address, walletStore.setIsTaskRefreshing]);
-
-  useEffect(() => {
-    fetchAllData();
-  }, [fetchAllData]);
-
-  useEffect(() => {
-    if (walletStore.isTaskRefreshing) {
-      fetchAllData();
-    }
-  }, [walletStore.isTaskRefreshing, fetchAllData]);
+  }, [currentAddress, walletStore.setIsTaskRefreshing]);
 
   useEffect(() => {
     const viewParam = searchParams.get('view');
+    const windowsParam = searchParams.get('windows');
     const refreshParam = searchParams.get('refresh');
     
-    if (viewParam === 'daily-task-hall' || refreshParam) {
+    if (!currentAddress) {
+      setLoading(false);
+      return;
+    }
+    
+    const isDailyTaskHallOpen = viewParam === 'daily-task-hall' || windowsParam?.includes('daily-task-hall');
+    const shouldFetchForRefresh = refreshParam && isDailyTaskHallOpen;
+    const shouldFetchForTaskRefresh = walletStore.isTaskRefreshing;
+    const isInitialLoad = !refreshParam && !walletStore.isTaskRefreshing;
+    
+    if (shouldFetchForRefresh || shouldFetchForTaskRefresh || isInitialLoad) {
       setLoading(true);
       fetchAllData();
     }
-  }, [searchParams, fetchAllData]);
+  }, [currentAddress, walletStore.isTaskRefreshing, searchParams, fetchAllData]);
 
 
   const { checkIn, isCheckingIn, error: checkInError } = useCheckIn({
@@ -157,7 +162,7 @@ const DailyTaskHallContent = ({ openWindow }: DailyTaskHallContentProps) => {
         const handleCheckIn = async () => {
           try {
             const payload = {
-              "address": walletStore.address,
+              "address": currentAddress,
               "event": "check_in"
             };
             const response = await fetch("/api/tasks/checkin", {

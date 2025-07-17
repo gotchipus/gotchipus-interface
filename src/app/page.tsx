@@ -6,6 +6,12 @@ import useResponsive from "@/hooks/useResponsive"
 import Desktop from "@/components/home/Desktop"
 import Taskbar from "@/components/home/Taskbar"
 import Window from "@/components/home/Window"
+import MintContent from "@/components/window-content/MintContent"
+import MyPharosContent from "@/components/window-content/MyPharosContent"
+import DashboardContent from "@/components/window-content/DashboardContent"
+import ClaimWearableContent from "@/components/window-content/ClaimWearableContent"
+import DailyTaskHallContent from "@/components/window-content/DailyTaskHallContent"
+import AIContent from "@/components/window-content/AIContent"
 import type { WindowType } from "@/lib/types"
 import type { JSX } from "react/jsx-runtime"
 import { WINDOW_SIZE } from "@/lib/constant"
@@ -24,6 +30,55 @@ export default function Home() {
       return shouldKeep
     })
   }, [windowRouter.openWindows])
+
+  useEffect(() => {
+    windowRouter.openWindows.forEach(windowId => {
+      if (!openWindows.some(w => w.id === windowId)) {
+        const icons = [
+          { id: "ai", title: "Chat" },
+          { id: "mint", title: "Mint" },
+          { id: "pharos", title: "My Pharos" },
+          { id: "dashboard", title: "My Gotchipus" },
+          { id: "wearable", title: "Claim Wearable" },
+          { id: "daily-task-hall", title: "Daily Task Hall" },
+        ]
+        
+        const icon = icons.find(i => i.id === windowId)
+        if (icon) {
+          let content: JSX.Element
+          switch (windowId) {
+            case "mint":
+              content = <MintContent />
+              break
+            case "pharos":
+              content = <MyPharosContent />
+              break
+            case "dashboard":
+              content = <DashboardContent />
+              break
+            case "wearable":
+              content = <ClaimWearableContent />
+              break
+            case "daily-task-hall":
+              content = <DailyTaskHallContent openWindow={(view: string) => {
+                const targetIcon = icons.find(i => i.id === view)
+                if (targetIcon) {
+                  handleOpenWindow(view, targetIcon.title, <div>Loading...</div>)
+                }
+              }} />
+              break
+            case "ai":
+              content = <AIContent />
+              break
+            default:
+              content = <div>Unknown window: {windowId}</div>
+          }
+          
+          handleOpenWindow(windowId, icon.title, content)
+        }
+      }
+    })
+  }, [windowRouter.openWindows, openWindows])
 
   const handleOpenWindow = (windowId: string, title: string, content: JSX.Element) => {
     if (openWindows.some((w) => w.id === windowId)) {

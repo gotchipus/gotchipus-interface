@@ -113,7 +113,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
     if (!walletStore.address) {
       return
     }
-    router.push(`/api/connect/x?address=${walletStore.address}`)
+    window.location.href = `/api/connect/x?address=${walletStore.address}`
   }
 
   const handleJoinDiscord = () => {
@@ -124,7 +124,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, selectedTaskType, onTaskType
     if (!walletStore.address) {
       return
     }
-    router.push(`/api/connect/discord?address=${walletStore.address}`)
+    window.location.href = `/api/connect/discord?address=${walletStore.address}`
   }
 
   const filteredTasks = React.useMemo(() => {

@@ -8,7 +8,7 @@ import { GotchiItem } from '@/lib/types';
 
 
 interface GotchiGridProps {
-  gotchiList: GotchiItem[];
+  gotchiList: (GotchiItem & { canPet?: boolean })[];
   onGotchiAction?: (gotchi: GotchiItem) => void;
   onGotchiSelect?: (gotchi: GotchiItem) => void;
   getButtonText?: (gotchi: GotchiItem) => string;
@@ -96,6 +96,7 @@ const GotchiGrid = ({
                 id={selectedGotchi.id}
                 buttonText={getButtonText(selectedGotchi)}
                 onAction={() => handleGotchiAction(selectedGotchi)}
+                buttonDisabled={selectedGotchi.canPet === false}
               />
             )}
           </div>
@@ -129,6 +130,7 @@ const GotchiGrid = ({
               className="cursor-pointer"
               buttonName={getButtonText(gotchi)}
               buttonAction={() => handleGotchiAction(gotchi)}
+              buttonDisabled={gotchi.canPet === false}
             />
           ))}
         </div>

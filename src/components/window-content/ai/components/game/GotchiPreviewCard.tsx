@@ -10,6 +10,7 @@ interface GotchiPreviewCardProps {
   buttonText?: string;
   onAction?: () => void;
   className?: string;
+  buttonDisabled?: boolean;
 }
 
 const GotchiPreviewCard = ({
@@ -18,6 +19,7 @@ const GotchiPreviewCard = ({
   buttonText = "Pet",
   onAction,
   className,
+  buttonDisabled = false,
 }: GotchiPreviewCardProps) => {
   const { layers, backgroundSvg, isLoading } = useSvgLayers(id);
   
@@ -49,7 +51,12 @@ const GotchiPreviewCard = ({
         <h3 className="mb-2 text-sm font-bold text-[#000080] text-center">{name}</h3>
         <button
           onClick={onAction}
-          className="w-full py-2 font-bold text-sm border-2 border-[#b0b0b0] bg-[#c0c0c0] text-black hover:bg-[#d0d0d0] shadow-win98-inneractive:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff] transition-all duration-75"
+          disabled={buttonDisabled}
+          className={`w-full py-2 font-bold text-sm border-2 border-[#b0b0b0] text-black transition-all duration-75 ${
+            buttonDisabled 
+              ? 'bg-[#a0a0a0] text-[#808080] cursor-not-allowed shadow-win98-inner' 
+              : 'bg-[#c0c0c0] hover:bg-[#d0d0d0] shadow-win98-outer active:shadow-[inset_1px_1px_#0a0a0a,inset_-1px_-1px_#fff]'
+          }`}
         >
           {buttonText}
         </button>
