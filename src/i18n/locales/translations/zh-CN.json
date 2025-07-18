@@ -22,6 +22,10 @@
             "partner4": {
                 "name": "Pharos Name Service",
                 "url": "/partners/pns.png"
+            },
+            "partner5": {
+                "name": "Auto Staking",
+                "url": "/partners/autostaking.png"
             }
         }
     },
