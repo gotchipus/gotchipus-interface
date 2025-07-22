@@ -26,6 +26,14 @@
             "partner5": {
                 "name": "Auto Staking",
                 "url": "/partners/autostaking.png"
+            },
+            "partner6": {
+                "name": "Zentra",
+                "url": "/partners/zentra.png"
+            },
+            "partner7": {
+                "name": "ZenithSwap",
+                "url": "/partners/zenith.svg"
             }
         }
     },

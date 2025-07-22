@@ -40,7 +40,7 @@ export default function AboutContent() {
       <div className="bg-[#c0c0c0] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white p-4">
         <h3 className="font-bold mb-3 text-sm">{t("about.partners.title")}</h3>
         <div className={`grid gap-2 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {[1, 2, 3, 4, 5].map((partner) => (
+          {[1, 2, 3, 4, 5, 6, 7].map((partner) => (
             <div key={partner} className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] p-3 hover:bg-[#b8b8b8] active:border-t-[#808080] active:border-l-[#808080] active:border-r-white active:border-b-white transition-colors cursor-pointer">
               <div className="flex items-center space-x-3">
                 <div className="bg-white border border-[#808080] p-1">
