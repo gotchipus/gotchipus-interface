@@ -15,7 +15,11 @@ const pharosTestnetCustomChain = {
   iconBackground: '#fff',
   nativeCurrency: { name: 'Pharos', symbol: 'PHRS', decimals: 18 },
   rpcUrls: {
-    default: { http: ['/api/testnet'] },
+    default: { 
+      http: typeof window !== 'undefined' && window.location?.origin 
+        ? [`${window.location.origin}/api/testnet`]
+        : ['https://testnet.dplabs-internal.com'] 
+    },
   },
   blockExplorers: {
     default: { name: 'Pharosscan', url: 'https://testnet.pharosscan.xyz/' },
