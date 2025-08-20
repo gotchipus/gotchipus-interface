@@ -38,10 +38,10 @@
         }
     },
     "mint": {
-        "free": "FREE MINT!",
-        "noCost": "No cost, just gas fees",
+        "mint": "MINT OPENED!",
+        "noCost": "0.025 $PHRS per Gotchipus",
         "button": "Mint Now",
-        "description": "Mint your unique Pharos and join our collection",
-        "limited": "Limited time offer!"
+        "description": "Mint your unique Gotchipus and join our collection",
+        "limited": "Limited time offer! 20,000 Gotchipus!"
     }
 } 

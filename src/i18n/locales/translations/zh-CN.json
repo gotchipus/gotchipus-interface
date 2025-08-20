@@ -38,10 +38,10 @@
         }
     },
     "mint": {
-        "free": "免费铸造！",
-        "noCost": "无需成本，只需 Gas 费用",
+        "mint": "铸造已开放！",
+        "noCost": "0.025 $PHRS 每只 Gotchipus",
         "button": "立即铸造",
-        "description": "铸造你的独特 Pharos 并加入我们的收藏",
-        "limited": "限时活动！"
+        "description": "铸造你的独特 Gotchipus 并加入我们的收藏",
+        "limited": "限时铸造 20,000 只！"
     }
 } 

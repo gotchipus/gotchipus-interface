@@ -81,11 +81,13 @@ const DashboardTab = observer(({
     : {};
 
   const attributes = [
-    { name: "Aether", value: tokenInfo.aether || 0, icon: "aether" },
-    { name: "Bonding", value: tokenInfo.bonding || 0, icon: "bonding" },
-    { name: "Growth", value: tokenInfo.growth || 0, icon: "growth" },
-    { name: "Element", value: tokenInfo.element || 0, icon: "element" },
-    { name: "Wisdom", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "Faction", value: tokenInfo.aether || 0, icon: "aether" },
+    { name: "STR", value: tokenInfo.bonding || 0, icon: "bonding" },
+    { name: "DEF", value: tokenInfo.growth || 0, icon: "growth" },
+    { name: "INT", value: tokenInfo.element || 0, icon: "element" },
+    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "wisdom" },
   ];
 
   const dnaData = {

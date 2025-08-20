@@ -158,31 +158,43 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
     },
     traits: [
       { 
-        name: "Elemented", 
-        displayValue: "Water", 
+        name: "Faction", 
+        displayValue: "Combat", 
         icon: <Image src="/icons/element.png" alt="Water" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-blue-50"
       },
       { 
-        name: "Bonding", 
+        name: "STR", 
         displayValue: "50", 
         icon: <Image src="/icons/bonding.png" alt="Bonding" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-red-50"
       },
       { 
-        name: "Growth", 
+        name: "DEF", 
         displayValue: "0", 
         icon: <Image src="/icons/growth.png" alt="Growth" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-amber-50"
       },
       { 
-        name: "Wisdom", 
+        name: "INT", 
         displayValue: "0", 
         icon: <Image src="/icons/wisdom.png" alt="Wisdom" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-emerald-50"
       },
       { 
-        name: "Aether", 
+        name: "VIT", 
+        displayValue: getStableAether(Number(stakeAmount)), 
+        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        bgColor: "bg-cyan-50"
+      },
+      { 
+        name: "AGI", 
+        displayValue: getStableAether(Number(stakeAmount)), 
+        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        bgColor: "bg-cyan-50"
+      },
+      { 
+        name: "LUK", 
         displayValue: getStableAether(Number(stakeAmount)), 
         icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-cyan-50"
@@ -260,7 +272,7 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
               />
               {pusName && !isSummoning && (
                 <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
                   onClick={() => setPusName("")}
                 >
                   Clear
@@ -321,7 +333,7 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
               />
               {!isSummoning && (
                 <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
                   onClick={() => {
                     const maxAmount = walletStore.formattedPharos(18)
                     setStakeAmount(maxAmount)
@@ -566,7 +578,7 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
               />
               {pusName && !isSummoning && (
                 <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
                   onClick={() => setPusName("")}
                 >
                   Clear
@@ -627,7 +639,7 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
               />
               {!isSummoning && (
                 <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-innerpx-2 py-1 text-xs"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#d4d0c8] border border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
                   onClick={() => {
                     const maxAmount = walletStore.formattedPharos(18)
                     setStakeAmount(maxAmount)

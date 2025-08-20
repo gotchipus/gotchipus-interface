@@ -17,11 +17,12 @@ const StatsTab = ({
   };
 
   const attributes = [
-    { name: "Aether", value: tokenInfo.aether || 0, icon: "aether" },
-    { name: "Bonding", value: tokenInfo.bonding || 0, icon: "bonding" },
-    { name: "Growth", value: tokenInfo.growth || 0, icon: "growth" },
-    { name: "Element", value: tokenInfo.element || 0, icon: "element" },
-    { name: "Wisdom", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "STR", value: tokenInfo.bonding || 0, icon: "bonding" },
+    { name: "DEF", value: tokenInfo.growth || 0, icon: "growth" },
+    { name: "INT", value: tokenInfo.element || 0, icon: "element" },
+    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "wisdom" },
   ];
 
   return (
@@ -37,7 +38,7 @@ const StatsTab = ({
             <div key={index} className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner rounded-sm ${isMobile ? 'p-2' : 'p-3'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Image src={`/icons/${attr.name}.png`} alt={attr.name} width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`}/>
+                  <Image src={`/icons/${attr.icon}.png`} alt={attr.name} width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`}/>
                   <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>{attr.name}</span>
                 </div>
                 <div className={`font-bold ${isMobile ? 'text-sm' : ''}`}>{attr.value}</div>
