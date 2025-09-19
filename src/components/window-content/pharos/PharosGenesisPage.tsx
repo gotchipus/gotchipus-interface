@@ -160,43 +160,43 @@ const PharosGenesisPage = observer(({ tokenId, name, story, previewImage, onClos
       { 
         name: "Faction", 
         displayValue: "Combat", 
-        icon: <Image src="/icons/element.png" alt="Water" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/faction.png" alt="Faction" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-blue-50"
       },
       { 
         name: "STR", 
         displayValue: "50", 
-        icon: <Image src="/icons/bonding.png" alt="Bonding" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/strength.png" alt="Strength" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-red-50"
       },
       { 
         name: "DEF", 
         displayValue: "0", 
-        icon: <Image src="/icons/growth.png" alt="Growth" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/defense.png" alt="Defense" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-amber-50"
       },
       { 
         name: "INT", 
         displayValue: "0", 
-        icon: <Image src="/icons/wisdom.png" alt="Wisdom" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/mind.png" alt="Mind" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-emerald-50"
       },
       { 
         name: "VIT", 
         displayValue: getStableAether(Number(stakeAmount)), 
-        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/vitality.png" alt="Vitality" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-cyan-50"
       },
       { 
         name: "AGI", 
         displayValue: getStableAether(Number(stakeAmount)), 
-        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/agility.png" alt="Agility" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-cyan-50"
       },
       { 
         name: "LUK", 
         displayValue: getStableAether(Number(stakeAmount)), 
-        icon: <Image src="/icons/aether.png" alt="Aether" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
+        icon: <Image src="/icons/luck.png" alt="Luck" width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} />,
         bgColor: "bg-cyan-50"
       }
     ]

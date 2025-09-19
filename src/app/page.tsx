@@ -6,6 +6,7 @@ import useResponsive from "@/hooks/useResponsive"
 import Desktop from "@/components/home/Desktop"
 import Taskbar from "@/components/home/Taskbar"
 import Window from "@/components/home/Window"
+import NFTSalesPopup from "@/components/home/NFTSalesPopup"
 import MintContent from "@/components/window-content/MintContent"
 import MyPharosContent from "@/components/window-content/MyPharosContent"
 import DashboardContent from "@/components/window-content/DashboardContent"
@@ -178,10 +179,10 @@ export default function Home() {
 
   return (
     <main className={`w-full min-w-[800px] min-h-screen overflow-auto bg-uni-bg-01 relative ${isMobile ? 'touch-manipulation' : ''}`}>
-      <Desktop 
-        onOpenWindow={handleOpenWindow} 
-        activeWindow={windowRouter.activeWindow} 
-        isMobile={isMobile} 
+      <Desktop
+        onOpenWindow={handleOpenWindow}
+        activeWindow={windowRouter.activeWindow}
+        isMobile={isMobile}
         openWindowIds={openWindows.map(w => w.id)}
       />
 
@@ -209,6 +210,8 @@ export default function Home() {
         onRestoreWindow={handleRestoreWindow}
         isMobile={isMobile}
       />
+
+      <NFTSalesPopup />
     </main>
   )
 }

@@ -17,12 +17,12 @@ const StatsTab = ({
   };
 
   const attributes = [
-    { name: "STR", value: tokenInfo.bonding || 0, icon: "bonding" },
-    { name: "DEF", value: tokenInfo.growth || 0, icon: "growth" },
-    { name: "INT", value: tokenInfo.element || 0, icon: "element" },
-    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "wisdom" },
-    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "wisdom" },
-    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "STR", value: tokenInfo.bonding || 0, icon: "strength" },
+    { name: "DEF", value: tokenInfo.growth || 0, icon: "defense" },
+    { name: "INT", value: tokenInfo.element || 0, icon: "mind" },
+    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "vitality" },
+    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "agility" },
+    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "luck" },
   ];
 
   return (
@@ -33,7 +33,7 @@ const StatsTab = ({
           Attributes
         </div>
 
-        <div className={`grid gap-3 mb-4 ${isMobile ? 'grid-cols-2 gap-2' : ''}`}>
+        <div className={`grid gap-3 mb-4 ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2'}`}>
           {attributes.map((attr, index) => (
             <div key={index} className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner rounded-sm ${isMobile ? 'p-2' : 'p-3'}`}>
               <div className="flex items-center justify-between">

@@ -81,13 +81,13 @@ const DashboardTab = observer(({
     : {};
 
   const attributes = [
-    { name: "Faction", value: tokenInfo.aether || 0, icon: "aether" },
-    { name: "STR", value: tokenInfo.bonding || 0, icon: "bonding" },
-    { name: "DEF", value: tokenInfo.growth || 0, icon: "growth" },
-    { name: "INT", value: tokenInfo.element || 0, icon: "element" },
-    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "wisdom" },
-    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "wisdom" },
-    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "wisdom" },
+    { name: "Faction", value: 0 || 0, icon: "faction" },
+    { name: "STR", value: 0 || 0, icon: "strength" },
+    { name: "DEF", value: 0 || 0, icon: "defense" },
+    { name: "INT", value: 0 || 0, icon: "mind" },
+    { name: "VIT", value: 0 || 0, icon: "vitality" },
+    { name: "AGI", value: 0 || 0, icon: "agility" },
+    { name: "LUK", value: 0 || 0, icon: "luck" },
   ];
 
   const dnaData = {
@@ -217,7 +217,7 @@ const DashboardTab = observer(({
           Attributes
         </div>
 
-        <div className={`grid gap-4 mb-4 ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2'}`}>
+        <div className={`grid gap-4 mb-4 ${isMobile ? 'grid-cols-3 gap-2' : 'grid-cols-3'}`}>
           {attributes.map((attr, index) => (
             <div key={index} className={`bg-[#c0c0c0] border border-[#808080] shadow-win98-inner rounded-sm ${isMobile ? 'p-2' : 'p-3'}`}>
               <div className="flex items-center mb-1">
