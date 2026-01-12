@@ -155,3 +155,35 @@
 .marked-markdown > *:last-child {
   margin-bottom: 0;
 }
+
+.marked-markdown pre {
+  position: relative;
+}
+
+.marked-markdown pre code {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+}
+
+.marked-markdown table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.marked-markdown a {
+  word-break: break-all;
+}
+
+.marked-markdown a:hover {
+  text-decoration: underline;
+  background-color: rgba(0, 0, 255, 0.1);
+}
+
+.marked-markdown img {
+  display: block;
+  margin: 1em auto;
+  max-width: 100%;
+  height: auto;
+}

@@ -1,6 +1,76 @@
 import type { JSX } from "react"
 import { ethers } from "ethers";
 
+// Gotchi Metadata from Database (matches gotchi_metadata table)
+export interface GotchiMetadata {
+  // Primary Key & Identifiers
+  id: number;
+  token_id: number;
+
+  // Basic Info
+  name?: string;
+  uri?: string;
+  story?: string; // BYTEA decoded as string
+  owner?: string;
+  collateral?: string;
+  collateral_amount?: string;
+  status: number;
+  locked: boolean;
+  birth_time?: number;
+  timezone?: number;
+
+  // Core Attributes
+  core_level: number;
+  core_evolution: number;
+  core_experience: number;
+  core_available_points: number;
+  core_strength: number;
+  core_defense: number;
+  core_mind: number;
+  core_vitality: number;
+  core_agility: number;
+  core_luck: number;
+
+  // Faction
+  faction_primary?: number;
+  faction_purity: number;
+  faction_has_secondary: boolean;
+
+  // Leveling
+  leveling_total_exp: number;
+
+  // Computed Fields
+  total_stats: number;
+  is_evolved: boolean;
+
+  // JSONB Data
+  soul_data?: Record<string, any>;
+  faction_data?: Record<string, any>;
+  spec_data?: Record<string, any>;
+  strategy_data?: Record<string, any>;
+  evolution_data?: Record<string, any>;
+  leveling_data?: Record<string, any>;
+  dynamic_states?: Record<string, any>;
+  dna_data?: Record<string, any>;
+
+  // ERC6551
+  singer?: string;
+  nonces?: string;
+
+  // Metadata
+  created_at?: string;
+  updated_at?: string;
+  synced_at?: string;
+  block_number?: number;
+
+  // Equipped wearables (array from API)
+  all_equip?: Array<{
+    equipped: boolean;
+    wearable_id: string;
+    wearable_type: string;
+  }>;
+}
+
 export interface WindowType {
   id: string
   title: string
@@ -21,11 +91,12 @@ export interface DesktopIconProps {
 }
 
 export interface TokenInfo {
-  aether?: number;
-  bonding?: number;
-  growth?: number;
-  element?: number;
-  wisdom?: number;
+  strength?: number;
+  defense?: number;
+  mind?: number;
+  vitality?: number;
+  agility?: number;
+  luck?: number;
   status?: number;
   dna?: {
     geneSeed: string;
@@ -48,13 +119,25 @@ export interface GotchipusInfo {
   epoch: number;
   utc: number;
   dna: any; 
-  bonding: number;
-  growth: number;
-  wisdom: number;
-  aether: number;
+  strength: number;
+  defense: number;
+  mind: number;
+  vitality: number;
+  agility: number;
+  luck: number;
   singer: string;
   nonces: string;
   element?: number;
+  primaryFaction?: number;
+  currentExp?: number;
+  requiredExp?: number;
+  totalExp?: number;
+  battleExp?: number;
+  buildingExp?: number;
+  interactionExp?: number;
+  questExp?: number;
+  expMultiplier?: number;
+  lastExpGain?: number;
 }
 
 export interface GotchiItem {
@@ -123,10 +206,12 @@ export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {
       epoch: Number(result.epoch || 0),
       utc: Number(result.utc || 0),
       dna: result.dna || {},
-      bonding: Number(result.bonding || 0),
-      growth: Number(result.growth || 0),
-      wisdom: Number(result.wisdom || 0),
-      aether: Number(result.aether || 0),
+      strength: Number(result.strength || 0),
+      defense: Number(result.defense || 0),
+      mind: Number(result.mind || 0),
+      vitality: Number(result.vitality || 0),
+      agility: Number(result.agility || 0),
+      luck: Number(result.luck || 0),
       singer: result.singer || "",
       nonces: (result.nonces || BigInt(0)).toString()
     };

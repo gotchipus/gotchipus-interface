@@ -1,3 +1,4 @@
+import { getWindowIcon, isValidWindowId as isValidWindowIdFromConfig } from './windowConfig'
 
 export interface WindowState {
   id: string
@@ -8,6 +9,33 @@ export interface WindowState {
 export interface RouteState {
   windows: WindowState[]
   activeWindow: string | null
+}
+
+export function parseWindowsFromPath(pathname: string, searchParams: URLSearchParams): RouteState {
+  const pathParts = pathname.split('/').filter(Boolean)
+  const activeParam = searchParams.get('active')
+  
+  if (pathParts.length === 0) {
+    return { windows: [], activeWindow: null }
+  }
+
+  const validWindowIds = pathParts.filter(id => isValidWindowId(id))
+  
+  if (validWindowIds.length === 0) {
+    return { windows: [], activeWindow: null }
+  }
+
+  const activeWindow = activeParam || validWindowIds[0]
+  const windows = validWindowIds.map(id => ({
+    id: id.trim(),
+    title: getWindowTitle(id.trim()),
+    active: id.trim() === activeWindow
+  }))
+
+  return {
+    windows,
+    activeWindow: activeWindow
+  }
 }
 
 export function parseWindowsFromUrl(searchParams: URLSearchParams): RouteState {
@@ -31,35 +59,13 @@ export function parseWindowsFromUrl(searchParams: URLSearchParams): RouteState {
   }
 }
 
-export function encodeWindowsToUrl(windows: string[], activeWindow: string | null): string {
-  const params = new URLSearchParams()
-  
-  if (windows.length > 0) {
-    params.set('windows', windows.join(','))
-  }
-  
-  if (activeWindow) {
-    params.set('active', activeWindow)
-  }
-  
-  return params.toString()
-}
-
 export function getWindowTitle(windowId: string): string {
-  const titles: Record<string, string> = {
-    'ai': 'Chat',
-    'mint': 'Mint',
-    'pharos': 'My Pharos',
-    'dashboard': 'My Gotchipus',
-    'wearable': 'Claim Wearable',
-    'daily-task-hall': 'Daily Task Hall',
-  }
-  return titles[windowId] || windowId
+  const icon = getWindowIcon(windowId)
+  return icon?.title || windowId
 }
 
 export function isValidWindowId(windowId: string): boolean {
-  const validIds = ['ai', 'mint', 'pharos', 'dashboard', 'wearable', 'daily-task-hall']
-  return validIds.includes(windowId)
+  return isValidWindowIdFromConfig(windowId)
 }
 
 export function generateWindowUrl(windowId: string, baseUrl: string = ''): string {
@@ -67,7 +73,28 @@ export function generateWindowUrl(windowId: string, baseUrl: string = ''): strin
     return baseUrl || '/'
   }
   
-  return `${baseUrl}/?windows=${windowId}&active=${windowId}`
+  return `${baseUrl}/${windowId}`
+}
+
+export function encodeWindowsToPath(windows: string[], activeWindow: string | null): string {
+  if (windows.length === 0) {
+    return '/'
+  }
+
+  const validWindows = windows.filter(id => isValidWindowId(id))
+  if (validWindows.length === 0) {
+    return '/'
+  }
+
+  const active = activeWindow || validWindows[0]
+  const needsActiveParam = active !== validWindows[0]
+
+  const path = '/' + validWindows.join('/')
+  if (needsActiveParam) {
+    return `${path}?active=${active}`
+  }
+
+  return path
 }
 
 export function addWindowToUrl(
@@ -79,7 +106,7 @@ export function addWindowToUrl(
     ? currentWindows 
     : [...currentWindows, newWindowId]
   
-  return `/?${encodeWindowsToUrl(updatedWindows, activeWindow || newWindowId)}`
+  return encodeWindowsToPath(updatedWindows, activeWindow || newWindowId)
 }
 
 export function removeWindowFromUrl(
@@ -92,11 +119,7 @@ export function removeWindowFromUrl(
     ? (updatedWindows.length > 0 ? updatedWindows[updatedWindows.length - 1] : null)
     : activeWindow
 
-  if (updatedWindows.length === 0) {
-    return '/'
-  }
-
-  return `/?${encodeWindowsToUrl(updatedWindows, newActiveWindow)}`
+  return encodeWindowsToPath(updatedWindows, newActiveWindow)
 }
 
 export function updateActiveWindowUrl(
@@ -107,5 +130,5 @@ export function updateActiveWindowUrl(
     return addWindowToUrl(currentWindows, newActiveWindow, newActiveWindow)
   }
   
-  return `/?${encodeWindowsToUrl(currentWindows, newActiveWindow)}`
+  return encodeWindowsToPath(currentWindows, newActiveWindow)
 }

@@ -9,8 +9,8 @@ import { connectors } from './walletConfig'
 // const supportedChains: Chain[] = [mainnet, sepolia, base, optimism]
 
 const pharosTestnetCustomChain = {
-  id: 688688,
-  name: 'Pharos Testnet',
+  id: 688689,
+  name: 'Pharos Atlantic Testnet',
   iconUrl: '',
   iconBackground: '#fff',
   nativeCurrency: { name: 'Pharos', symbol: 'PHRS', decimals: 18 },
@@ -18,11 +18,11 @@ const pharosTestnetCustomChain = {
     default: { 
       http: typeof window !== 'undefined' && window.location?.origin 
         ? [`${window.location.origin}/api/testnet`]
-        : ['https://testnet.dplabs-internal.com'] 
+        : ['https://atlantic.dplabs-internal.com'] 
     },
   },
   blockExplorers: {
-    default: { name: 'Pharosscan', url: 'https://testnet.pharosscan.xyz/' },
+    default: { name: 'Pharosscan', url: 'https://atlantic.pharosscan.xyz/' },
   },
 } as const satisfies Chain;
 

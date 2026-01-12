@@ -39,9 +39,9 @@
     },
     "mint": {
         "mint": "铸造已开放！",
-        "noCost": "0.025 $PHRS 每只 Gotchipus",
+        "noCost": "0.04 $PHRS 每只 $GOTCHI",
         "button": "立即铸造",
-        "description": "铸造你的独特 Gotchipus 并加入我们的收藏",
+        "description": "铸造你的独特 GOTCHI 并加入我们的收藏",
         "limited": "限时铸造 20,000 只！"
     }
 } 

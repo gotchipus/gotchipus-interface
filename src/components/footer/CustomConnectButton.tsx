@@ -5,15 +5,40 @@ import { useEffect, useRef } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { CustomJazzicon } from './Jazzicon'
 import { useToast } from '@/hooks/use-toast'
+import { useAccount } from 'wagmi'
 
 export const CustomConnectButton = () => {
   const { toast } = useToast()
   const prevConnectedRef = useRef<boolean | null>(null)
   const isInitialMountRef = useRef(true)
+  const { address, isConnected } = useAccount()
 
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   };
+
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      prevConnectedRef.current = isConnected ?? false
+      isInitialMountRef.current = false
+      return
+    }
+
+    if (prevConnectedRef.current !== isConnected) {
+      if (isConnected && address) {
+        toast({
+          title: "Wallet connected",
+          description: `Connected to wallet ${formatAddress(address)}`,
+        })
+      } else if (!isConnected && prevConnectedRef.current) {
+        toast({
+          title: "Disconnected Wallet",
+          description: "Disconnected",
+        })
+      }
+      prevConnectedRef.current = isConnected ?? false
+    }
+  }, [isConnected, address, toast])
 
   return (
     <ConnectButton.Custom>
@@ -32,29 +57,6 @@ export const CustomConnectButton = () => {
           account &&
           chain &&
           (!authenticationStatus || authenticationStatus === 'authenticated')
-
-          useEffect(() => {
-            if (isInitialMountRef.current) {
-              prevConnectedRef.current = connected ?? false
-              isInitialMountRef.current = false
-              return
-            }
-  
-            if (prevConnectedRef.current !== connected) {
-              if (connected && account) {
-                toast({
-                  title: "Wallet connected",
-                  description: `Connected to wallet ${formatAddress(account.address)}`,
-                })
-              } else if (!connected && prevConnectedRef.current) {
-                toast({
-                  title: "Disconnected Wallet",
-                  description: "Disconnected",
-                })
-              }
-              prevConnectedRef.current = connected ?? false
-            }
-          }, [connected, account, toast])
 
         return (
           <div

@@ -7,15 +7,11 @@ import Desktop from "@/components/home/Desktop"
 import Taskbar from "@/components/home/Taskbar"
 import Window from "@/components/home/Window"
 import NFTSalesPopup from "@/components/home/NFTSalesPopup"
-import MintContent from "@/components/window-content/MintContent"
-import MyPharosContent from "@/components/window-content/MyPharosContent"
-import DashboardContent from "@/components/window-content/DashboardContent"
-import ClaimWearableContent from "@/components/window-content/ClaimWearableContent"
-import DailyTaskHallContent from "@/components/window-content/DailyTaskHallContent"
-import AIContent from "@/components/window-content/AIContent"
 import type { WindowType } from "@/lib/types"
 import type { JSX } from "react/jsx-runtime"
 import { WINDOW_SIZE } from "@/lib/constant"
+import { getWindowIcon, getWindowContent } from "@/lib/windowConfig"
+import { WINDOW_OPEN_EVENT, type WindowOpenEventDetail } from "@/lib/windowEvents"
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<WindowType[]>([])
@@ -35,46 +31,9 @@ export default function Home() {
   useEffect(() => {
     windowRouter.openWindows.forEach(windowId => {
       if (!openWindows.some(w => w.id === windowId)) {
-        const icons = [
-          { id: "ai", title: "Chat" },
-          { id: "mint", title: "Mint" },
-          { id: "pharos", title: "My Pharos" },
-          { id: "dashboard", title: "My Gotchipus" },
-          { id: "wearable", title: "Claim Wearable" },
-          { id: "daily-task-hall", title: "Daily Task Hall" },
-        ]
-        
-        const icon = icons.find(i => i.id === windowId)
+        const icon = getWindowIcon(windowId)
         if (icon) {
-          let content: JSX.Element
-          switch (windowId) {
-            case "mint":
-              content = <MintContent />
-              break
-            case "pharos":
-              content = <MyPharosContent />
-              break
-            case "dashboard":
-              content = <DashboardContent />
-              break
-            case "wearable":
-              content = <ClaimWearableContent />
-              break
-            case "daily-task-hall":
-              content = <DailyTaskHallContent openWindow={(view: string) => {
-                const targetIcon = icons.find(i => i.id === view)
-                if (targetIcon) {
-                  handleOpenWindow(view, targetIcon.title, <div>Loading...</div>)
-                }
-              }} />
-              break
-            case "ai":
-              content = <AIContent />
-              break
-            default:
-              content = <div>Unknown window: {windowId}</div>
-          }
-          
+          const content = getWindowContent(windowId)
           handleOpenWindow(windowId, icon.title, content)
         }
       }
@@ -144,6 +103,14 @@ export default function Home() {
     if (!windowRouter.openWindows.includes(windowId)) {
       windowRouter.openWindow(windowId)
     }
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        handleActivateWindow(windowId)
+      })
+    } else {
+      handleActivateWindow(windowId)
+    }
   }
 
   const handleCloseWindow = (windowId: string) => {
@@ -176,6 +143,32 @@ export default function Home() {
   const handleMoveWindow = (windowId: string, position: { x: number; y: number }) => {
     setOpenWindows((prev) => prev.map((w) => (w.id === windowId ? { ...w, position } : w)))
   }
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const handleExternalOpen = (event: Event) => {
+      const { windowId } = (event as CustomEvent<WindowOpenEventDetail>).detail || {}
+      if (!windowId) {
+        return
+      }
+
+      const icon = getWindowIcon(windowId)
+      if (!icon) {
+        return
+      }
+
+      const content = getWindowContent(windowId)
+      handleOpenWindow(windowId, icon.title, content)
+    }
+
+    window.addEventListener(WINDOW_OPEN_EVENT, handleExternalOpen)
+    return () => {
+      window.removeEventListener(WINDOW_OPEN_EVENT, handleExternalOpen)
+    }
+  }, [handleOpenWindow])
 
   return (
     <main className={`w-full min-w-[800px] min-h-screen overflow-auto bg-uni-bg-01 relative ${isMobile ? 'touch-manipulation' : ''}`}>
@@ -211,7 +204,7 @@ export default function Home() {
         isMobile={isMobile}
       />
 
-      <NFTSalesPopup />
+      {/* <NFTSalesPopup /> */}
     </main>
   )
 }

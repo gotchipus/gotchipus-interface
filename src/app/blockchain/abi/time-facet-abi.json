@@ -1,0 +1,74 @@
+[
+    {
+        "type": "function",
+        "name": "getWeather",
+        "inputs": [
+            {
+                "name": "timezone",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8",
+                "internalType": "enum LibTime.Weather"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "updateWeather",
+        "inputs": [
+            {
+                "name": "timezones",
+                "type": "uint8[]",
+                "internalType": "uint8[]"
+            },
+            {
+                "name": "conds",
+                "type": "uint8[]",
+                "internalType": "enum LibTime.Weather[]"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "event",
+        "name": "WeatherUpdated",
+        "inputs": [
+            {
+                "name": "timezones",
+                "type": "uint8[]",
+                "indexed": true,
+                "internalType": "uint8[]"
+            },
+            {
+                "name": "conditions",
+                "type": "uint8[]",
+                "indexed": false,
+                "internalType": "enum LibTime.Weather[]"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "error",
+        "name": "NotContractOwner",
+        "inputs": [
+            {
+                "name": "_user",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_contractOwner",
+                "type": "address",
+                "internalType": "address"
+            }
+        ]
+    }
+]

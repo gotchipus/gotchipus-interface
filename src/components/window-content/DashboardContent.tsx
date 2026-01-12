@@ -4,20 +4,21 @@ import Image from "next/image"
 import { useState, useEffect, useCallback, useRef } from "react"
 import {ChevronLeft, X} from "lucide-react"
 import EquipSelectWindow from "./equip/EquipSelectWindow"
-import { useContractWrite } from "@/hooks/useContract"
+import { useContractWrite, useContractRead } from "@/hooks/useContract"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
 import { useToast } from "@/hooks/use-toast"
 import { Win98Loading } from "@/components/ui/win98-loading";
-import { GotchipusInfo } from "@/lib/types";
+import { GotchipusInfo, EquipWearableType } from "@/lib/types";
 import { DashboardTab, EquipTab, StatsTab, WalletTab } from "./Dashboard";
-import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32, FACE_BYTES32, MOUTH_BYTES32 } from "@/lib/constant";
 import { NftCard } from "@/components/gotchiSvg/NftCard";
 import { checkAndCompleteTask } from "@/src/utils/taskUtils";
 import useSWR from 'swr';
 import WalletConnectTBA from "./Dashboard/WalletTabContent/WalletConnectTBA";
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
 import useResponsive from "@/hooks/useResponsive"
+import { dispatchWindowOpenEvent } from "@/lib/windowEvents"
 
 interface ListApiData {
   balance: string;
@@ -38,6 +39,8 @@ const EQUIPMENT_TYPES = {
   3: HAND_BYTES32,
   4: HEAD_BYTES32,
   5: CLOTHES_BYTES32,
+  6: FACE_BYTES32,
+  7: MOUTH_BYTES32,
 };
 
 const fetcher = (url: string) => fetch(url).then(res => {
@@ -69,22 +72,22 @@ const DashboardContent = observer(() => {
   const [showWalletConnectTBA, setShowWalletConnectTBA] = useState<boolean>(false)
   const [petSuccessTimestamp, setPetSuccessTimestamp] = useState<number>(0)
   
-  const { walletStore } = useStores()
+  const { walletStore, wearableStore } = useStores()
   const walletAddress = walletStore.address;
   const { toast } = useToast()
   const isMobile = useResponsive()
-  
+
   const listApiUrl = walletAddress && activeTab === null ? `/api/tokens/gotchipus?owner=${walletAddress}&includeGotchipusInfo=false` : null;
 
-  const { data: listData, isLoading: isListLoading } = useSWR<ListApiData>(listApiUrl, fetcher, {
-    refreshInterval: 10000,
+  const { data: listData, isLoading: isListLoading, mutate: mutateListData } = useSWR<ListApiData>(listApiUrl, fetcher, {
+    refreshInterval: 30000,
     keepPreviousData: true,
     errorRetryCount: 5,
     revalidateOnMount: true,
     revalidateIfStale: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 2000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 10000,
   });
   
   const ids = listData?.ids || [];
@@ -94,18 +97,40 @@ const DashboardContent = observer(() => {
     ? `/api/tokens/gotchipus-details?owner=${walletAddress}&tokenId=${selectedTokenId}` 
     : null; 
 
-  const { data: detailsData } = useSWR<DetailsApiData>(detailsApiUrl, fetcher);
-
+  const { data: detailsData, mutate: mutateDetailsData } = useSWR<DetailsApiData>(detailsApiUrl, fetcher);
+  
+  useEffect(() => {
+    if (selectedTokenId) {
+      setPusName("");
+      setTbaAddress("");
+      setTokenInfoMap({} as GotchipusInfo);
+    }
+  }, [selectedTokenId]);
+  
   useEffect(() => {
     if (detailsData) {
       setPusName(detailsData.tokenName || "");
       setTbaAddress(detailsData.tokenBoundAccount || "");
       setTokenInfoMap(detailsData.info);
+      if (detailsData.tokenBoundAccount && selectedTokenId) {
+        walletStore.setTokenBoundAccount(selectedTokenId, detailsData.tokenBoundAccount);
+      }
     }
-  }, [detailsData]);
+  }, [detailsData, selectedTokenId, walletStore]);
 
+  useEffect(() => {
+    if (listApiUrl && !selectedTokenId) {
+      mutateListData();
+    }
+  }, [walletAddress, listApiUrl, selectedTokenId, mutateListData]);
 
   const {contractWrite, isConfirmed, error} = useContractWrite();
+
+  const { data: wearableTypeInfos, isLoading: isLoadingWearables, error: wearablesError, refetch: refetchWearables } = useContractRead(
+    "getAllEquipWearableType",
+    selectedTokenId ? [selectedTokenId] : undefined,
+    { enabled: !!selectedTokenId }
+  ) as { data: EquipWearableType[] | undefined; isLoading: boolean; error: Error | null; refetch: () => void };
 
   const handlePet = () => {
     if (!selectedTokenId) return;
@@ -128,6 +153,11 @@ const DashboardContent = observer(() => {
         setIsPetWriting(false);
         setPetSuccessTimestamp(Date.now());
 
+        // Refresh token info data after petting
+        if (mutateDetailsData) {
+          mutateDetailsData();
+        }
+
         const updateTask = async () => {
           await checkAndCompleteTask(walletStore.address!, 5);
         };
@@ -135,7 +165,7 @@ const DashboardContent = observer(() => {
         walletStore.setIsTaskRefreshing(true);
       }
     }
-  }, [isConfirmed]);
+  }, [isConfirmed, isPetWriting, mutateDetailsData, walletStore]);
 
 
   const handleRename = () => {
@@ -153,14 +183,20 @@ const DashboardContent = observer(() => {
   };
 
   useEffect(() => {
-    if (isConfirmed) {
+    if (isConfirmed && isRenaming) {
       setIsRenaming(false);
+      
+      // Refresh token info data after renaming
+      if (mutateDetailsData) {
+        mutateDetailsData();
+      }
+      
       toast({
         title: "Transaction Confirmed",
         description: "Transaction confirmed successfully",
       })
     }
-  }, [isConfirmed]);
+  }, [isConfirmed, isRenaming, mutateDetailsData]);
 
   useEffect(() => {
     if (error && isRenaming) {
@@ -184,6 +220,17 @@ const DashboardContent = observer(() => {
       });
     }
   }, [error, isPetWriting]);
+
+  // Refresh wearable data when wearableStore.isRefreshing is true
+  useEffect(() => {
+    if (wearableStore.isRefreshing && selectedTokenId && refetchWearables) {
+      refetchWearables();
+      // Reset the refresh flag after a short delay to allow the refetch to complete
+      setTimeout(() => {
+        wearableStore.setIsRefreshing(false);
+      }, 1000);
+    }
+  }, [wearableStore.isRefreshing, selectedTokenId, refetchWearables, wearableStore]);
 
   const handleEquipSlotClick = (index: number) => {
     setSelectedEquipSlot(index === selectedEquipSlot ? null : index)
@@ -222,6 +269,7 @@ const DashboardContent = observer(() => {
   const handleBackToList = () => {
     setSelectedTokenId("");
     setCurrentPage(1);
+    mutateListData(undefined, { revalidate: true });
   };
   
 
@@ -259,17 +307,20 @@ const DashboardContent = observer(() => {
 
   if (!walletAddress) {
     return (
-      <div className={`bg-[#d4d0c8] h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="text-center flex flex-col items-center">
-          <div className={`mb-4 ${isMobile ? 'mb-2' : ''}`}>
-            <Image src="/not-any.png" alt="No NFTs" width={isMobile ? 80 : 120} height={isMobile ? 80 : 120} />
+      <div className="p-4 h-full scrollbar-none flex justify-center items-center">
+        <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer max-w-md w-full">
+          <div className="bg-[#000080] text-white px-2 py-1 flex items-center border-b-2 border-[#808080]">
+            <span className="text-xs font-bold">Wallet Connection Required</span>
           </div>
-          <h3 className={`font-bold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>No Wallet Connected</h3>
-          <p className={`text-[#000080] mb-4 ${isMobile ? 'text-sm' : ''}`}>Please connect your wallet to continue.</p>
-          <div
-            className={`text-sm flex items-center justify-center bg-[#c0c0c0] border border-[#808080] shadow-win98-outer active:shadow-inner ${isMobile ? 'h-8' : 'h-10'}`}
-          >
-            <CustomConnectButton />
+          <div className="p-6 flex flex-col items-center text-center">
+            <div className="mb-4">
+              <Image src="/not-any.png" alt="No Wallet" width={80} height={80} />
+            </div>
+            <h3 className="text-lg font-bold mb-2">No Wallet Connected</h3>
+            <p className="text-sm text-[#000080] mb-4">Please connect your wallet to view your Gotchipus collection.</p>
+            <div className="mt-2">
+              <CustomConnectButton />
+            </div>
           </div>
         </div>
       </div>
@@ -278,28 +329,46 @@ const DashboardContent = observer(() => {
 
   if (isListLoading) {
     return (
-      <div className={`bg-[#d4d0c8] h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="text-center">
-          <Win98Loading />
-          <p className={`mt-4 ${isMobile ? 'text-xs' : 'text-sm'}`}>Loading Gotchipus...</p>
-        </div>
+      <div className="p-4 h-full scrollbar-none flex justify-center items-center">
+        <Win98Loading />
       </div>
     );
   }
 
   if (balances === 0) {
     return (
-      <div className={`bg-[#d4d0c8] h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="text-center flex flex-col items-center">
-          <div className={`mb-4 ${isMobile ? 'mb-2' : ''}`}>
-            <Image src="/not-any.png" alt="No NFTs" width={isMobile ? 80 : 120} height={isMobile ? 80 : 120} />
-          </div>
-          <h3 className={`font-bold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>No NFTs Found</h3>
-          <p className={`text-[#000080] mb-4 ${isMobile ? 'text-sm' : ''}`}>You don't have any Gotchipus NFTs yet.</p>
+      <div className="p-4 h-full scrollbar-none flex flex-col items-center justify-center gap-6">
+        <div className="flex-shrink-0">
+          <Image
+            src="/not-any.png"
+            alt="No Pharos"
+            width={150}
+            height={150}
+            className="drop-shadow-lg"
+          />
+        </div>
+
+        <div className="flex flex-col items-center gap-3 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-[#000080] flex items-center gap-2 justify-center">
+            Start Your Journey
+          </h2>
+          <p className="text-sm text-[#404040]">
+            You need to own Pharos NFTs to summon and manage Gotchipus. Get started by visiting the Pharos collection.
+          </p>
+        </div>
+
+        <div className="flex gap-3 flex-wrap justify-center">
           <button
-            className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] ${isMobile ? 'px-4 py-1 text-sm' : 'px-6 py-2'}`}
+            onClick={() => dispatchWindowOpenEvent("pharos")}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#000080] text-white px-6 py-3 text-sm font-bold rounded-none hover:bg-[#1a3a99] active:shadow-win98-inner transition-all"
           >
-            Mint a Gotchipus
+            Go to My Pharos
+          </button>
+          <button
+            onClick={() => dispatchWindowOpenEvent("mint")}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-[#000080] px-6 py-3 text-sm font-bold rounded-none hover:bg-[#c0c0c0] active:shadow-win98-inner transition-all"
+          >
+            Mint Pharos
           </button>
         </div>
       </div>
@@ -308,15 +377,41 @@ const DashboardContent = observer(() => {
 
   if (ids.length === 0) {
     return (
-      <div className={`bg-[#d4d0c8] h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="text-center flex flex-col items-center">
-          <div className={`mb-4 ${isMobile ? 'mb-2' : ''}`}>
-            <Image src="/not-any.png" alt="No NFTs" width={isMobile ? 80 : 120} height={isMobile ? 80 : 120} />
-          </div>
-          <h3 className={`font-bold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>No Gotchipus Found</h3>
-          <p className={`text-[#000080] mb-4 ${isMobile ? 'text-sm' : ''}`}>
-            {balances > 0 ? `You holder ${balances} Pharos, But you don't summon your Gotchipus yet.` : "You don't have any Gotchipus NFTs yet."}
+      <div className="p-4 h-full scrollbar-none flex flex-col items-center justify-center gap-6">
+        <div className="flex-shrink-0">
+          <Image
+            src="/not-any.png"
+            alt="No Gotchipus"
+            width={150}
+            height={150}
+            className="drop-shadow-lg"
+          />
+        </div>
+
+        <div className="flex flex-col items-center gap-3 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-[#000080] flex items-center gap-2 justify-center">
+            Ready to Summon?
+          </h2>
+          <p className="text-sm text-[#404040]">
+            {balances > 0
+              ? `You hold ${balances} Pharos, but you haven't summoned your Gotchipus yet. Head to the Pharos collection to begin the summoning ritual.`
+              : "You don't have any Gotchipus NFTs yet. Get started by visiting the Pharos collection."}
           </p>
+        </div>
+
+        <div className="flex gap-3 flex-wrap justify-center">
+          <button
+            onClick={() => dispatchWindowOpenEvent("pharos")}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#000080] text-white px-6 py-3 text-sm font-bold rounded-none hover:bg-[#1a3a99] active:shadow-win98-inner transition-all"
+          >
+            Go to Pharos
+          </button>
+          <button
+            onClick={() => dispatchWindowOpenEvent("mint")}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] text-[#000080] px-6 py-3 text-sm font-bold rounded-none hover:bg-[#c0c0c0] active:shadow-win98-inner transition-all"
+          >
+            Learn More
+          </button>
         </div>
       </div>
     );
@@ -324,22 +419,40 @@ const DashboardContent = observer(() => {
 
   if (!selectedTokenId) {
     return (
-      <div className={`bg-[#c0c0c0] h-full overflow-auto ${isMobile ? 'p-3' : 'p-6'}`}>
+      <div className="p-4 h-full scrollbar-none">
         <div className="flex flex-col h-full">
-          <div className={`grid gap-4 ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'}`}>
+          <div className="mb-2 px-1">
+            <div className="win98-group-box bg-[#c0c0c0]">
+              <div className="win98-group-title text-xs font-bold text-[#000080]">Gotchipus Collection</div>
+              <div className="text-xs text-[#808080] mt-1">
+                Click on any Gotchipus to view details
+              </div>
+            </div>
+          </div>
+          <div className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 scrollbar-none ${isMobile ? 'gap-2' : ''}`}>
             {getCurrentPageItems().map((id: string) => (
-              <NftCard 
-                key={id} 
-                id={id} 
-                onSelect={handleTokenSelect} 
+              <NftCard
+                key={id}
+                id={id}
+                onSelect={handleTokenSelect}
                 isMobile={isMobile}
               />
             ))}
           </div>
           
-          {hasMore && (
-            <div ref={observerTarget} className={`flex justify-center items-center mt-4 ${isMobile ? 'p-2' : 'p-4'}`}>
-              {isLoadingMore && <Win98Loading text={isMobile ? "Loading..." : "Loading more..."} />}
+          {hasMore && getCurrentPageItems().length > 0 && (
+            <div 
+              ref={observerTarget} 
+              className="flex justify-center items-center p-4 mt-4"
+            >
+              {isLoadingMore ? (
+                <div className="text-center bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-4">
+                  <Win98Loading text="Loading..."/>
+                  <p className="mt-2 text-xs">Loading more Gotchipus NFTs...</p>
+                </div>
+              ) : (
+                <div className="h-8"></div> 
+              )}
             </div>
           )}
         </div>
@@ -348,68 +461,70 @@ const DashboardContent = observer(() => {
   }
 
   return (
-    <div className={`bg-[#c0c0c0] h-full overflow-auto ${isMobile ? 'p-3' : 'p-6'}`}>
-      <div className={`flex justify-between items-center mb-6 ${isMobile ? 'mb-4' : ''}`}>
-        <div className="flex items-center">
+    <div className="p-4 h-full scrollbar-none">
+      <div className={`flex justify-between items-center mb-4 ${isMobile ? 'mb-3 flex-wrap gap-2' : ''}`}>
+        <div className="flex items-center gap-2">
           <button 
             onClick={handleBackToList}
-            className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center mr-2 ${isMobile ? 'px-2 py-0.5 text-sm' : 'px-3 py-1'}`}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-none hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center text-xs font-bold px-4 py-2"
           >
-            <ChevronLeft size={isMobile ? 14 : 16} className={`mr-1 ${isMobile ? 'mr-0.5' : ''}`} /> Back
+            <ChevronLeft size={14} className="mr-1" /> 
+            Back
           </button>
-          <h2 className={`font-bold ${isMobile ? 'text-lg' : 'text-xl'}`}>Gotchipus #{selectedTokenId}</h2>
+          <div className="text-center text-sm font-bold text-[#000080] px-3 py-1 bg-white border border-[#808080] shadow-win98-inner">
+            Gotchipus #{selectedTokenId}
+          </div>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={handleOpenWalletConnectTBA}
-            className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-sm hover:bg-[#c0c0c0] flex items-center ${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1'}`}
+            className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-none hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center text-xs font-bold px-3 py-1.5"
           >
-            <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={isMobile ? 16 : 24} height={isMobile ? 16 : 24} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
-            {walletStore.isWalletConnectConnected ? `Connected to ${walletStore.connectedTarget}` : 'Connect dApp'}
+            <Image src="/icons/walletconnect-logo.png" alt="Wallet" width={16} height={16} className="mr-1.5" />
+            {walletStore.isWalletConnectConnected ? `Connected` : 'Connect dApp'}
           </button>
         </div>
       </div>
 
-      <div className={`flex gap-2 mb-6 ${isMobile ? 'mb-4 flex-wrap' : ''}`}>
+      <div className={`flex gap-2 mb-4 ${isMobile ? 'mb-3 flex-wrap' : ''}`}>
         <button 
           onClick={() => setActiveTab("dashboard")}
-          className={`border-2 border-[#808080] shadow-win98-outer rounded-sm font-medium hover:bg-[#c0c0c0] flex items-center ${
+          className={`border-2 border-[#808080] shadow-win98-outer rounded-none font-bold text-xs hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center ${
             activeTab === "dashboard" ? "bg-[#c0c0c0]" : "bg-[#d4d0c8]"
-          } ${isMobile ? 'px-2 py-1 text-xs' : 'px-4 py-2'}`}
+          } px-4 py-2`}
         >
-          <Image src="/icons/dashboard.png" alt="Dashboard" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
+          <Image src="/icons/dashboard.png" alt="Dashboard" width={16} height={16} className="mr-1.5" />
           Dashboard
         </button>
         <button 
           onClick={() => setActiveTab("equip")}
-          className={`border-2 border-[#808080] shadow-win98-outer rounded-sm font-medium hover:bg-[#c0c0c0] flex items-center ${
+          className={`border-2 border-[#808080] shadow-win98-outer rounded-none font-bold text-xs hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center ${
             activeTab === "equip" ? "bg-[#c0c0c0]" : "bg-[#d4d0c8]"
-          } ${isMobile ? 'px-2 py-1 text-xs' : 'px-4 py-2'}`}
+          } px-4 py-2`}
         >
-          <Image src="/icons/equip.png" alt="Equip" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} /> 
+          <Image src="/icons/equip.png" alt="Equip" width={16} height={16} className="mr-1.5" /> 
           Equip
         </button>
         <button 
           onClick={() => setActiveTab("stats")}
-          className={`border-2 border-[#808080] shadow-win98-outer rounded-sm font-medium hover:bg-[#c0c0c0] flex items-center ${
+          className={`border-2 border-[#808080] shadow-win98-outer rounded-none font-bold text-xs hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center ${
             activeTab === "stats" ? "bg-[#c0c0c0]" : "bg-[#d4d0c8]"
-          } ${isMobile ? 'px-2 py-1 text-xs' : 'px-4 py-2'}`}
+          } px-4 py-2`}
         >
-          <Image src="/icons/stats.png" alt="Stats" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
+          <Image src="/icons/stats.png" alt="Stats" width={16} height={16} className="mr-1.5" />
           Stats
         </button>
         <button 
           onClick={() => setActiveTab("wallet")}
-          className={`border-2 border-[#808080] shadow-win98-outer rounded-sm font-medium hover:bg-[#c0c0c0] flex items-center ${
+          className={`border-2 border-[#808080] shadow-win98-outer rounded-none font-bold text-xs hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center ${
             activeTab === "wallet" ? "bg-[#c0c0c0]" : "bg-[#d4d0c8]"
-          } ${isMobile ? 'px-2 py-1 text-xs' : 'px-4 py-2'}`}
+          } px-4 py-2`}
         >
-          <Image src="/icons/wallet.png" alt="Wallet" width={isMobile ? 14 : 18} height={isMobile ? 14 : 18} className={`mr-2 ${isMobile ? 'mr-1' : ''}`} />
+          <Image src="/icons/wallet.png" alt="Wallet" width={16} height={16} className="mr-1.5" />
           Wallet
         </button>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "dashboard" && (
         <DashboardTab 
           selectedTokenId={selectedTokenId}
@@ -424,6 +539,9 @@ const DashboardContent = observer(() => {
           isPetWriting={isPetWriting}
           isMobile={isMobile}
           petSuccessTimestamp={petSuccessTimestamp}
+          wearableTypeInfos={wearableTypeInfos}
+          isLoadingWearables={isLoadingWearables}
+          wearablesError={wearablesError}
         />
       )}
       
@@ -434,11 +552,14 @@ const DashboardContent = observer(() => {
           handleEquipSlotClick={handleEquipSlotClick} 
           handleEquipWearable={handleEquipWearable} 
           isMobile={isMobile}
+          wearableTypeInfos={wearableTypeInfos}
+          isLoadingWearables={isLoadingWearables}
+          wearablesError={wearablesError}
         />
       )}
       
       {activeTab === "stats" && (
-        <StatsTab tokenInfo={tokenInfoMap} isMobile={isMobile} />
+        <StatsTab tokenInfo={tokenInfoMap} tokenId={selectedTokenId} isMobile={isMobile} />
       )}
       
       {activeTab === "wallet" && (

@@ -208,23 +208,47 @@ function _MarkDownContent(props: { content: string }) {
       ]}
       components={{
         pre: PreCode,
-        code: CustomCode,
-        p: (pProps) => <p {...pProps} dir="auto" style={{ margin: "0.5em 0" }} />,
-        h1: (hProps) => <h1 {...hProps} style={{ fontSize: "1.5em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
-        h2: (hProps) => <h2 {...hProps} style={{ fontSize: "1.3em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
-        h3: (hProps) => <h3 {...hProps} style={{ fontSize: "1.1em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000000" }} />,
-        ul: (ulProps) => <ul {...ulProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em" }} />,
-        ol: (olProps) => <ol {...olProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em" }} />,
-        li: (liProps) => <li {...liProps} style={{ margin: "0.2em 0" }} />,
-        strong: (strongProps) => <strong {...strongProps} style={{ fontWeight: "bold", color: "#000080", fontSize: "1.1em" }} />,
+        code: (codeProps: any) => {
+          // 行内代码
+          if (!codeProps.className) {
+            return (
+              <code 
+                {...codeProps} 
+                style={{
+                  backgroundColor: "#f0f0f0",
+                  border: "1px solid #c0c0c0",
+                  borderRadius: "3px",
+                  padding: "0.2em 0.4em",
+                  fontFamily: "'Courier New', Courier, monospace",
+                  fontSize: "0.9em",
+                  color: "#000000"
+                }}
+              />
+            );
+          }
+          // 代码块
+          return <CustomCode {...codeProps} />;
+        },
+        p: (pProps) => <p {...pProps} dir="auto" style={{ margin: "0.5em 0", lineHeight: "1.6" }} />,
+        h1: (hProps) => <h1 {...hProps} style={{ fontSize: "1.5em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000080", borderBottom: "2px solid #808080", paddingBottom: "0.3em" }} />,
+        h2: (hProps) => <h2 {...hProps} style={{ fontSize: "1.3em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000080", borderBottom: "1px solid #c0c0c0", paddingBottom: "0.3em" }} />,
+        h3: (hProps) => <h3 {...hProps} style={{ fontSize: "1.1em", fontWeight: "bold", margin: "1em 0 0.5em 0", color: "#000080" }} />,
+        h4: (hProps) => <h4 {...hProps} style={{ fontSize: "1em", fontWeight: "bold", margin: "0.8em 0 0.4em 0", color: "#000080" }} />,
+        h5: (hProps) => <h5 {...hProps} style={{ fontSize: "0.9em", fontWeight: "bold", margin: "0.8em 0 0.4em 0", color: "#000080" }} />,
+        h6: (hProps) => <h6 {...hProps} style={{ fontSize: "0.85em", fontWeight: "bold", margin: "0.8em 0 0.4em 0", color: "#000080" }} />,
+        ul: (ulProps) => <ul {...ulProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em", listStyleType: "disc" }} />,
+        ol: (olProps) => <ol {...olProps} style={{ margin: "0.5em 0", paddingLeft: "1.5em", listStyleType: "decimal" }} />,
+        li: (liProps) => <li {...liProps} style={{ margin: "0.2em 0", lineHeight: "1.5" }} />,
+        strong: (strongProps) => <strong {...strongProps} style={{ fontWeight: "bold", color: "#000080" }} />,
         em: (emProps) => <em {...emProps} style={{ fontStyle: "italic", color: "#000000" }} />,
         blockquote: (bqProps) => (
           <blockquote {...bqProps} style={{ 
             margin: "1em 0", 
-            paddingLeft: "1em", 
+            padding: "0.5em 1em", 
             borderLeft: "3px solid #808080",
             backgroundColor: "#f0f0f0",
-            fontStyle: "italic"
+            fontStyle: "italic",
+            borderRadius: "2px"
           }} />
         ),
         hr: (hrProps) => <hr {...hrProps} style={{ border: "1px solid #808080", margin: "1em 0" }} />,

@@ -1,0 +1,392 @@
+"use client";
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { observer } from "mobx-react-lite";
+import { Win98Loading } from "@/components/ui/win98-loading";
+import { Win98Select } from "@/components/ui/win98-select";
+import { Win98Checkbox } from "@/components/ui/win98-checkbox";
+import GotchiCard from "./all-gotchi/GotchiCard";
+import { GotchiMetadata } from "@/lib/types";
+import useSWR from "swr";
+
+interface AllGotchiContentProps {
+  isMobile?: boolean;
+}
+
+const TOTAL_NFTS = 20000;
+const ITEMS_PER_PAGE = 30;
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
+  const [searchId, setSearchId] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [allMetadata, setAllMetadata] = useState<GotchiMetadata[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Filters
+  const [selectedRarity, setSelectedRarity] = useState<string>("");
+  const [levelRange, setLevelRange] = useState<{ min: string; max: string }>({ min: "", max: "" });
+  const [selectedCommunityFeatures, setSelectedCommunityFeatures] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<string>("token_id");
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevFiltersRef = useRef<string>("");
+
+  const buildApiUrl = () => {
+    const params = new URLSearchParams({
+      offset: offset.toString(),
+      limit: ITEMS_PER_PAGE.toString(),
+    });
+
+    if (selectedRarity) params.append('rarity', selectedRarity);
+    if (levelRange.min) params.append('min_level', levelRange.min);
+    if (levelRange.max) params.append('max_level', levelRange.max);
+    if (sortBy) params.append('sort_by', sortBy);
+
+    return `/api/gotchi-metadata?${params.toString()}`;
+  };
+
+  const { data, isLoading, error, mutate } = useSWR(
+    buildApiUrl(),
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    }
+  );
+
+  useEffect(() => {
+    const currentFilters = `${selectedRarity}-${levelRange.min}-${levelRange.max}-${Array.from(selectedCommunityFeatures).join(',')}-${sortBy}`;
+
+    if (prevFiltersRef.current && prevFiltersRef.current !== currentFilters) {
+      setAllMetadata([]);
+      setOffset(0);
+      setHasMore(true);
+    }
+
+    prevFiltersRef.current = currentFilters;
+  }, [selectedRarity, levelRange, selectedCommunityFeatures, sortBy]);
+
+  useEffect(() => {
+    console.log('Data effect triggered', { hasData: !!data?.data, dataLength: data?.data?.length, offset });
+    if (data?.data) {
+      setAllMetadata((prev) => {
+        if (offset === 0) {
+          console.log('Replacing data (offset=0), received', data.data.length, 'items');
+          if (data.data.length < ITEMS_PER_PAGE) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
+          return data.data;
+        }
+
+        const newItems = data.data.filter(
+          (item: GotchiMetadata) => !prev.some((p) => p.id === item.id)
+        );
+        const updated = [...prev, ...newItems];
+        console.log('Appending data, prev:', prev.length, 'new:', newItems.length, 'total:', updated.length);
+
+        if (data.data.length < ITEMS_PER_PAGE || updated.length >= TOTAL_NFTS) {
+          console.log('No more items, setting hasMore to false');
+          setHasMore(false);
+        }
+
+        return updated;
+      });
+    }
+  }, [data, offset]);
+
+  const loadMoreItems = useCallback(() => {
+    console.log('loadMoreItems called', { isLoading, hasMore });
+    if (isLoading || !hasMore) return;
+    setOffset((prev) => {
+      console.log('Setting offset from', prev, 'to', prev + ITEMS_PER_PAGE);
+      return prev + ITEMS_PER_PAGE;
+    });
+  }, [isLoading, hasMore]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    // Wait for scroll container to be available
+    const scrollContainer = scrollContainerRef.current;
+    const currentTarget = observerTarget.current;
+
+    if (!currentTarget || !scrollContainer) {
+      console.log('Observer not ready', { hasTarget: !!currentTarget, hasContainer: !!scrollContainer });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        console.log('IntersectionObserver triggered', {
+          isIntersecting: entries[0]?.isIntersecting,
+          hasMore,
+          isLoading,
+        });
+        if (entries[0]?.isIntersecting && hasMore && !isLoading) {
+          loadMoreItems();
+        }
+      },
+      {
+        root: scrollContainer,
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    );
+
+    console.log('Observer attached to target');
+    observer.observe(currentTarget);
+
+    return () => {
+      observer.unobserve(currentTarget);
+    };
+  }, [hasMore, isLoading, loadMoreItems, allMetadata.length]);
+
+  // Handle search
+  const handleSearch = async () => {
+    const tokenId = parseInt(searchId);
+    if (!isNaN(tokenId) && tokenId >= 0 && tokenId < TOTAL_NFTS) {
+      setIsSearching(true);
+      const startTime = Date.now();
+      try {
+        const response = await fetch(`/api/gotchi-metadata?token_id=${tokenId}`);
+        const result = await response.json();
+
+        const endTime = Date.now();
+        console.log(`Search took ${endTime - startTime}ms`);
+
+        if (result.data && result.data.length > 0) {
+          setAllMetadata(result.data);
+          setOffset(0);
+          setHasMore(false);
+        } else {
+          console.warn('No data returned for token ID:', tokenId);
+          setAllMetadata([]);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        setAllMetadata([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchId("");
+    setIsSearching(false);
+    setOffset(0);
+    setHasMore(true);
+    mutate();
+  };
+
+  const handleResetFilters = () => {
+    setSelectedRarity("");
+    setLevelRange({ min: "", max: "" });
+    setSelectedCommunityFeatures(new Set());
+    setSortBy("token_id");
+    setSearchId("");
+  };
+
+  const toggleCommunityFeature = (feature: string) => {
+    const newFeatures = new Set(selectedCommunityFeatures);
+    if (newFeatures.has(feature)) {
+      newFeatures.delete(feature);
+    } else {
+      newFeatures.add(feature);
+    }
+    setSelectedCommunityFeatures(newFeatures);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="bg-[#c0c0c0] h-full flex flex-col">
+      <div className="flex gap-4 p-4 flex-1 overflow-hidden">
+        <div className="w-64 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-none">
+        <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-3">
+          <label className="text-xs font-bold block mb-2 text-[#000080]">Search by ID</label>
+          <input
+            type="text"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter Token ID (0-19999)"
+            disabled={isSearching}
+            className="w-full bg-white border-2 border-[#808080] shadow-win98-inner px-2 py-2 text-xs outline-none disabled:opacity-50"
+          />
+          {isSearching && (
+            <div className="mt-2 text-xs text-[#000080] text-center">
+              Searching...
+            </div>
+          )}
+          {searchId && !isSearching && (
+            <button
+              onClick={handleClearSearch}
+              className="mt-2 w-full px-3 py-1 bg-[#c0c0c0] border-2 border-white border-r-[#808080] border-b-[#808080] active:border-r-white active:border-b-white active:border-l-[#808080] active:border-t-[#808080] text-xs"
+            >
+              Clear Search
+            </button>
+          )}
+        </div>
+
+        <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-3">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-bold text-[#000080]">Filters</h3>
+            <button
+              onClick={handleResetFilters}
+              className="text-xs text-[#808080] hover:text-[#000080] underline"
+            >
+              Reset All
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold block mb-2 text-[#000080]">Rarity</label>
+              <Win98Select
+                options={[
+                  { value: "", label: "All Rarities" },
+                  { value: "0", label: "Common" },
+                  { value: "1", label: "Rare" },
+                  { value: "2", label: "Epic" },
+                  { value: "3", label: "Legendary" },
+                ]}
+                value={selectedRarity}
+                onChange={setSelectedRarity}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold block mb-2 text-[#000080]">Level Range</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  value={levelRange.min}
+                  onChange={(e) => setLevelRange({ ...levelRange, min: e.target.value })}
+                  placeholder="Min"
+                  min="1"
+                  max="100"
+                  className="flex-1 bg-white border-2 border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
+                />
+                <span className="text-xs text-[#808080]">-</span>
+                <input
+                  type="number"
+                  value={levelRange.max}
+                  onChange={(e) => setLevelRange({ ...levelRange, max: e.target.value })}
+                  placeholder="Max"
+                  min="1"
+                  max="100"
+                  className="flex-1 bg-white border-2 border-[#808080] shadow-win98-inner px-2 py-1 text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold block mb-2 text-[#000080]">Community Features</label>
+              <div className="space-y-1">
+                <Win98Checkbox
+                  checked={selectedCommunityFeatures.has('pet')}
+                  onChange={() => toggleCommunityFeature('pet')}
+                  label="Public Pet Enabled"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-3">
+          <label className="text-xs font-bold block mb-2 text-[#000080]">Sort By</label>
+          <Win98Select
+            options={[
+              { value: "token_id", label: "Token ID" },
+              { value: "core_level", label: "Level (High to Low)" },
+              { value: "leveling_total_exp", label: "Total EXP (High to Low)" },
+            ]}
+            value={sortBy}
+            onChange={setSortBy}
+          />
+        </div>
+
+        <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-inner p-2">
+          <div className="text-xs text-[#808080] text-center">
+            Showing {allMetadata.length} of {TOTAL_NFTS.toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      <div ref={scrollContainerRef} className="flex-1 bg-[#c0c0c0] overflow-auto scrollbar-none">
+        <div className="p-4">
+          <div className="mb-2 px-1">
+            <div className="win98-group-box bg-[#c0c0c0]">
+              <div className="win98-group-title text-xs font-bold text-[#000080]">All Gotchipus Collection</div>
+              <div className="text-xs text-[#808080] mt-1">
+                Browse all {TOTAL_NFTS.toLocaleString()} Gotchipus NFTs
+              </div>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] py-16">
+              <p className="font-bold text-[#cc0000] text-lg mb-2">⚠️ Service Unavailable</p>
+              <p className="text-[#808080] text-sm mb-1">Please ensure the service is running</p>
+            </div>
+          ) : isLoading && allMetadata.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <Win98Loading text="Loading Gotchipus..." />
+            </div>
+          ) : allMetadata.length === 0 ? (
+            <div className="text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] py-16">
+              <p className="font-bold text-[#808080] text-lg mb-2">No NFTs found</p>
+              <p className="text-[#808080] text-sm">Try adjusting your search or filters</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {allMetadata.map((metadata) => (
+                <GotchiCard key={metadata.id} metadata={metadata} />
+              ))}
+            </div>
+          )}
+
+          {hasMore && allMetadata.length > 0 && (
+            <div
+              ref={observerTarget}
+              className="flex justify-center items-center p-4 mt-4"
+            >
+              {isLoading ? (
+                <div className="text-center bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-4">
+                  <Win98Loading text="Loading..." />
+                  <p className="mt-2 text-xs">Loading more Gotchipus...</p>
+                </div>
+              ) : (
+                <div className="h-8"></div>
+              )}
+            </div>
+          )}
+
+          {!hasMore && allMetadata.length >= TOTAL_NFTS && (
+            <div className="text-center py-8 text-xs text-[#808080]">
+              🎉 You've reached the end of the collection!
+            </div>
+          )}
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+});
+
+AllGotchiContent.displayName = "AllGotchiContent";
+
+export default AllGotchiContent;

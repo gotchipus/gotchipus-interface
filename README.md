@@ -58,4 +58,4 @@ We welcome community contributions! If you'd like to contribute to Gotchipus, pl
 
 ## License
 
-© 2025 Gotchipus Ltd. All rights reserved.
+© 2026 Gotchipus Ltd. All rights reserved.

@@ -13,21 +13,21 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    const checkUserInfo = async () => {
-      if (!walletStore.address) return;
+    // const checkUserInfo = async () => {
+    //   if (!walletStore.address) return;
 
-      const response = await fetch(`/api/tasks/info`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: walletStore.address }),
-      });
+    //   const response = await fetch(`/api/tasks/info`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ address: walletStore.address }),
+    //   });
 
-      if (response.ok) {
-        await response.json();
-      }
-    }
+    //   if (response.ok) {
+    //     await response.json();
+    //   }
+    // }
 
-    checkUserInfo();
+    // checkUserInfo();
 
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);

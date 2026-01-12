@@ -28,7 +28,7 @@ const SuccessComponent = ({
   };
 
   const handleViewTx = () => {
-    window.open(`https://testnet.pharosscan.xyz/tx/${txHash}`, '_blank');
+    window.open(`https://atlantic.pharosscan.xyz/tx/${txHash}`, '_blank');
   };
 
   return (

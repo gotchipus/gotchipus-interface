@@ -3,13 +3,15 @@
 import { X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useContractRead, useContractWrite } from "@/hooks/useContract"
-import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant"
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32, FACE_BYTES32, MOUTH_BYTES32 } from "@/lib/constant"
 import { useToast } from '@/hooks/use-toast'
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
-import { ALL_WEARABLE_SVG } from "@/components/gotchiSvg/svgs";
+import { KEY_TO_CONFIG_MAP, WearableCategoryKey, TOKEN_ID_TO_LOCAL_INDEX, TOKEN_ID_TO_IMAGE } from '@/components/gotchiSvg/config';
 import SvgIcon from "@/components/gotchiSvg/SvgIcon"; 
 import { WearableDefinition } from "@/lib/types";
+import { normalizeWearableId } from "@/lib/utils";
+import { getWearableName, WearableType } from "@/src/utils/wearableMapping";
 
 interface EquipSelectWindowProps {
   onClose: () => void
@@ -32,14 +34,50 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
     setActiveTab(getTypeFromIndex(selectedType));
   }, [selectedType]);
 
-  const getAvailableEquipments = (type: string) => {
-    const equipments = (ALL_WEARABLE_SVG[type as keyof typeof ALL_WEARABLE_SVG] || []) as (WearableDefinition | null)[];
+  const mapCategoryNameToWearableType = (categoryName: string): WearableType | null => {
+    const mapping: Record<string, WearableType> = {
+      'head': 'heads',
+      'hand': 'hands',
+      'clothes': 'clothes',
+      'face': 'faces',
+      'mouth': 'mouths',
+      'background': 'backgrounds',
+      'body': 'bodys',
+      'eye': 'eyes',
+    };
+    return mapping[categoryName] || null;
+  };
+
+  const getAvailableEquipments = (type: string): WearableDefinition[] => {
+    const config = KEY_TO_CONFIG_MAP[type as WearableCategoryKey];
+    if (!config) return [];
+
+    const categoryMapping = TOKEN_ID_TO_LOCAL_INDEX[config.name];
+    if (!categoryMapping) return [];
+
+    const availableEquipments: WearableDefinition[] = [];
+    const wearableType = mapCategoryNameToWearableType(config.name);
     
-    return equipments.filter((equip): equip is WearableDefinition => {
-      if (!equip) return false;
-      const balance = parseInt(wearableBalances[equip.id] || "0");
-      return balance > 0;
+    Object.keys(categoryMapping).forEach(tokenIdStr => {
+      const tokenId = parseInt(tokenIdStr);
+      const balance = parseInt(wearableBalances[tokenId] || "0");
+      
+      if (balance > 0) {
+        const imagePath = TOKEN_ID_TO_IMAGE[tokenId];
+        if (imagePath && wearableType) {
+          const index = tokenId - config.offset;
+          const name = getWearableName(wearableType, index);
+          
+          availableEquipments.push({
+            id: tokenId,
+            name: name,
+            svg: "" 
+          });
+        }
+      }
     });
+
+    return availableEquipments;
   };
 
 
@@ -59,7 +97,7 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
   const handleEquipWearable = (wearableId: number) => {
     setEquipIndex(wearableId);
     setIsEquiping(true);
-    contractWrite("simpleEquipWearable", [selectedTokenId, wearableId, selectedType]);
+    contractWrite("equipWearable", [selectedTokenId, wearableId, selectedType]);
 
     toast({
       title: "Transaction Submitted",
@@ -91,11 +129,13 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
           
           const slotMapping = [
             { index: 0, type: BG_BYTES32, offset: 0 },       
-            { index: 1, type: BODY_BYTES32, offset: 9 },      
-            { index: 2, type: EYE_BYTES32, offset: 18 },      
+            { index: 1, type: BODY_BYTES32, offset: 16 },      
+            { index: 2, type: EYE_BYTES32, offset: 24 },      
             { index: 3, type: HAND_BYTES32, offset: 27 },     
-            { index: 4, type: HEAD_BYTES32, offset: 36 },     
-            { index: 5, type: CLOTHES_BYTES32, offset: 45 }  
+            { index: 4, type: HEAD_BYTES32, offset: 46 },     
+            { index: 5, type: CLOTHES_BYTES32, offset: 63 },
+            { index: 6, type: FACE_BYTES32, offset: 72 },
+            { index: 7, type: MOUTH_BYTES32, offset: 79 }
           ];
           
           if (Array.isArray(wearableTypeInfos)) {
@@ -109,7 +149,7 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
               if (matchedSlot && info.equiped) {
                 pick_layers[matchedSlot.index] = 1; 
                 
-                const wearableIdAsNumber = Number(info.wearableId);
+                const wearableIdAsNumber = normalizeWearableId(Number(info.wearableId));
                 const calculatedIndex = wearableIdAsNumber - matchedSlot.offset;
                 
                 file_indexs[matchedSlot.index] = calculatedIndex;
@@ -117,23 +157,23 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
             });
           }
                     
-          const data = {
-            token_id: selectedTokenId,
-            pick_layers,
-            file_indexs
-          };
+          // const data = {
+          //   token_id: selectedTokenId,
+          //   pick_layers,
+          //   file_indexs
+          // };
 
-          const backendResponse = await fetch("/api/images/update", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
+          // const backendResponse = await fetch("/api/images/update", {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //   },
+          //   body: JSON.stringify(data),
+          // });
           
-          if (!backendResponse.ok) {
-            throw new Error(`API CALL ERROR: ${backendResponse.status}`);
-          }
+          // if (!backendResponse.ok) {
+          //   throw new Error(`API CALL ERROR: ${backendResponse.status}`);
+          // }
           
           wearableStore.setImageVersion(wearableStore.imageVersion + 1);
           setTimeout(onClose, 500);
@@ -184,7 +224,23 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
             ? 'grid grid-cols-2 gap-2 p-3' 
             : 'grid grid-cols-4 gap-4'
         }`}>
-          {availableEquipments.map((equip) => {
+          {availableEquipments.length === 0 ? (
+            <div className="col-span-full flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className={`text-gray-500 font-medium ${
+                  isMobile ? 'text-sm' : 'text-base'
+                }`}>
+                  No Equipments
+                </div>
+                <div className={`text-gray-400 mt-1 ${
+                  isMobile ? 'text-xs' : 'text-sm'
+                }`}>
+                  You don't have any equipments of this type
+                </div>
+              </div>
+            </div>
+          ) : (
+            availableEquipments.map((equip) => {
               const isSelected = equip.id === equipIndex;
               const isDisabled = isEquiping && !isSelected;
               
@@ -194,15 +250,15 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
                   onClick={() => !isDisabled && handleEquipWearable(equip.id)}
                   className={`flex flex-col transition-all duration-200 transform hover:scale-105 ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'} ${isSelected && isEquiping ? 'scale-105' : ''}`}
                 >
-                  <div className={`border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm flex items-center justify-center p-2 ${
-                    isMobile ? 'h-24' : 'h-24'
+                  <div className={`border-2 border-[#808080] shadow-win98-outer bg-gradient-to-br from-white to-[#f5f5f5] rounded-t-sm aspect-square flex items-center justify-center p-1 ${
+                    isMobile ? 'w-full' : 'w-full'
                   }`}>
                     <SvgIcon
-                      svgString={equip.svg}
+                      imagePath={TOKEN_ID_TO_IMAGE[equip.id]}
                       alt={equip.name}
                       width={isMobile ? 40 : 64}
                       height={isMobile ? 40 : 64}
-                      className={isDisabled ? 'grayscale' : ''}
+                      className={`w-full h-full object-cover ${isDisabled ? 'grayscale' : ''}`}
                     />
                   </div>
                   <div className={`border-2 border-t-0 border-[#808080] shadow-win98-outer bg-[#d4d0c8] rounded-b-sm p-2 ${
@@ -226,7 +282,8 @@ const EquipSelectWindow = observer(({ onClose, onSuccess, wearableBalances, sele
                   </div>
                 </div>
               );
-            })}
+            })
+          )}
         </div>
       </div>
     </div>

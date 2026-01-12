@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const TESTNET_BASE_URL = 'https://testnet.dplabs-internal.com';
+const TESTNET_BASE_URL = 'https://atlantic.dplabs-internal.com';
 const REQUEST_TIMEOUT = 30000; 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -39,7 +39,11 @@ async function fetchWithRetry(url: string, options: FetchOptions, retries = MAX_
     clearTimeout(timeoutId);
     
     if (retries > 0 && shouldRetry(error)) {
-      console.warn(`Request failed, retrying in ${RETRY_DELAY}ms. Retries left: ${retries - 1}`, error);
+      // Log error message only, avoid logging full error object in Edge Runtime
+      const errorMsg = (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') 
+        ? error.message 
+        : String(error || 'Unknown error');
+      console.warn(`Request failed, retrying in ${RETRY_DELAY}ms. Retries left: ${retries - 1}. Error: ${errorMsg}`);
       await sleep(RETRY_DELAY);
       return fetchWithRetry(url, options, retries - 1);
     }
@@ -49,35 +53,92 @@ async function fetchWithRetry(url: string, options: FetchOptions, retries = MAX_
 }
 
 function shouldRetry(error: any): boolean {
-  return (
-    error.name === 'AbortError' ||
-    error.code === 'ECONNRESET' ||
-    error.code === 'ENOTFOUND' ||
-    error.code === 'ECONNREFUSED' ||
-    error.message?.includes('fetch failed')
-  );
+  // Safely extract error properties for Edge Runtime compatibility
+  try {
+    const errorName = typeof error?.name === 'string' ? error.name : '';
+    const errorCode = typeof error?.code === 'string' ? error.code : '';
+    const errorMessage = typeof error?.message === 'string' ? error.message : String(error || '');
+    
+    return (
+      errorName === 'AbortError' ||
+      errorCode === 'ECONNRESET' ||
+      errorCode === 'ENOTFOUND' ||
+      errorCode === 'ECONNREFUSED' ||
+      errorMessage.includes('fetch failed') ||
+      errorMessage.includes('ECONNRESET') ||
+      errorMessage.includes('ECONNREFUSED')
+    );
+  } catch {
+    // If error extraction fails, don't retry
+    return false;
+  }
 }
 
 function createErrorResponse(error: any, path: string, method: string) {
-  const errorDetails = {
-    message: error.message || 'Unknown error',
-    code: error.code,
-    name: error.name,
-    path,
-    method,
+  // Safely extract error information for Edge Runtime compatibility
+  // Avoid accessing properties that might trigger XMLHttpRequest references
+  let errorMessage = 'Unknown error';
+  let errorName = 'Error';
+  let errorCode: string | undefined = undefined;
+  
+  try {
+    // Safely extract error message
+    if (typeof error?.message === 'string') {
+      errorMessage = error.message;
+    } else if (typeof error?.toString === 'function') {
+      errorMessage = error.toString();
+    } else {
+      errorMessage = String(error || 'Unknown error');
+    }
+    
+    // Safely extract error name
+    if (typeof error?.name === 'string') {
+      errorName = error.name;
+    }
+    
+    // Safely extract error code (may not exist in Edge Runtime)
+    if (typeof error?.code === 'string' || typeof error?.code === 'number') {
+      errorCode = String(error.code);
+    }
+  } catch (e) {
+    // If error extraction fails, use defaults
+    errorMessage = 'Error processing request';
+  }
+  
+  // Build error details with only serializable values
+  const errorDetails: Record<string, string> = {
+    message: errorMessage,
+    name: errorName,
+    path: path || '',
+    method: method || 'UNKNOWN',
     timestamp: new Date().toISOString(),
   };
   
-  console.error('Testnet proxy error:', errorDetails);
+  // Only add code if it exists
+  if (errorCode) {
+    errorDetails.code = errorCode;
+  }
   
-  if (error.name === 'AbortError') {
+  // Log error message only (avoid logging full error object in Edge Runtime)
+  console.error('Testnet proxy error:', errorMessage, { path, method });
+  
+  // Check error types using safe string comparisons
+  const isAbortError = errorName === 'AbortError' || errorMessage.includes('aborted');
+  const isConnectionError = errorCode === 'ECONNRESET' || 
+                           errorCode === 'ECONNREFUSED' ||
+                           errorCode === 'ENOTFOUND' ||
+                           errorMessage.includes('ECONNREFUSED') ||
+                           errorMessage.includes('ECONNRESET') ||
+                           errorMessage.includes('fetch failed');
+  
+  if (isAbortError) {
     return NextResponse.json(
       { error: 'Request timeout', details: errorDetails },
       { status: 504 }
     );
   }
   
-  if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
+  if (isConnectionError) {
     return NextResponse.json(
       { error: 'Connection failed', details: errorDetails },
       { status: 503 }

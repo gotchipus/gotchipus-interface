@@ -9,9 +9,11 @@ import { useStores } from "@stores/context";
 import { observer } from "mobx-react-lite";
 import SvgIcon from "@/components/gotchiSvg/SvgIcon";
 import EquipSelectWindow from "@/components/window-content/equip/EquipSelectWindow";
-import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32 } from "@/lib/constant";
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32, FACE_BYTES32, MOUTH_BYTES32 } from "@/lib/constant";
 import { useSvgLayers } from "@/hooks/useSvgLayers";
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
+import EnhancedGotchiSvg from "@/components/gotchiSvg/EnhancedGotchiSvg";
+import { backgrounds } from "@/components/gotchiSvg/svgs";
+import { renderToStaticMarkup } from "react-dom/server";
 import { ArrowLeft } from "lucide-react";
 import { GotchiItem } from '@/lib/types';
 
@@ -31,7 +33,12 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
   
   const { walletStore } = useStores();
 
-  const { layers, backgroundSvg, isLoading: svgLoading } = useSvgLayers(selectedGotchi?.id || "");
+  const { wearableIndices, isLoading: svgLoading } = useSvgLayers(selectedGotchi?.id || "");
+  
+  const backgroundComponent = selectedGotchi ? backgrounds(wearableIndices.backgroundIndex) : null;
+  const backgroundSvg = backgroundComponent
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${renderToStaticMarkup(backgroundComponent)}</svg>`
+    : null;
 
   const { equippedItems, isLoading: isLoadingEquipped } = useEquippedItems(
     selectedGotchi ? parseInt(selectedGotchi.id) : 0
@@ -125,7 +132,9 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
       EYE_BYTES32,    
       HAND_BYTES32,   
       HEAD_BYTES32,   
-      CLOTHES_BYTES32 
+      CLOTHES_BYTES32,
+      FACE_BYTES32,
+      MOUTH_BYTES32
     ];
     return EQUIPMENT_TYPES[selectedEquipSlot];
   };
@@ -202,7 +211,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
             <div className="border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] p-4">
               <div className="flex items-center justify-center h-64 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-inner"
                    style={backgroundSvg ? { 
-                     backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">${backgroundSvg}</svg>`)}")`,
+                     backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(backgroundSvg)}")`,
                      backgroundSize: 'cover',
                      backgroundPosition: 'center'
                    } : {}}>
@@ -211,7 +220,7 @@ const WearableComponent = observer(({ onEquipSuccess }: WearableComponentProps) 
                     <div className="text-sm">Loading...</div>
                   ) : selectedGotchi ? (
                     <div className="relative flex items-center justify-center w-48 h-48">
-                      <SvgComposer layers={layers} />
+                      <EnhancedGotchiSvg wearableIndices={wearableIndices} />
                     </div>
                   ) : (
                     <Image 

@@ -4,10 +4,16 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { GotchipusInfo } from "@/lib/types"
 import { observer } from "mobx-react-lite"
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer"
-import { useSvgLayers } from "@/hooks/useSvgLayers"
+import EnhancedGotchiSvg from "@/components/gotchiSvg/EnhancedGotchiSvg"
+import { backgrounds } from "@/components/gotchiSvg/svgs"
+import { renderToStaticMarkup } from "react-dom/server"
 import { useContractRead } from "@/hooks/useContract"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
+import { EquipWearableType } from "@/lib/types"
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32, FACE_BYTES32, MOUTH_BYTES32 } from "@/lib/constant"
+import { KEY_TO_CONFIG_MAP, WearableCategoryKey, TOKEN_ID_TO_LOCAL_INDEX } from '@/components/gotchiSvg/config'
+import { WearableIndices } from "@/hooks/useSvgLayers"
+import { normalizeWearableId } from "@/lib/utils"
 
 interface DashboardTabProps {
   selectedTokenId: string
@@ -22,6 +28,9 @@ interface DashboardTabProps {
   isPetWriting: boolean
   isMobile?: boolean
   petSuccessTimestamp?: number
+  wearableTypeInfos?: EquipWearableType[]
+  isLoadingWearables?: boolean
+  wearablesError?: Error | null
 }
 
 const AttributeValueSkeleton = () => (
@@ -31,6 +40,70 @@ const AttributeValueSkeleton = () => (
 const DnaValueSkeleton = () => (
   <div className="w-full h-4 bg-[#d4d0c8] rounded animate-pulse"></div>
 )
+
+const calculateWearableIndices = (wearableTypeInfos: EquipWearableType[] | undefined): WearableIndices => {
+  const defaultIndices: WearableIndices = {
+    backgroundIndex: 0,
+    bodyIndex: 0,
+    eyeIndex: 0,
+    handIndex: 0,
+    headIndex: 0,
+    clothesIndex: 0,
+    faceIndex: 0,
+    mouthIndex: 0,
+  };
+
+  if (!wearableTypeInfos || !Array.isArray(wearableTypeInfos)) {
+    return defaultIndices;
+  }
+
+  const newIndices = { ...defaultIndices };
+
+  wearableTypeInfos
+    .filter((info: EquipWearableType) => info.equiped)
+    .forEach((info: EquipWearableType) => {
+      const config = KEY_TO_CONFIG_MAP[info.wearableType as WearableCategoryKey];
+      if (!config) return;
+
+      const categoryMapping = TOKEN_ID_TO_LOCAL_INDEX[config.name];
+      if (!categoryMapping) return;
+
+      const tokenId = normalizeWearableId(Number(info.wearableId));
+      const localIndex = categoryMapping[tokenId];
+      if (localIndex === undefined) return;
+
+      switch (config.key) {
+        case BG_BYTES32:
+          newIndices.backgroundIndex = localIndex;
+          break;
+        case BODY_BYTES32:
+          newIndices.bodyIndex = localIndex;
+          break;
+        case EYE_BYTES32:
+          newIndices.eyeIndex = localIndex;
+          break;
+        case HAND_BYTES32:
+          newIndices.handIndex = localIndex;
+          break;
+        case HEAD_BYTES32:
+          newIndices.headIndex = localIndex;
+          break;
+        case CLOTHES_BYTES32:
+          newIndices.clothesIndex = localIndex;
+          break;
+        case FACE_BYTES32:
+          newIndices.faceIndex = localIndex;
+          break;
+        case MOUTH_BYTES32:
+          newIndices.mouthIndex = localIndex;
+          break;
+        default:
+          break;
+      }
+    });
+
+  return newIndices;
+};
 
 const DashboardTab = observer(({
   selectedTokenId,
@@ -44,10 +117,18 @@ const DashboardTab = observer(({
   handlePet,
   isPetWriting,
   isMobile,
-  petSuccessTimestamp
+  petSuccessTimestamp,
+  wearableTypeInfos,
+  isLoadingWearables = false,
+  wearablesError
 }: DashboardTabProps) => {
+  // console.log("tokenInfo", tokenInfo);
+
   const tokenId = selectedTokenId;
-  const { layers, backgroundSvg, isLoading, error } = useSvgLayers(tokenId);
+  
+  const wearableIndices = useMemo(() => calculateWearableIndices(wearableTypeInfos), [wearableTypeInfos]);
+  const isLoading = isLoadingWearables;
+  const error = wearablesError;
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [canPet, setCanPet] = useState<boolean>(true);
   
@@ -63,31 +144,44 @@ const DashboardTab = observer(({
     }
   }, [petSuccessTimestamp, refetchLastPetTime]);
 
-  const isDataLoading = !tokenInfo || 
-    (tokenInfo.aether === undefined && 
-     tokenInfo.bonding === undefined && 
-     tokenInfo.growth === undefined && 
-     tokenInfo.element === undefined && 
-     tokenInfo.wisdom === undefined);
+  const isDataLoading = !tokenInfo ||
+    (tokenInfo.strength === undefined &&
+     tokenInfo.defense === undefined &&
+     tokenInfo.mind === undefined &&
+     tokenInfo.vitality === undefined &&
+     tokenInfo.agility === undefined &&
+     tokenInfo.luck === undefined);
 
-  const viewBox = "0 0 80 80"; 
-
-  const completeBackgroundSvg = backgroundSvg 
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${backgroundSvg}</svg>`
+  const backgroundComponent = backgrounds(wearableIndices.backgroundIndex);
+  const backgroundSvg = backgroundComponent
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${renderToStaticMarkup(backgroundComponent)}</svg>`
     : null;
 
-  const backgroundStyle = completeBackgroundSvg
-    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(completeBackgroundSvg)}")` } 
+  const backgroundStyle = backgroundSvg
+    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(backgroundSvg)}")` }
     : {};
 
+  const getFactionName = (primaryFaction: number | undefined): string => {
+    switch (primaryFaction) {
+      case 0:
+        return "COMBAT";
+      case 1:
+        return "DEFENSE";
+      case 2:
+        return "TECHNOLOGY";
+      default:
+        return "COMBAT";
+    }
+  };
+
   const attributes = [
-    { name: "Faction", value: 0 || 0, icon: "faction" },
-    { name: "STR", value: 0 || 0, icon: "strength" },
-    { name: "DEF", value: 0 || 0, icon: "defense" },
-    { name: "INT", value: 0 || 0, icon: "mind" },
-    { name: "VIT", value: 0 || 0, icon: "vitality" },
-    { name: "AGI", value: 0 || 0, icon: "agility" },
-    { name: "LUK", value: 0 || 0, icon: "luck" },
+    { name: "Faction", value: getFactionName(tokenInfo.primaryFaction), icon: "faction" },
+    { name: "STR", value: tokenInfo.strength / 100 || 0, icon: "strength" },
+    { name: "DEF", value: tokenInfo.defense / 100 || 0, icon: "defense" },
+    { name: "INT", value: tokenInfo.mind / 100 || 0, icon: "mind" },
+    { name: "VIT", value: tokenInfo.vitality / 100 || 0, icon: "vitality" },
+    { name: "AGI", value: tokenInfo.agility / 100 || 0, icon: "agility" },
+    { name: "LUK", value: tokenInfo.luck / 100 || 0, icon: "luck" },
   ];
 
   const dnaData = {
@@ -111,7 +205,7 @@ const DashboardTab = observer(({
     const updateCountdown = () => {
       const now = Math.floor(Date.now() / 1000);
       const lastPetTimestamp = Number(lastPetTime);
-      const cooldownEnd = lastPetTimestamp + (24 * 60 * 60); // 24 hours
+      const cooldownEnd = lastPetTimestamp + (24 * 60 * 60);
       const remainingTime = cooldownEnd - now;
       
       if (remainingTime > 0) {
@@ -167,7 +261,11 @@ const DashboardTab = observer(({
                   className="w-full h-full relative flex items-center justify-center"
                   animate={floatAnimation}
                 >
-                  <SvgComposer layers={layers} width={isMobile ? 200 : 300} height={isMobile ? 200 : 300} />
+                  <EnhancedGotchiSvg
+                    wearableIndices={wearableIndices}
+                    width={isMobile ? 200 : 300}
+                    height={isMobile ? 200 : 300}
+                  />
                 </motion.div>
               </>
             )}
@@ -251,11 +349,11 @@ const DashboardTab = observer(({
         </div>
 
         <div className="mt-4 pt-4 border-t border-[#808080]">
-          <div className={`text-[#000080] mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gotchipus Level: {Math.floor(Number(tokenInfo.growth) / 100)}</div>
+          <div className={`text-[#000080] mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gotchipus Level: {Math.floor(Number(tokenInfo.currentExp) / 100)}</div>
           <div className="w-full bg-[#c0c0c0] border border-[#808080] h-4">
-            <div className="bg-[#000080] h-full" style={{ width: `${Number(tokenInfo.growth) % 100}%` }}></div>
+            <div className="bg-[#000080] h-full" style={{ width: `${((Number(tokenInfo.currentExp) / 100) % 1) * 100}%` }}></div>
           </div>
-          <div className={`text-right mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>XP: {Number(tokenInfo.growth) % 100}/100</div>
+          <div className={`text-right mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>XP: {Math.floor(((Number(tokenInfo.currentExp) / 100) % 1) * 100)}/100</div>
         </div>
       </div>
     </div>

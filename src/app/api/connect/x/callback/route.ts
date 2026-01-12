@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   const token = request.cookies.get('x_auth_jwt')?.value;
   if (!token) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/daily-task-hall?refresh=${Date.now()}`);
   }
 
   let decodedToken: any;
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const { payload } = await jose.jwtVerify(token, secret);
     decodedToken = payload;
   } catch (err) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/daily-task-hall?refresh=${Date.now()}`);
   }
   const walletAddress = decodedToken.address;
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const codeVerifier = request.cookies.get('x_oauth_code_verifier')?.value;
 
   if (!state || !storedState || state !== storedState) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/daily-task-hall?refresh=${Date.now()}`);
   }
 
   try {
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     console.log(`User ${xUsername} (${xUserId}) has successfully connected and is following the official account.`);
 
-    const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
+    const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/daily-task-hall?refresh=${Date.now()}`);
     response.cookies.delete('x_auth_jwt');
     response.cookies.delete('x_oauth_state');
     response.cookies.delete('x_oauth_code_verifier');
@@ -81,6 +81,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error(error);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}?windows=daily-task-hall&active=daily-task-hall&refresh=${Date.now()}`);
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/daily-task-hall?refresh=${Date.now()}`);
   }
 }

@@ -32,6 +32,7 @@ class WalletStore {
   isWalletConnectConnected: boolean = false;
   isWalletConnectPairing: boolean = false;
   connectedTarget: string = '';
+  tokenBoundAccounts: Record<string, string> = {};
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -152,6 +153,22 @@ class WalletStore {
     }
   }
 
+  setTokenBoundAccount(tokenId: string, address: string) {
+    runInAction(() => {
+      this.tokenBoundAccounts[tokenId] = address;
+    });
+  }
+
+  getTokenBoundAccount(tokenId: string): string | undefined {
+    return this.tokenBoundAccounts[tokenId];
+  }
+
+  resetTokenBoundAccounts() {
+    runInAction(() => {
+      this.tokenBoundAccounts = {};
+    });
+  }
+
   reset() {
     runInAction(() => {
       this.address = undefined;
@@ -161,6 +178,7 @@ class WalletStore {
       this.symbol = undefined;
       this.chainId = undefined;
       this.resetWalletConnect();
+      this.resetTokenBoundAccounts();
     });
   }
 

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useContractRead } from '@/hooks/useContract';
-import { ALL_WEARABLE_SVG } from '@/components/gotchiSvg/svgs';
-import { BG_BYTES32 } from '@/lib/constant';
+import { BG_BYTES32, BODY_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32, CLOTHES_BYTES32, FACE_BYTES32, MOUTH_BYTES32 } from '@/lib/constant';
 import { EquipWearableType } from '@/lib/types';
-import { KEY_TO_CONFIG_MAP, WearableCategoryKey } from '@/components/gotchiSvg/config';
+import { KEY_TO_CONFIG_MAP, WearableCategoryKey, TOKEN_ID_TO_LOCAL_INDEX } from '@/components/gotchiSvg/config';
+import { normalizeWearableId } from '@/lib/utils';
 
 export interface SvgLayer {
   svgString: string;
@@ -11,9 +11,28 @@ export interface SvgLayer {
   svgName: string;
 }
 
+export interface WearableIndices {
+  backgroundIndex: number;
+  bodyIndex: number;
+  eyeIndex: number;
+  handIndex: number;
+  headIndex: number;
+  clothesIndex: number;
+  faceIndex: number;
+  mouthIndex: number;
+}
+
 export const useSvgLayers = (tokenId: string) => {
-  const [layers, setLayers] = useState<SvgLayer[]>([]);
-  const [backgroundSvg, setBackgroundSvg] = useState<string | null>(null);
+  const [wearableIndices, setWearableIndices] = useState<WearableIndices>({
+    backgroundIndex: 0,
+    bodyIndex: 0,
+    eyeIndex: 0,
+    handIndex: 0,
+    headIndex: 0,
+    clothesIndex: 0,
+    faceIndex: 0,
+    mouthIndex: 0,
+  });
 
   const { data: wearableTypeInfos, isLoading, error } = useContractRead(
     "getAllEquipWearableType",
@@ -22,8 +41,16 @@ export const useSvgLayers = (tokenId: string) => {
 
   useEffect(() => {
     if (wearableTypeInfos && Array.isArray(wearableTypeInfos)) {
-      const foregroundLayers: SvgLayer[] = [];
-      let foundBackground: string | null = null;
+      const newIndices: WearableIndices = {
+        backgroundIndex: 0,
+        bodyIndex: 0,
+        eyeIndex: 0,
+        handIndex: 0,
+        headIndex: 0,
+        clothesIndex: 0,
+        faceIndex: 0,
+        mouthIndex: 0,
+      };
 
       wearableTypeInfos
         .filter((info: EquipWearableType) => info.equiped)
@@ -31,37 +58,62 @@ export const useSvgLayers = (tokenId: string) => {
           const config = KEY_TO_CONFIG_MAP[info.wearableType as WearableCategoryKey];
           if (!config) return;
 
-          const localIndex = Number(info.wearableId) - config.offset;
-          const ITEMS_PER_CATEGORY = 9;
-          if (localIndex < 0 || localIndex >= ITEMS_PER_CATEGORY) return;
+          const categoryMapping = TOKEN_ID_TO_LOCAL_INDEX[config.name];
+          if (!categoryMapping) return;
 
-          const svgObjectArray = ALL_WEARABLE_SVG[config.key as WearableCategoryKey];
-          const wearableDef = svgObjectArray?.[localIndex];
+          const tokenId = normalizeWearableId(Number(info.wearableId));
+          const localIndex = categoryMapping[tokenId];
+          if (localIndex === undefined) return;
 
-          if (!wearableDef || !wearableDef.svg) return;
-          const svgString = wearableDef.svg;
-
-          if (config.key === BG_BYTES32) {
-            foundBackground = svgString;
-          } else {
-            foregroundLayers.push({
-              svgString: svgString,
-              zIndex: config.zIndex,
-              svgName: config.name,
-            });
+          switch (config.key) {
+            case BG_BYTES32:
+              newIndices.backgroundIndex = localIndex;
+              break;
+            case BODY_BYTES32:
+              newIndices.bodyIndex = localIndex;
+              break;
+            case EYE_BYTES32:
+              newIndices.eyeIndex = localIndex;
+              break;
+            case HAND_BYTES32:
+              newIndices.handIndex = localIndex;
+              break;
+            case HEAD_BYTES32:
+              newIndices.headIndex = localIndex;
+              break;
+            case CLOTHES_BYTES32:
+              newIndices.clothesIndex = localIndex;
+              break;
+            case FACE_BYTES32:
+              newIndices.faceIndex = localIndex;
+              break;
+            case MOUTH_BYTES32:
+              newIndices.mouthIndex = localIndex;
+              break;
+            default:
+              break;
           }
         });
 
-      foregroundLayers.sort((a, b) => a.zIndex - b.zIndex);
-      setLayers(foregroundLayers);
-      
-      setBackgroundSvg(foundBackground);
+      setWearableIndices(newIndices);
 
     } else {
-      setLayers([]);
-      setBackgroundSvg(null);
+      setWearableIndices({
+        backgroundIndex: 0,
+        bodyIndex: 0,
+        eyeIndex: 0,
+        handIndex: 0,
+        headIndex: 0,
+        clothesIndex: 0,
+        faceIndex: 0,
+        mouthIndex: 0,
+      });
     }
   }, [wearableTypeInfos]);
 
-  return { layers, backgroundSvg, isLoading, error };
+  return {
+    wearableIndices,
+    isLoading,
+    error
+  };
 };

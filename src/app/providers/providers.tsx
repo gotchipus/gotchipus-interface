@@ -10,6 +10,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SWRConfig } from 'swr'
 import { config } from '@/lib/wagmi'
 import { CustomJazzicon } from '@/components/footer/Jazzicon'
 import { StoreProvider } from "@stores/context";
@@ -109,7 +110,12 @@ const windows98Theme: Theme = {
   },
 };
 
-
+const swrConfig = {
+  dedupingInterval: 60000,
+  revalidateIfStale: false,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+};
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = React.useState(false)
@@ -118,26 +124,28 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider
-          theme={windows98Theme}
-          modalSize="compact"
-          locale="en"
-          avatar={CustomAvatar}
-          appInfo={{
-            appName: 'Gotchipus',
-            learnMoreUrl: 'https://gotchipus.com',
-          }}
-        >
-          <StoreProvider>
-            <WalletProvider>
-              <ToastProvider>
-                <I18nProvider>
-                  {mounted ? children : null}
-                </I18nProvider>
-              </ToastProvider>
-            </WalletProvider>
-          </StoreProvider>
-        </RainbowKitProvider>
+        <SWRConfig value={swrConfig}>
+          <RainbowKitProvider
+            theme={windows98Theme}
+            modalSize="compact"
+            locale="en"
+            avatar={CustomAvatar}
+            appInfo={{
+              appName: 'Gotchipus',
+              learnMoreUrl: 'https://gotchipus.com',
+            }}
+          >
+            <StoreProvider>
+              <WalletProvider>
+                <ToastProvider>
+                  <I18nProvider>
+                    {mounted ? children : null}
+                  </I18nProvider>
+                </ToastProvider>
+              </WalletProvider>
+            </StoreProvider>
+          </RainbowKitProvider>
+        </SWRConfig>
       </QueryClientProvider>
     </WagmiProvider>
   )

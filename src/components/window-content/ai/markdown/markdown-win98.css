@@ -82,6 +82,8 @@
   padding: 0.2em 0.4em;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9em;
+  color: #000000;
+  word-break: break-word;
 }
 
 .markdown-body pre {
@@ -91,6 +93,8 @@
   padding: 1em;
   overflow-x: auto;
   margin: 1em 0;
+  position: relative;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .markdown-body pre code {
@@ -106,6 +110,9 @@
   width: 100%;
   margin: 1em 0;
   border: 2px solid #808080;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .markdown-body th {
@@ -114,6 +121,7 @@
   background-color: #c0c0c0;
   font-weight: bold;
   text-align: left;
+  color: #000000;
 }
 
 .markdown-body td {
@@ -235,4 +243,33 @@
   border-radius: 3px;
   padding: 1em;
   margin: 1em 0;
+}
+
+/* Markdown 流式渲染容器样式 */
+.markdown-streaming {
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.markdown-streaming > * {
+  margin-top: 0;
+}
+
+.markdown-streaming > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-streaming .animate-pulse {
+  animation: blink 1s infinite;
+  font-weight: bold;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
 }

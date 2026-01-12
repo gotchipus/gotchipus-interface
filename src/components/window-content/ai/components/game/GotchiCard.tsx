@@ -4,7 +4,9 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSvgLayers } from "@/hooks/useSvgLayers";
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
+import EnhancedGotchiSvg from "@/components/gotchiSvg/EnhancedGotchiSvg";
+import { backgrounds } from "@/components/gotchiSvg/svgs";
+import { renderToStaticMarkup } from "react-dom/server";
 
 interface GotchiCardProps {
   name: string;
@@ -23,15 +25,15 @@ const GotchiCard = ({
   buttonAction,
   buttonDisabled = false,
 }: GotchiCardProps) => {
-  const { layers, backgroundSvg, isLoading } = useSvgLayers(id || "");
+  const { wearableIndices, isLoading } = useSvgLayers(id || "");
   
-  const viewBox = "0 0 80 80"; 
-  const completeBackgroundSvg = backgroundSvg 
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${backgroundSvg}</svg>`
+  const backgroundComponent = id ? backgrounds(wearableIndices.backgroundIndex) : null;
+  const backgroundSvg = backgroundComponent
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${renderToStaticMarkup(backgroundComponent)}</svg>`
     : null;
   
-  const backgroundStyle = completeBackgroundSvg
-    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(completeBackgroundSvg)}")` } 
+  const backgroundStyle = backgroundSvg
+    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(backgroundSvg)}")` } 
     : {};
 
   return (
@@ -42,7 +44,7 @@ const GotchiCard = ({
             {isLoading ? (
               <div className="text-sm">Loading...</div>
             ) : (
-              <SvgComposer layers={layers} />
+              <EnhancedGotchiSvg wearableIndices={wearableIndices} />
             )}
           </div>
         ) : (

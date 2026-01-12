@@ -39,9 +39,9 @@
     },
     "mint": {
         "mint": "MINT OPENED!",
-        "noCost": "0.025 $PHRS per Gotchipus",
+        "noCost": "0.04 $PHRS per $GOTCHI",
         "button": "Mint Now",
-        "description": "Mint your unique Gotchipus and join our collection",
-        "limited": "Limited time offer! 20,000 Gotchipus!"
+        "description": "Mint your unique $GOTCHI and join our collection",
+        "limited": "Limited time offer! 20,000 $GOTCHI!"
     }
 } 

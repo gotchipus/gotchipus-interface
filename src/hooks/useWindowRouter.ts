@@ -1,7 +1,7 @@
-
-import { useCallback, useEffect, useLayoutEffect, useState, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { 
+  parseWindowsFromPath,
   parseWindowsFromUrl, 
   addWindowToUrl, 
   removeWindowFromUrl, 
@@ -20,6 +20,7 @@ export interface UseWindowRouterReturn {
 
 export function useWindowRouter(): UseWindowRouterReturn {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [openWindows, setOpenWindows] = useState<string[]>([])
   const [activeWindow, setActiveWindow] = useState<string | null>(null)
@@ -30,12 +31,41 @@ export function useWindowRouter(): UseWindowRouterReturn {
     const hasRefresh = !!refreshParam
     
     if (!isInitialized.current || hasRefresh) {
-      const routeState = parseWindowsFromUrl(searchParams)
-      setOpenWindows(routeState.windows.map(w => w.id))
-      setActiveWindow(routeState.activeWindow)
+      const pathBasedState = parseWindowsFromPath(pathname, searchParams)
+      
+      if (pathBasedState.windows.length > 0) {
+        setOpenWindows(pathBasedState.windows.map(w => w.id))
+        setActiveWindow(pathBasedState.activeWindow)
+      } else {
+        const queryBasedState = parseWindowsFromUrl(searchParams)
+        if (queryBasedState.windows.length > 0) {
+          setOpenWindows(queryBasedState.windows.map(w => w.id))
+          setActiveWindow(queryBasedState.activeWindow)
+          const newPath = updateActiveWindowUrl(queryBasedState.windows.map(w => w.id), queryBasedState.activeWindow || '')
+          window.history.replaceState({}, '', newPath)
+        }
+      }
+      
       isInitialized.current = true
     }
-  }, [searchParams])
+  }, [pathname, searchParams])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const url = new URL(window.location.href)
+      const pathBasedState = parseWindowsFromPath(url.pathname, url.searchParams)
+      if (pathBasedState.windows.length > 0) {
+        setOpenWindows(pathBasedState.windows.map(w => w.id))
+        setActiveWindow(pathBasedState.activeWindow)
+      } else {
+        setOpenWindows([])
+        setActiveWindow(null)
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   const openWindow = useCallback((windowId: string) => {
     if (!isValidWindowId(windowId)) {
@@ -49,8 +79,11 @@ export function useWindowRouter(): UseWindowRouterReturn {
     setActiveWindow(windowId)
     
     const newUrl = addWindowToUrl(newWindows, windowId, activeWindow)
-    router.push(newUrl, { scroll: false })
-  }, [router, activeWindow, openWindows])
+    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+    if (currentUrl !== newUrl && newUrl !== '/') {
+      window.history.pushState({}, '', newUrl)
+    }
+  }, [pathname, searchParams, activeWindow, openWindows])
 
   const closeWindow = useCallback((windowId: string) => {
     const newWindows = openWindows.filter(id => id !== windowId)
@@ -62,8 +95,11 @@ export function useWindowRouter(): UseWindowRouterReturn {
     setActiveWindow(newActiveWindow)
     
     const newUrl = removeWindowFromUrl(openWindows, windowId, activeWindow)
-    router.push(newUrl, { scroll: false })
-  }, [router, activeWindow, openWindows])
+    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+    if (currentUrl !== newUrl) {
+      window.history.pushState({}, '', newUrl)
+    }
+  }, [pathname, searchParams, activeWindow, openWindows])
 
   const activateWindow = useCallback((windowId: string) => {
     if (!openWindows.includes(windowId)) {
@@ -74,8 +110,11 @@ export function useWindowRouter(): UseWindowRouterReturn {
     setActiveWindow(windowId)
     
     const newUrl = updateActiveWindowUrl(openWindows, windowId)
-    router.push(newUrl, { scroll: false })
-  }, [router, openWindows, openWindow])
+    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+    if (currentUrl !== newUrl && newUrl !== '/') {
+      window.history.pushState({}, '', newUrl)
+    }
+  }, [pathname, searchParams, openWindows, openWindow])
 
   const isWindowOpen = useCallback((windowId: string) => {
     return openWindows.includes(windowId)

@@ -45,7 +45,8 @@ const Taskbar = observer(({
   const { walletStore } = useStores();
 
   const { data: blockNumber } = useBlockNumber({
-    watch: true
+    watch: true,
+    chainId: 688689,
   });
 
   const handleButtonMouseDown = (id: string) => {
@@ -360,7 +361,7 @@ const Taskbar = observer(({
             <div className="absolute top-0 left-0 w-2 h-2 mr-2 rounded-full animate-ping bg-[#008000]"></div>
           </div>
           <a 
-            href={`https://testnet.pharosscan.xyz/block/${blockNumber?.toString()}`} 
+            href={`https://atlantic.pharosscan.xyz/block/${blockNumber?.toString()}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-base text-[#000080] hover:underline break-all"

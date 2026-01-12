@@ -109,11 +109,12 @@ const MintGotchiComponent = observer(({ onMintSuccess }: MintGotchiComponentProp
           }`}
         >
           <Image 
-            src="/pharos-mint.png" 
+            src="/pharos-summon.gif" 
             alt="Pharos Mint" 
             className="w-32 h-32 object-contain pixelated"
             width={128}
             height={128}
+            unoptimized={true}
           />
         </div>
       </div>

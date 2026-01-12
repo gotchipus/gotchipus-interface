@@ -23,7 +23,7 @@ const PoolInfoComponent = ({ data }: { data: PoolInfo }) => {
         </div>
         <div className="flex-1" />
         <Link
-          href={`https://testnet.pharosscan.xyz/address/${data.pool}`}
+          href={`https://atlantic.pharosscan.xyz/address/${data.pool}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-blue-800 underline hover:text-blue-500"
@@ -42,7 +42,7 @@ const PoolInfoComponent = ({ data }: { data: PoolInfo }) => {
       </div>
       <div className="flex justify-between mt-2 gap-2">
         <Link
-          href={`https://testnet.pharosscan.xyz/address/${data.token0}`}
+          href={`https://atlantic.pharosscan.xyz/address/${data.token0}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-blue-800 underline hover:text-blue-500"
@@ -50,7 +50,7 @@ const PoolInfoComponent = ({ data }: { data: PoolInfo }) => {
           {data.token0_symbol}
         </Link>
         <Link
-          href={`https://testnet.pharosscan.xyz/address/${data.token1}`}
+          href={`https://atlantic.pharosscan.xyz/address/${data.token1}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-blue-800 underline hover:text-blue-500"

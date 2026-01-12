@@ -7,7 +7,7 @@ import { useStores } from "@stores/context";
 
 interface FlipCardProps {
   tokenId: number;
-  image: string;
+  image: string | JSX.Element;
   onSelect: () => void;
   isSelected?: boolean;
   isMobile?: boolean;
@@ -157,8 +157,6 @@ const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false, isMob
         storyProgressRef.current = storyText.length;
       }
     }
-
-    
   };
 
   const processStreamEnd = () => {
@@ -279,16 +277,23 @@ const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false, isMob
               <div className="relative z-10 flex flex-col h-full bg-white">
                 <main className="flex-grow p-1 min-h-0">
                   <div className="relative w-full h-full border-2 border-t-[#5845c6] border-l-[#5845c6] border-b-[#140a43] border-r-[#140a43]">
-                    <Image 
-                      src={image} 
-                      alt={displayName || `Gotchipus #${tokenId}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="bg-black"
-                      draggable={false}
-                    />
+                    {typeof image === 'string' ? (
+                      <Image
+                        src={image}
+                        alt={displayName || `Gotchipus #${tokenId}`}
+                        layout="fill"
+                        objectFit="cover"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full">
+                          {image}
+                        </div>
+                      </div>
+                    )}
                     {isLoading && (
-                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-opacity-30 flex items-center justify-center">
                         <div className="animate-spin h-4 w-4 border-2 border-[#FAC428] border-t-transparent rounded-full"></div>
                       </div>
                     )}
@@ -333,32 +338,28 @@ const FlipCard = observer(({ tokenId, image, onSelect, isSelected = false, isMob
 
               <main className="flex-grow p-2 min-h-0">
                 <div className="relative w-full h-full border-2 border-t-[#5845c6] border-l-[#5845c6] border-b-[#140a43] border-r-[#140a43] p-1">
-                  <Image 
-                    src={image} 
-                    alt={displayName || `Gotchipus #${tokenId}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="bg-black"
-                    draggable={false}
-                  />
+                  {typeof image === 'string' ? (
+                    <Image
+                      src={image}
+                      alt={displayName || `Gotchipus #${tokenId}`}
+                      layout="fill"
+                      objectFit="cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-full [&>svg]:max-h-full">
+                        {image}
+                      </div>
+                    </div>
+                  )}
                   {isLoading && (
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-opacity-30 flex items-center justify-center">
                       <div className="animate-spin h-6 w-6 border-2 border-[#FAC428] border-t-transparent rounded-full"></div>
                     </div>
                   )}
                 </div>
               </main>
-              
-              <footer className="flex-shrink-0 mx-2 mb-1 p-1.5 border-2 border-t-[#856d17] border-l-[#856d17] border-b-[#fef1cf] border-r-[#fef1cf] bg-[#FFFBEB] overflow-y-hidden">
-                <div className="h-full max-h-[60px] overflow-y-auto text-xs text-black leading-tight pr-1 scrollbar-none">
-                  <p className="m-0 break-words">
-                    {displayStory || (isLoading ? 'Generating...' : 'Click the card to load the story')}
-                    {isLoading && cursorField === 'story' && (
-                      <span className="inline-block w-0.5 h-4 bg-black ml-1 animate-pulse"></span>
-                    )}
-                  </p>
-                </div>
-              </footer>
             </div>
           </div>
         </div>

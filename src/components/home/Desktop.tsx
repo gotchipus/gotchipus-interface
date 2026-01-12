@@ -1,16 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useWindowRouter } from "@/hooks/useWindowRouter"
 import DesktopIcon from "@/components/home/DesktopIcon"
-import MyPharosContent from "@/src/components/window-content/MyPharosContent"
-import DashboardContent from "@/components/window-content/DashboardContent"
 import type { JSX } from "react/jsx-runtime"
-import MintContent from "@/components/window-content/MintContent" 
-import ClaimWearableContent from "@/src/components/window-content/ClaimWearableContent"
-import DailyTaskHallContent from "@/src/components/window-content/DailyTaskHallContent"
-import AIContent from "@/src/components/window-content/AIContent"
+import { getEnabledWindowIcons, getWindowContent } from "@/lib/windowConfig"
 
 interface DesktopProps {
   onOpenWindow: (id: string, title: string, content: JSX.Element) => void
@@ -19,66 +14,10 @@ interface DesktopProps {
   openWindowIds?: string[]
 }
 
-const icons = [
-  {
-    id: "ai",
-    title: "Chat",
-    icon: "/ai-pus.png",
-  },
-  {
-    id: "mint",
-    title: "Mint",
-    icon: "/mint.png",
-  },
-  {
-    id: "pharos",
-    title: "My Pharos",
-    icon: "/pharos.png",
-  },
-  {
-    id: "dashboard",
-    title: "My Gotchipus",
-    icon: "/dashboard.png",
-  },
-  {
-    id: "wearable",
-    title: "Claim Wearable",
-    icon: "/claim-wearable.svg",
-  },
-  {
-    id: "daily-task-hall",
-    title: "Daily Task Hall",
-    icon: "/icons/pharos-proof.png",
-  },
-
-]
-
-const getWindowContent = (windowId: string, onOpenWindow: (id: string, title: string, content: JSX.Element) => void) => {
-  switch (windowId) {
-    case "mint":
-      return <MintContent />
-    case "pharos":
-      return <MyPharosContent />
-    case "dashboard":
-      return <DashboardContent />
-    case "wearable":
-      return <ClaimWearableContent />
-    case "daily-task-hall":
-      return <DailyTaskHallContent openWindow={(view: string) => {
-        const icon = icons.find(i => i.id === view)
-        const content = getWindowContent(view, onOpenWindow)
-        onOpenWindow(view, icon?.title || view, content)
-      }} />
-    case "ai":
-      return <AIContent />
-    default:
-      return <div>Unknown window: {windowId}</div>
-  }
-}
-
 export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds = [] }: DesktopProps) {
   const [activeIcon, setActiveIcon] = useState<string | null>(null)
   const windowRouter = useWindowRouter()
+  const icons = getEnabledWindowIcons()
   
   const MAX_ICONS_PER_COLUMN = isMobile ? 6 : 6
   
@@ -97,14 +36,14 @@ export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds 
     
     const icon = icons.find(i => i.id === iconId)
     if (icon) {
-      const content = getWindowContent(iconId, onOpenWindow)
+      const content = getWindowContent(iconId)
       onOpenWindow(iconId, icon.title, content)
     }
   }
 
   return (
     <div className={`top-0 left-0 w-full h-[calc(100%-28px)] p-4 flex flex-col items-start gap-2 relative ${isMobile ? 'p-2' : ''}`}>
-      <div className={`absolute inset-0 left-10 flex items-center justify-center z-0 pointer-events-none ${isMobile ? 'left-2' : ''}`}>
+      <div className={`absolute inset-0 left-10 top-36 flex items-center justify-center z-0 pointer-events-none ${isMobile ? 'left-2' : ''}`}>
         <Image 
           src="/gotchipus.png" 
           alt="Gotchipus" 

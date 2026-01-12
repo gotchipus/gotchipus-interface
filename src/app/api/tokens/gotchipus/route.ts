@@ -119,13 +119,16 @@ function serializeGotchipusInfo(info: any): GotchipusInfo {
     epoch: Number(info.epoch || 0),
     utc: Number(info.utc || 0),
     dna: serializedDna,
-    bonding: Number(info.bonding || 0),
-    growth: Number(info.growth || 0),
-    wisdom: Number(info.wisdom || 0),
-    aether: Number(info.aether || 0),
     singer: info.singer || "",
     nonces: info.nonces?.toString() || '0',
-    element: info.element ? Number(info.element) : undefined
+    element: info.element ? Number(info.element) : undefined,
+    strength: Number(info.strength || 0),
+    defense: Number(info.defense || 0),
+    mind: Number(info.mind || 0),
+    vitality: Number(info.vitality || 0),
+    agility: Number(info.agility || 0),
+    luck: Number(info.luck || 0),
+    primaryFaction: Number(info.primaryFaction || 0),
   };
 }
 

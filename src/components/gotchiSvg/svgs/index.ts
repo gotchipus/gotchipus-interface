@@ -1,16 +1,10 @@
-import { BG_BYTES32, BODY_BYTES32, CLOTHES_BYTES32, EYE_BYTES32, HAND_BYTES32, HEAD_BYTES32 } from "@/lib/constant";
-import { backgroundSvgs } from "./background";
-import { bodySvgs } from "./body";
-import { clothesSvgs } from "./clothes";
-import { eyeSvgs } from "./eye";
-import { handSvgs } from "./hand";
-import { headSvgs } from "./head";
+import bodys from "./bodys";
+import backgrounds from "./backgrounds";
+import eyes from "./eyes";
+import clothes from "./clothes";
+import faces from "./faces";
+import hands from "./hands";
+import heads from "./heads";
+import mouths from "./mouths";
 
-export const ALL_WEARABLE_SVG = {
-    [BG_BYTES32]: backgroundSvgs,
-    [BODY_BYTES32]: bodySvgs,
-    [CLOTHES_BYTES32]: clothesSvgs,
-    [EYE_BYTES32]: eyeSvgs,
-    [HAND_BYTES32]: handSvgs,
-    [HEAD_BYTES32]: headSvgs,
-};
+export { bodys, backgrounds, eyes, clothes, faces, hands, heads, mouths };

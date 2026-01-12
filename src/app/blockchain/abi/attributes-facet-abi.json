@@ -1,10 +1,10 @@
 [
     {
         "type": "function",
-        "name": "aether",
+        "name": "getAttributes",
         "inputs": [
             {
-                "name": "gotchipusTokenId",
+                "name": "gotchiTokenId",
                 "type": "uint256",
                 "internalType": "uint256"
             }
@@ -12,43 +12,11 @@
         "outputs": [
             {
                 "name": "",
-                "type": "uint32",
-                "internalType": "uint32"
+                "type": "uint32[6]",
+                "internalType": "uint32[6]"
             }
         ],
         "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "bonding",
-        "inputs": [
-            {
-                "name": "gotchipusTokenId",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "bond",
-                "type": "uint8",
-                "internalType": "uint8"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "feed",
-        "inputs": [
-            {
-                "name": "gotchipusTokenId",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
     },
     {
         "type": "function",
@@ -71,10 +39,29 @@
     },
     {
         "type": "function",
+        "name": "getSoul",
+        "inputs": [
+            {
+                "name": "gotchiTokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "soul_",
+                "type": "uint32",
+                "internalType": "uint32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
         "name": "getTokenName",
         "inputs": [
             {
-                "name": "gotchipusTokenId",
+                "name": "gotchiTokenId",
                 "type": "uint256",
                 "internalType": "uint256"
             }
@@ -90,29 +77,10 @@
     },
     {
         "type": "function",
-        "name": "growth",
-        "inputs": [
-            {
-                "name": "gotchipusTokenId",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint32",
-                "internalType": "uint32"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
-        "type": "function",
         "name": "pet",
         "inputs": [
             {
-                "name": "gotchipusTokenId",
+                "name": "gotchiTokenId",
                 "type": "uint256",
                 "internalType": "uint256"
             }
@@ -130,7 +98,7 @@
                 "internalType": "string"
             },
             {
-                "name": "gotchipusTokenId",
+                "name": "gotchiTokenId",
                 "type": "uint256",
                 "internalType": "uint256"
             }
@@ -139,23 +107,17 @@
         "stateMutability": "nonpayable"
     },
     {
-        "type": "function",
-        "name": "wisdom",
+        "type": "event",
+        "name": "Pet",
         "inputs": [
             {
-                "name": "gotchipusTokenId",
+                "name": "gotchiTokenId",
                 "type": "uint256",
+                "indexed": true,
                 "internalType": "uint256"
             }
         ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint8",
-                "internalType": "uint8"
-            }
-        ],
-        "stateMutability": "view"
+        "anonymous": false
     },
     {
         "type": "event",

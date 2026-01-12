@@ -1,7 +1,9 @@
 "use client";
 
 import { useSvgLayers } from "@/hooks/useSvgLayers";
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
+import EnhancedGotchiSvg from "@/components/gotchiSvg/EnhancedGotchiSvg";
+import { backgrounds } from "@/components/gotchiSvg/svgs";
+import { renderToStaticMarkup } from "react-dom/server";
 import { cn } from "@/lib/utils";
 
 interface GotchiPreviewCardProps {
@@ -21,15 +23,15 @@ const GotchiPreviewCard = ({
   className,
   buttonDisabled = false,
 }: GotchiPreviewCardProps) => {
-  const { layers, backgroundSvg, isLoading } = useSvgLayers(id);
+  const { wearableIndices, isLoading } = useSvgLayers(id);
   
-  const viewBox = "0 0 80 80"; 
-  const completeBackgroundSvg = backgroundSvg 
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${backgroundSvg}</svg>`
+  const backgroundComponent = backgrounds(wearableIndices.backgroundIndex);
+  const backgroundSvg = backgroundComponent
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${renderToStaticMarkup(backgroundComponent)}</svg>`
     : null;
   
-  const backgroundStyle = completeBackgroundSvg
-    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(completeBackgroundSvg)}")` } 
+  const backgroundStyle = backgroundSvg
+    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(backgroundSvg)}")` } 
     : {};
 
   return (
@@ -42,7 +44,7 @@ const GotchiPreviewCard = ({
           <div className="text-sm">Loading...</div>
         ) : (
           <div className="relative flex items-center justify-center w-48 h-48">
-            <SvgComposer layers={layers} />
+            <EnhancedGotchiSvg wearableIndices={wearableIndices} />
           </div>
         )}
       </div>

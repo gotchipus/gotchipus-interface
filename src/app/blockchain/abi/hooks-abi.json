@@ -1,1 +1,95 @@
-[{"type":"function","name":"addHook","inputs":[{"name":"hook","type":"address","internalType":"address"}],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"getHooks","inputs":[{"name":"sender","type":"address","internalType":"address"}],"outputs":[{"name":"","type":"address[]","internalType":"address[]"}],"stateMutability":"view"}]
+[
+    {
+        "type": "function",
+        "name": "addHook",
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "eventType",
+                "type": "uint8",
+                "internalType": "enum IHook.GotchiEvent"
+            },
+            {
+                "name": "hook",
+                "type": "address",
+                "internalType": "contract IHook"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "approvalHooks",
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "hook",
+                "type": "address",
+                "internalType": "contract IHook"
+            },
+            {
+                "name": "_permissions",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "getHooks",
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "eventType",
+                "type": "uint8",
+                "internalType": "enum IHook.GotchiEvent"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "hooks",
+                "type": "address[]",
+                "internalType": "address[]"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "removeHook",
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "eventType",
+                "type": "uint8",
+                "internalType": "enum IHook.GotchiEvent"
+            },
+            {
+                "name": "hook",
+                "type": "address",
+                "internalType": "contract IHook"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    }
+]

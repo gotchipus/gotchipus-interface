@@ -1,7 +1,9 @@
 "use client";
 
 import { useSvgLayers } from "@/hooks/useSvgLayers";
-import { SvgComposer } from "@/components/gotchiSvg/SvgComposer";
+import EnhancedGotchiSvg from "@/components/gotchiSvg/EnhancedGotchiSvg";
+import { backgrounds } from "@/components/gotchiSvg/svgs";
+import { renderToStaticMarkup } from "react-dom/server";
 import { cn } from "@/lib/utils";
 
 interface GotchiCompactCardProps {
@@ -19,15 +21,15 @@ const GotchiCompactCard = ({
   onClick,
   className,
 }: GotchiCompactCardProps) => {
-  const { layers, backgroundSvg, isLoading } = useSvgLayers(id);
+  const { wearableIndices, isLoading } = useSvgLayers(id);
   
-  const viewBox = "0 0 80 80"; 
-  const completeBackgroundSvg = backgroundSvg 
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${backgroundSvg}</svg>`
+  const backgroundComponent = backgrounds(wearableIndices.backgroundIndex);
+  const backgroundSvg = backgroundComponent
+    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">${renderToStaticMarkup(backgroundComponent)}</svg>`
     : null;
   
-  const backgroundStyle = completeBackgroundSvg
-    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(completeBackgroundSvg)}")` } 
+  const backgroundStyle = backgroundSvg
+    ? { backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(backgroundSvg)}")` } 
     : {};
 
   return (
@@ -51,7 +53,7 @@ const GotchiCompactCard = ({
           <div className="text-xs">...</div>
         ) : (
           <div className="w-full h-full flex items-center justify-center scale-75">
-            <SvgComposer layers={layers} />
+            <EnhancedGotchiSvg wearableIndices={wearableIndices} />
           </div>
         )}
       </div>

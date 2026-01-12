@@ -1,48 +1,22 @@
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import { useEffect, useRef } from 'react';
+import { memo } from 'react';
+import { MarkdownContent } from './markdown';
+import { cleanAIText } from '../utils';
 import './marked-win98.css';
 
 interface MarkedMarkdownProps {
   content: string;
 }
 
-export default function MarkedMarkdown({ content }: MarkedMarkdownProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-    });
-
-    const renderMarkdown = async () => {
-      const htmlContent = await marked(content);
-      
-      const sanitizedHtml = DOMPurify.sanitize(htmlContent);
-      
-      if (containerRef.current) {
-        containerRef.current.innerHTML = sanitizedHtml;
-      }
-    };
-
-    renderMarkdown();
-  }, [content]);
+const MarkedMarkdown = memo(({ content }: MarkedMarkdownProps) => {
+  const cleanedContent = cleanAIText(content);
 
   return (
-    <div 
-      ref={containerRef}
-      style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-        fontSize: '14px',
-        lineHeight: '1.6',
-        color: '#000000',
-        backgroundColor: 'transparent',
-        wordWrap: 'break-word'
-      }}
-      className="marked-markdown"
-    />
+    <div className="marked-markdown">
+      <MarkdownContent content={cleanedContent} />
+    </div>
   );
-}
+});
+
+MarkedMarkdown.displayName = 'MarkedMarkdown';
+
+export default MarkedMarkdown;

@@ -1,15 +1,21 @@
 import Image from "next/image"
 import { GotchipusInfo } from "@/lib/types"
+import { useStores } from "@stores/context"
+import { observer } from "mobx-react-lite"
 
 interface StatsTabProps {
   tokenInfo: GotchipusInfo
+  tokenId: string
   isMobile?: boolean
 }
 
-const StatsTab = ({
+const StatsTab = observer(({
   tokenInfo,
+  tokenId,
   isMobile
 }: StatsTabProps) => {
+  const { walletStore } = useStores()
+  const tokenBoundAccount = walletStore.getTokenBoundAccount(tokenId) || 'Not available'
   const dnaData = {
     name: "Genes",
     value: tokenInfo.dna?.geneSeed.toString() || "",
@@ -17,12 +23,12 @@ const StatsTab = ({
   };
 
   const attributes = [
-    { name: "STR", value: tokenInfo.bonding || 0, icon: "strength" },
-    { name: "DEF", value: tokenInfo.growth || 0, icon: "defense" },
-    { name: "INT", value: tokenInfo.element || 0, icon: "mind" },
-    { name: "VIT", value: tokenInfo.wisdom || 0, icon: "vitality" },
-    { name: "AGI", value: tokenInfo.wisdom || 0, icon: "agility" },
-    { name: "LUK", value: tokenInfo.wisdom || 0, icon: "luck" },
+    { name: "STR", value: tokenInfo.strength / 100 || 0, icon: "strength" },
+    { name: "DEF", value: tokenInfo.defense / 100 || 0, icon: "defense" },
+    { name: "INT", value: tokenInfo.mind / 100 || 0, icon: "mind" },
+    { name: "VIT", value: tokenInfo.vitality / 100 || 0, icon: "vitality" },
+    { name: "AGI", value: tokenInfo.agility / 100 || 0, icon: "agility" },
+    { name: "LUK", value: tokenInfo.luck / 100 || 0, icon: "luck" },
   ];
 
   return (
@@ -73,20 +79,20 @@ const StatsTab = ({
           </div>
           <div className="border-t border-[#808080] my-2"></div>
           <div className={`font-mono bg-[#c0c0c0] p-2 border border-[#808080] shadow-win98-inner overflow-x-auto whitespace-nowrap scrollbar-none ${isMobile ? 'text-xs' : 'text-xs'}`}>
-            {tokenInfo.owner || 'Not available'}
+            {tokenBoundAccount}
           </div>
         </div>
 
         <div className="mt-6 pt-4 border-t border-[#808080]">
-          <div className={`text-[#000080] mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gotchipus Level: 1</div>
+          <div className={`text-[#000080] mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>Gotchipus Level: {Number(tokenInfo.level || 0)}</div>
           <div className="w-full bg-[#c0c0c0] border border-[#808080] h-4">
-            <div className="bg-[#000080] h-full" style={{ width: `${Number(tokenInfo.growth) % 100}%` }}></div>
+            <div className="bg-[#000080] h-full" style={{ width: `${Number(tokenInfo.currentExp || 0) % 100}%` }}></div>
           </div>
-          <div className={`text-right mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>XP: {tokenInfo.growth}/100</div>
+          <div className={`text-right mt-1 ${isMobile ? 'text-xs' : 'text-xs'}`}>XP: {Number(tokenInfo.currentExp || 0) % 100}/100</div>
         </div>
       </div>
     </div>
   )
-}
+})
 
-export default StatsTab 
+export default StatsTab

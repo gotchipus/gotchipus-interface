@@ -5,6 +5,7 @@ import "./markdown.css";
 import { Providers } from "@providers/providers";
 import { Toaster } from "@/components/ui/toaster";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: {
@@ -67,6 +68,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-vt323">
         <GoogleAnalytics />
+        {/* <Script id="disable-context-menu" strategy="afterInteractive">{
+          `document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, { capture: true });`
+        }</Script> */}
         <Providers>
           {children}
           <Toaster />
