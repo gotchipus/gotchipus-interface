@@ -74,6 +74,7 @@ export interface GotchiMetadata {
 export interface WindowType {
   id: string
   title: string
+  icon?: string
   content: JSX.Element
   position: { x: number; y: number }
   size: { width: number; height: number }

@@ -8,7 +8,7 @@ import type { JSX } from "react/jsx-runtime"
 import { getEnabledWindowIcons, getWindowContent } from "@/lib/windowConfig"
 
 interface DesktopProps {
-  onOpenWindow: (id: string, title: string, content: JSX.Element) => void
+  onOpenWindow: (id: string, title: string, content: JSX.Element, icon?: string) => void
   activeWindow: string | null
   isMobile?: boolean
   openWindowIds?: string[]
@@ -37,7 +37,7 @@ export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds 
     const icon = icons.find(i => i.id === iconId)
     if (icon) {
       const content = getWindowContent(iconId)
-      onOpenWindow(iconId, icon.title, content)
+      onOpenWindow(iconId, icon.title, content, icon.icon)
     }
   }
 

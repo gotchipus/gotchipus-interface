@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
 import { X, Minus } from "lucide-react"
 import type { WindowType } from "@/lib/types"
 import { WINDOW_BG_COLOR } from "@/lib/constant"
@@ -139,7 +140,18 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
           handleTitleBarInteraction(touch.clientX, touch.clientY, e)
         }}
       >
-        <div className="text-sm font-bold truncate">{window.title}</div>
+        <div className="flex items-center gap-1 truncate">
+          {window.icon && (
+            <Image
+              src={window.icon}
+              alt=""
+              width={16}
+              height={16}
+              className="flex-shrink-0"
+            />
+          )}
+          <div className="text-sm font-bold truncate">{window.title}</div>
+        </div>
         <div className="flex">
           <button
             className={`flex items-center justify-center border border-[#808080] bg-[#c0c0c0] shadow-win98-outer ${isMobile ? 'w-5 h-5' : 'w-4 h-4 mr-1'}`}

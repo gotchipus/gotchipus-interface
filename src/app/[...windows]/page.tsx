@@ -60,7 +60,7 @@ export default function CatchAllPage() {
     windowRouter.activateWindow(windowId)
   }, [zIndexCounter, windowRouter])
 
-  const handleOpenWindow = useCallback((windowId: string, title: string, content: JSX.Element) => {
+  const handleOpenWindow = useCallback((windowId: string, title: string, content: JSX.Element, icon?: string) => {
     setOpenWindows((prev) => {
       if (prev.some((w) => w.id === windowId)) {
         handleActivateWindow(windowId)
@@ -111,6 +111,7 @@ export default function CatchAllPage() {
       const newWindow: WindowType = {
         id: windowId,
         title,
+        icon,
         content,
         position,
         size,
@@ -194,6 +195,7 @@ export default function CatchAllPage() {
           const newWindow: WindowType = {
             id: windowId,
             title: icon.title,
+            icon: icon.icon,
             content,
             position,
             size,
@@ -232,7 +234,7 @@ export default function CatchAllPage() {
       }
 
       const content = getWindowContent(windowId)
-      handleOpenWindow(windowId, icon.title, content)
+      handleOpenWindow(windowId, icon.title, content, icon.icon)
     }
 
     window.addEventListener(WINDOW_OPEN_EVENT, handleExternalOpen)

@@ -34,13 +34,13 @@ export default function Home() {
         const icon = getWindowIcon(windowId)
         if (icon) {
           const content = getWindowContent(windowId)
-          handleOpenWindow(windowId, icon.title, content)
+          handleOpenWindow(windowId, icon.title, content, icon.icon)
         }
       }
     })
   }, [windowRouter.openWindows, openWindows])
 
-  const handleOpenWindow = (windowId: string, title: string, content: JSX.Element) => {
+  const handleOpenWindow = (windowId: string, title: string, content: JSX.Element, icon?: string) => {
     if (openWindows.some((w) => w.id === windowId)) {
       handleActivateWindow(windowId)
       return
@@ -90,6 +90,7 @@ export default function Home() {
     const newWindow: WindowType = {
       id: windowId,
       title,
+      icon,
       content,
       position,
       size,
@@ -161,7 +162,7 @@ export default function Home() {
       }
 
       const content = getWindowContent(windowId)
-      handleOpenWindow(windowId, icon.title, content)
+      handleOpenWindow(windowId, icon.title, content, icon.icon)
     }
 
     window.addEventListener(WINDOW_OPEN_EVENT, handleExternalOpen)

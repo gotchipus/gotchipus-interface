@@ -22,7 +22,7 @@ import { observer } from 'mobx-react-lite';
 import { Menu, X } from 'lucide-react';
 
 interface TaskbarProps {
-  onOpenWindow: (id: string, title: string, content: JSX.Element) => void
+  onOpenWindow: (id: string, title: string, content: JSX.Element, icon?: string) => void
   openWindows: WindowType[]
   activeWindow: string | null
   onActivateWindow: (id: string) => void
@@ -101,7 +101,16 @@ const Taskbar = observer(({
 
           <div className="flex-1 mx-2 overflow-hidden">
             {activeWindow && (
-              <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner px-2 py-1 h-8 flex items-center">
+              <div className="bg-[#c0c0c0] border border-[#808080] shadow-win98-inner px-2 py-1 h-8 flex items-center gap-1">
+                {openWindows.find(w => w.id === activeWindow)?.icon && (
+                  <Image
+                    src={openWindows.find(w => w.id === activeWindow)!.icon!}
+                    alt=""
+                    width={12}
+                    height={12}
+                    className="flex-shrink-0"
+                  />
+                )}
                 <span className="text-xs truncate">
                   {openWindows.find(w => w.id === activeWindow)?.title || activeWindow}
                 </span>
@@ -172,9 +181,19 @@ const Taskbar = observer(({
                             : "bg-[#c0c0c0] shadow-win98-outer hover:bg-[#d4d0c8]"
                         }`}
                       >
-                        <div className="w-3 h-3 bg-[#c0c0c0] border border-[#808080] mr-2 flex items-center justify-center">
-                          {activeWindow === window.id && <div className="w-1.5 h-1.5 bg-[#000080]"></div>}
-                        </div>
+                        {window.icon ? (
+                          <Image
+                            src={window.icon}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className="flex-shrink-0 mr-2"
+                          />
+                        ) : (
+                          <div className="w-3 h-3 bg-[#c0c0c0] border border-[#808080] mr-2 flex items-center justify-center">
+                            {activeWindow === window.id && <div className="w-1.5 h-1.5 bg-[#000080]"></div>}
+                          </div>
+                        )}
                         <span className="text-sm truncate">{window.title}</span>
                       </button>
                     ))}
@@ -296,7 +315,7 @@ const Taskbar = observer(({
           {openWindows.map((window) => (
             <button
               key={window.id}
-              className={`min-w-[120px] px-2 ml-1 text-sm flex items-center justify-start truncate border border-[#808080] bg-[#c0c0c0] h-10 ${
+              className={`min-w-[120px] px-2 ml-1 text-sm flex items-center justify-start truncate border border-[#808080] bg-[#c0c0c0] h-10 gap-1.5 ${
                 pressedButton === window.id
                   ? "shadow-win98-inner"
                   : activeWindow === window.id
@@ -307,7 +326,16 @@ const Taskbar = observer(({
               onMouseUp={() => handleButtonMouseUp(window.id)}
               onMouseLeave={handleButtonMouseLeave}
             >
-              {window.title}
+              {window.icon && (
+                <Image
+                  src={window.icon}
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="flex-shrink-0"
+                />
+              )}
+              <span className="truncate">{window.title}</span>
             </button>
           ))}
         </div>
