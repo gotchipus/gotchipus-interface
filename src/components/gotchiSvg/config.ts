@@ -5,7 +5,7 @@ export const WEARABLE_CONFIG = {
   background: { key: BG_BYTES32, zIndex: 0, offset: 0, name: "background" },
   body: { key: BODY_BYTES32, zIndex: 1, offset: 16, name: "body" },
   eye: { key: EYE_BYTES32, zIndex: 2, offset: 24, name: "eye" },
-  hand: { key: HAND_BYTES32, zIndex: 3, offset: 27, name: "hand" },
+  hand: { key: HAND_BYTES32, zIndex: 3, offset: 32, name: "hand" },
   head: { key: HEAD_BYTES32, zIndex: 4, offset: 46, name: "head" },
   clothes: { key: CLOTHES_BYTES32, zIndex: 5, offset: 63, name: "clothes" },
   face: { key: FACE_BYTES32, zIndex: 6, offset: 72, name: "face" },

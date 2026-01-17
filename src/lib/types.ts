@@ -1,5 +1,4 @@
 import type { JSX } from "react"
-import { ethers } from "ethers";
 
 // Gotchi Metadata from Database (matches gotchi_metadata table)
 export interface GotchiMetadata {
@@ -144,39 +143,6 @@ export interface GotchipusInfo {
 export interface GotchiItem {
   id: string;
   info?: GotchipusInfo;
-}
-
-
-export function safeDecodeUtf8(bytesData: string | Uint8Array): string {
-  try {
-    let byteArr: Uint8Array;
-
-    if (typeof bytesData === "string") {
-      let hex = bytesData.trim();
-
-      if (!hex.startsWith("0x") && /^[0-9a-fA-F]+$/.test(hex)) {
-        hex = "0x" + hex;
-      }
-
-      if (!hex.startsWith("0x")) {
-        return "";
-      }
-
-      byteArr = ethers.getBytes(hex);
-    }
-    else if (bytesData instanceof Uint8Array) {
-      byteArr = bytesData;
-    }
-    else {
-      return "";
-    }
-
-    const decoder = new TextDecoder("utf-8", { fatal: false });
-    return decoder.decode(byteArr);
-  } catch (err) {
-    console.error("safeDecodeUtf8 failed", err);
-    return "";
-  }
 }
 
 export function parseGotchipusInfo(rawData: any): GotchipusInfo | undefined {

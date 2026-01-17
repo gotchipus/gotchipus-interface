@@ -101,6 +101,7 @@ const GotchiCard: React.FC<GotchiCardProps> = ({ metadata, onClick }) => {
               width={100}
               height={100}
               className="object-contain"
+              unoptimized
             />
           </div>
         ) : (

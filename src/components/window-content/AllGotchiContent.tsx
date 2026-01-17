@@ -6,6 +6,7 @@ import { Win98Loading } from "@/components/ui/win98-loading";
 import { Win98Select } from "@/components/ui/win98-select";
 import { Win98Checkbox } from "@/components/ui/win98-checkbox";
 import GotchiCard from "./all-gotchi/GotchiCard";
+import GotchiDetailView from "./all-gotchi/GotchiDetailView";
 import { GotchiMetadata } from "@/lib/types";
 import useSWR from "swr";
 
@@ -24,6 +25,7 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
   const [offset, setOffset] = useState(0);
   const [allMetadata, setAllMetadata] = useState<GotchiMetadata[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null);
 
   // Filters
   const [selectedRarity, setSelectedRarity] = useState<string>("");
@@ -211,6 +213,22 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
     }
   };
 
+  const handleCardClick = (metadata: GotchiMetadata) => {
+    setSelectedTokenId(metadata.token_id);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedTokenId(null);
+  };
+
+  const handleNavigateDetail = (tokenId: number) => {
+    setSelectedTokenId(tokenId);
+  };
+
+  const selectedMetadata = selectedTokenId !== null
+    ? allMetadata.find(m => m.token_id === selectedTokenId)
+    : null;
+
   return (
     <div className="bg-[#c0c0c0] h-full flex flex-col">
       <div className="flex gap-4 p-4 flex-1 overflow-hidden">
@@ -354,7 +372,7 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {allMetadata.map((metadata) => (
-                <GotchiCard key={metadata.id} metadata={metadata} />
+                <GotchiCard key={metadata.id} metadata={metadata} onClick={handleCardClick} />
               ))}
             </div>
           )}
@@ -383,6 +401,15 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
         </div>
       </div>
       </div>
+
+      {selectedMetadata && (
+        <GotchiDetailView
+          metadata={selectedMetadata}
+          allMetadata={allMetadata}
+          onClose={handleCloseDetail}
+          onNavigate={handleNavigateDetail}
+        />
+      )}
     </div>
   );
 });
