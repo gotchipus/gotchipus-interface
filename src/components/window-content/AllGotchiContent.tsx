@@ -6,7 +6,7 @@ import { Win98Loading } from "@/components/ui/win98-loading";
 import { Win98Select } from "@/components/ui/win98-select";
 import { Win98Checkbox } from "@/components/ui/win98-checkbox";
 import GotchiCard from "./all-gotchi/GotchiCard";
-import GotchiDetailView from "./all-gotchi/GotchiDetailView";
+import GotchiDetailView from "./all-gotchi/gotchi-detail-view";
 import { GotchiMetadata } from "@/lib/types";
 import useSWR from "swr";
 
