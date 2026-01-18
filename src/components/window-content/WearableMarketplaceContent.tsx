@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { ethers } from "ethers"
 import { observer } from "mobx-react-lite"
 import { useStores } from "@stores/context"
-import useResponsive from "@/hooks/useResponsive"
+import { useWindowMode } from "@/hooks/useWindowMode"
 import { TOKEN_ID_TO_IMAGE } from "@/components/gotchiSvg/config"
 import { getWearableName, WearableType } from "@/src/utils/wearableMapping"
 import {
@@ -88,7 +88,8 @@ const WearableMarketplaceContent = observer(() => {
   const { t } = useTranslation();
   const { toast } = useToast()
   const { walletStore } = useStores()
-  const isMobile = useResponsive()
+  const { mode: windowMode, width: windowWidth } = useWindowMode()
+  const isMobileMode = windowMode === 'mobile' || (windowWidth !== null && windowWidth <= 640)
 
   const {
     purchaseWearables,
@@ -228,25 +229,25 @@ const WearableMarketplaceContent = observer(() => {
   };
 
   return (
-    <div className={`bg-[#c0c0c0] min-h-screen pb-24 ${isMobile ? 'p-2' : 'p-4'}`}>
+    <div className={`bg-[#c0c0c0] min-h-screen pb-24 ${isMobileMode ? 'p-2' : 'p-4'}`}>
       {/* Sticky Header */}
-      <div className={`sticky top-0 z-30 bg-[#000080] text-white font-bold mb-4 ${isMobile ? 'p-3' : 'p-4'} shadow-lg`}>
+      <div className={`sticky top-0 z-30 bg-[#000080] text-white font-bold mb-4 ${isMobileMode ? 'p-3' : 'p-4'} shadow-lg`}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className={isMobile ? 'text-lg' : 'text-2xl'}>Wearable Marketplace</h1>
-            <p className={`font-normal ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            <h1 className={isMobileMode ? 'text-lg' : 'text-2xl'}>Wearable Marketplace</h1>
+            <p className={`font-normal ${isMobileMode ? 'text-xs' : 'text-sm'}`}>
               Browse and purchase exclusive wearables for your GOTCHIs
             </p>
           </div>
           <button
             onClick={() => setShowCart(true)}
             className={`relative border-2 border-white bg-[#000060] hover:bg-[#000040] font-bold transition-all
-              ${isMobile ? 'px-3 py-2' : 'px-4 py-2'}`}
+              ${isMobileMode ? 'px-3 py-2' : 'px-4 py-2'}`}
           >
             <Image src="/icons/marketplace.png" alt="Cart" width={24} height={24} />
             {cart.length > 0 && (
               <span className={`absolute -top-2 -right-2 bg-red-600 text-white rounded-full
-                ${isMobile ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} flex items-center justify-center animate-pulse`}>
+                ${isMobileMode ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} flex items-center justify-center animate-pulse`}>
                 {getTotalItems()}
               </span>
             )}
@@ -254,7 +255,7 @@ const WearableMarketplaceContent = observer(() => {
         </div>
       </div>
 
-      <div className={`flex gap-4 ${isMobile ? 'flex-col gap-3' : ''}`}>
+      <div className={`flex gap-4 ${isMobileMode ? 'flex-col gap-3' : ''}`}>
         <FilterSidebar
           selectedCategory={selectedCategory}
           selectedRarity={selectedRarity}
@@ -266,16 +267,16 @@ const WearableMarketplaceContent = observer(() => {
 
         <div className="flex-1">
           {filteredItems.length === 0 ? (
-            <div className={`text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] ${isMobile ? 'py-8' : 'py-16'}`}>
-              <p className={`font-bold text-[#808080] ${isMobile ? 'text-base' : 'text-lg'}`}>
+            <div className={`text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] ${isMobileMode ? 'py-8' : 'py-16'}`}>
+              <p className={`font-bold text-[#808080] ${isMobileMode ? 'text-base' : 'text-lg'}`}>
                 No items found matching your filters
               </p>
-              <p className={`text-[#808080] mt-2 ${isMobile ? 'text-sm' : ''}`}>
+              <p className={`text-[#808080] mt-2 ${isMobileMode ? 'text-sm' : ''}`}>
                 Try adjusting your filter settings
               </p>
             </div>
           ) : (
-            <div className={`grid gap-4 ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+            <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
               {filteredItems.map((item) => (
                 <EquipCard
                   key={item.id}
@@ -289,7 +290,7 @@ const WearableMarketplaceContent = observer(() => {
           )}
 
           {filteredItems.length > 0 && (
-            <div className={`mt-6 text-center border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-3 text-xs' : 'p-4 text-sm'}`}>
+            <div className={`mt-6 text-center border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobileMode ? 'p-3 text-xs' : 'p-4 text-sm'}`}>
               <p className="mb-2">
                 These wearables can be used to customize your GOTCHIs in the game.
               </p>
@@ -309,14 +310,14 @@ const WearableMarketplaceContent = observer(() => {
 
       {cart.length > 0 && (
         <div className={`fixed bottom-0 left-0 right-0 z-40 bg-[#d4d0c8] border-t-4 border-[#808080] 
-          shadow-[0_-4px_12px_rgba(0,0,0,0.3)] ${isMobile ? 'px-2 py-2' : 'px-6 py-3'}`}>
-          <div className={`max-w-7xl mx-auto flex items-center justify-between gap-4 ${isMobile ? 'flex-col' : ''}`}>
-            <div className={`flex items-center gap-4 ${isMobile ? 'w-full justify-between' : ''}`}>
+          shadow-[0_-4px_12px_rgba(0,0,0,0.3)] ${isMobileMode ? 'px-2 py-2' : 'px-6 py-3'}`}>
+          <div className={`max-w-7xl mx-auto flex items-center justify-between gap-4 ${isMobileMode ? 'flex-col' : ''}`}>
+            <div className={`flex items-center gap-4 ${isMobileMode ? 'w-full justify-between' : ''}`}>
               <button
                 onClick={() => setShowCart(true)}
                 className={`flex items-center gap-2 border-2 border-[#808080] shadow-win98-outer bg-[#c0c0c0] 
                   hover:bg-[#b0b0b0] active:shadow-win98-inner font-bold transition-all
-                  ${isMobile ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'}`}
+                  ${isMobileMode ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'}`}
               >
                 <Image src="/icons/marketplace.png" alt="Cart" width={20} height={20} />
                 <span>View Cart</span>
@@ -325,23 +326,23 @@ const WearableMarketplaceContent = observer(() => {
                 </span>
               </button>
               
-              <div className={`flex items-center gap-2 ${isMobile ? 'flex-col items-start' : ''}`}>
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-[#808080]`}>
+              <div className={`flex items-center gap-2 ${isMobileMode ? 'flex-col items-start' : ''}`}>
+                <div className={`${isMobileMode ? 'text-xs' : 'text-sm'} text-[#808080]`}>
                   <span className="font-bold">{getTotalItems()}</span> item{getTotalItems() !== 1 ? 's' : ''} in cart
                 </div>
-                <div className={`font-bold text-[#000080] ${isMobile ? 'text-base' : 'text-xl'}`}>
+                <div className={`font-bold text-[#000080] ${isMobileMode ? 'text-base' : 'text-xl'}`}>
                   {getTotalPrice().toFixed(4)} PHRS
                 </div>
               </div>
             </div>
 
-            <div className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}>
+            <div className={`flex items-center gap-2 ${isMobileMode ? 'w-full' : ''}`}>
               <button
                 onClick={clearCart}
                 disabled={isPurchasing}
                 className={`border-2 border-[#808080] shadow-win98-outer bg-[#c0c0c0] font-bold
                   hover:bg-[#b0b0b0] active:shadow-win98-inner disabled:opacity-50 disabled:cursor-not-allowed
-                  ${isMobile ? 'px-3 py-1.5 text-xs flex-1' : 'px-4 py-2 text-sm'}`}
+                  ${isMobileMode ? 'px-3 py-1.5 text-xs flex-1' : 'px-4 py-2 text-sm'}`}
               >
                 Clear
               </button>
@@ -351,7 +352,7 @@ const WearableMarketplaceContent = observer(() => {
                   disabled={isPurchasing || cart.length === 0}
                   className={`border-2 border-[#808080] shadow-win98-outer bg-[#008000] text-white font-bold
                     hover:bg-[#006000] active:shadow-win98-inner disabled:opacity-50 disabled:cursor-not-allowed
-                    transition-all ${isMobile ? 'px-4 py-2 text-sm flex-1' : 'px-6 py-2 text-base'}`}
+                    transition-all ${isMobileMode ? 'px-4 py-2 text-sm flex-1' : 'px-6 py-2 text-base'}`}
                 >
                   {isPurchasing ? (
                     <Win98Loading className="w-full" text="Processing..." />
@@ -361,11 +362,11 @@ const WearableMarketplaceContent = observer(() => {
                 </button>
               ) : (
                 <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] 
-                  ${isMobile ? 'flex-1' : ''}`}>
+                  ${isMobileMode ? 'flex-1' : ''}`}>
                   <button
                     className={`w-full border-2 border-[#808080] shadow-win98-outer bg-[#000080] text-white font-bold
                       hover:bg-[#000060] active:shadow-win98-inner
-                      ${isMobile ? 'px-4 py-2 text-xs' : 'px-6 py-2 text-sm'}`}
+                      ${isMobileMode ? 'px-4 py-2 text-xs' : 'px-6 py-2 text-sm'}`}
                     onClick={() => {
                       toast({
                         title: "Connect Wallet",

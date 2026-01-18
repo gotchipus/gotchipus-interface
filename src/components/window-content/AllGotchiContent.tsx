@@ -9,6 +9,7 @@ import GotchiCard from "./all-gotchi/GotchiCard";
 import GotchiDetailView from "./all-gotchi/gotchi-detail-view";
 import { GotchiMetadata } from "@/lib/types";
 import useSWR from "swr";
+import { useWindowMode, getGridColumns } from "@/hooks/useWindowMode";
 
 interface AllGotchiContentProps {
   isMobile?: boolean;
@@ -26,6 +27,9 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
   const [allMetadata, setAllMetadata] = useState<GotchiMetadata[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null);
+
+  const { mode: windowMode, width: windowWidth } = useWindowMode()
+  const gridCols = Math.min(getGridColumns(windowWidth), 5) // Max 5 columns for all-gotchi grid
 
   // Filters
   const [selectedRarity, setSelectedRarity] = useState<string>("");
@@ -370,7 +374,7 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
               <p className="text-[#808080] text-sm">Try adjusting your search or filters</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}>
               {allMetadata.map((metadata) => (
                 <GotchiCard key={metadata.id} metadata={metadata} onClick={handleCardClick} />
               ))}

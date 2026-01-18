@@ -17,7 +17,7 @@ import { checkAndCompleteTask } from "@/src/utils/taskUtils";
 import useSWR from 'swr';
 import WalletConnectTBA from "./Dashboard/WalletTabContent/WalletConnectTBA";
 import { CustomConnectButton } from "@/components/footer/CustomConnectButton"
-import useResponsive from "@/hooks/useResponsive"
+import { useWindowMode, getGridColumns } from "@/hooks/useWindowMode"
 import { dispatchWindowOpenEvent } from "@/lib/windowEvents"
 
 interface ListApiData {
@@ -75,7 +75,9 @@ const DashboardContent = observer(() => {
   const { walletStore, wearableStore } = useStores()
   const walletAddress = walletStore.address;
   const { toast } = useToast()
-  const isMobile = useResponsive()
+  const { mode: windowMode, width: windowWidth } = useWindowMode()
+  const isMobileMode = windowMode === 'mobile' || (windowWidth !== null && windowWidth <= 640)
+  const gridCols = Math.min(getGridColumns(windowWidth), 6) // Max 6 columns for gotchi grid
 
   const listApiUrl = walletAddress && activeTab === null ? `/api/tokens/gotchipus?owner=${walletAddress}&includeGotchipusInfo=false` : null;
 
@@ -429,13 +431,13 @@ const DashboardContent = observer(() => {
               </div>
             </div>
           </div>
-          <div className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 scrollbar-none ${isMobile ? 'gap-2' : ''}`}>
+          <div className={`grid scrollbar-none ${isMobileMode ? 'gap-2' : 'gap-4'}`} style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}>
             {getCurrentPageItems().map((id: string) => (
               <NftCard
                 key={id}
                 id={id}
                 onSelect={handleTokenSelect}
-                isMobile={isMobile}
+                isMobile={isMobileMode}
               />
             ))}
           </div>
@@ -462,7 +464,7 @@ const DashboardContent = observer(() => {
 
   return (
     <div className="p-4 h-full scrollbar-none">
-      <div className={`flex justify-between items-center mb-4 ${isMobile ? 'mb-3 flex-wrap gap-2' : ''}`}>
+      <div className={`flex justify-between items-center mb-4 ${isMobileMode ? 'mb-3 flex-wrap gap-2' : ''}`}>
         <div className="flex items-center gap-2">
           <button 
             onClick={handleBackToList}
@@ -486,7 +488,7 @@ const DashboardContent = observer(() => {
         </div>
       </div>
 
-      <div className={`flex gap-2 mb-4 ${isMobile ? 'mb-3 flex-wrap' : ''}`}>
+      <div className={`flex gap-2 mb-4 ${isMobileMode ? 'mb-3 flex-wrap' : ''}`}>
         <button 
           onClick={() => setActiveTab("dashboard")}
           className={`border-2 border-[#808080] shadow-win98-outer rounded-none font-bold text-xs hover:bg-[#c0c0c0] active:shadow-win98-inner flex items-center justify-center ${
@@ -537,7 +539,7 @@ const DashboardContent = observer(() => {
           handleRename={handleRename} 
           handlePet={handlePet} 
           isPetWriting={isPetWriting}
-          isMobile={isMobile}
+          isMobile={isMobileMode}
           petSuccessTimestamp={petSuccessTimestamp}
           wearableTypeInfos={wearableTypeInfos}
           isLoadingWearables={isLoadingWearables}
@@ -551,7 +553,7 @@ const DashboardContent = observer(() => {
           selectedEquipSlot={selectedEquipSlot} 
           handleEquipSlotClick={handleEquipSlotClick} 
           handleEquipWearable={handleEquipWearable} 
-          isMobile={isMobile}
+          isMobile={isMobileMode}
           wearableTypeInfos={wearableTypeInfos}
           isLoadingWearables={isLoadingWearables}
           wearablesError={wearablesError}
@@ -559,7 +561,7 @@ const DashboardContent = observer(() => {
       )}
       
       {activeTab === "stats" && (
-        <StatsTab tokenInfo={tokenInfoMap} tokenId={selectedTokenId} isMobile={isMobile} />
+        <StatsTab tokenInfo={tokenInfoMap} tokenId={selectedTokenId} isMobile={isMobileMode} />
       )}
       
       {activeTab === "wallet" && (
@@ -568,7 +570,7 @@ const DashboardContent = observer(() => {
           tbaAddress={tbaAddress} 
           activeWalletTab={activeWalletTab} 
           setActiveWalletTab={setActiveWalletTab} 
-          isMobile={isMobile}
+          isMobile={isMobileMode}
         />
       )}
 
@@ -578,7 +580,7 @@ const DashboardContent = observer(() => {
           wearableBalances={wearableBalances}
           selectedType={selectedType}
           selectedTokenId={selectedTokenId}
-          isMobile={isMobile}
+          isMobile={isMobileMode}
         />
       )}
 
@@ -605,7 +607,7 @@ const DashboardContent = observer(() => {
               </button>
             </div>
             <div className="p-4">
-              <WalletConnectTBA tbaAddress={tbaAddress} tokenId={selectedTokenId} handleWalletConnected={handleWalletConnected} isMobile={isMobile} />
+              <WalletConnectTBA tbaAddress={tbaAddress} tokenId={selectedTokenId} handleWalletConnected={handleWalletConnected} isMobile={isMobileMode} />
             </div>
           </div>
         </div>

@@ -95,3 +95,21 @@ export const Tokens: Token[] = [
   { name: "Wrapped BTC", symbol: "WBTC", icon: "/tokens/wbtc.png", contract: "0x0c64F03EEa5c30946D5c55B4b532D08ad74638a4", balance: "0", decimals: 8, popular: false },
   { name: "Wrapped PHRS", symbol: "WPHRS", icon: "/tokens/pharos.png", contract: "0x838800b758277CC111B2d48Ab01e5E164f8E9471", balance: "0", decimals: 8, popular: false },
 ];
+
+// Window content responsive breakpoints
+export const WINDOW_BREAKPOINTS = {
+  MOBILE: 640,  // When window width <= 640px, use mobile layout
+  MAX_CONTENT_WIDTH: 1200  // Maximum content width, center content when window is larger
+};
+
+// Maximum content width for different window types
+export const WINDOW_MAX_CONTENT_WIDTH: Record<string, number> = {
+  "pharos": 1200,
+  "dashboard": 1200,
+  "wearable": 1200,
+  "ai": 1000,
+  "mint": 800,
+  "daily-task-hall": 1000,
+  "all-gotchi": 1200,
+  "default": 1200
+};

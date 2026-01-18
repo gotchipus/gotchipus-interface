@@ -46,6 +46,19 @@ export default function CatchAllPage() {
     setOpenWindows((prev) => prev.map((w) => (w.id === windowId ? { ...w, position } : w)))
   }
 
+  const handleResizeWindow = (windowId: string, size: { width: number; height: number }, position?: { x: number; y: number }) => {
+    setOpenWindows((prev) => prev.map((w) => {
+      if (w.id === windowId) {
+        return {
+          ...w,
+          size,
+          ...(position && { position })
+        }
+      }
+      return w
+    }))
+  }
+
   const handleActivateWindow = useCallback((windowId: string) => {
     let newZIndex = zIndexCounter;
     if (windowId === "wallet-connect-tba") {
@@ -263,6 +276,7 @@ export default function CatchAllPage() {
               onMinimize={() => handleMinimizeWindow(window.id)}
               onActivate={() => handleActivateWindow(window.id)}
               onMove={(position) => handleMoveWindow(window.id, position)}
+              onResize={(size, position) => handleResizeWindow(window.id, size, position)}
               isMobile={isMobile}
             />
           ),

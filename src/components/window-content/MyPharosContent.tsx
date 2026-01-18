@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
 import { Win98Loading } from "@/components/ui/win98-loading";
 import useSWR from 'swr';
-import useResponsive from "@/hooks/useResponsive";
+import { useWindowMode, getGridColumns } from "@/hooks/useWindowMode";
 import { dispatchWindowOpenEvent } from "@/lib/windowEvents";
 import { getERC6551AccountSalt, getTraitsIndex } from "@/src/utils/contractHepler"
 import { CHAIN_ID, ZERO_ADDRESS } from "@/lib/constant"
@@ -46,8 +46,9 @@ const MyPharosContent = observer(() => {
   const [tokenBoundAccount, setTokenBoundAccount] = useState(ZERO_ADDRESS)
   const [dna, setDna] = useState("0")
   const { walletStore, storyStore } = useStores();
-  const isMobile = useResponsive()
-  
+  const { mode: windowMode, width: windowWidth } = useWindowMode()
+  const gridCols = getGridColumns(windowWidth)
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [storyCache, setStoryCache] = useState<Record<string, { name: string; story: string }>>({});
@@ -383,7 +384,7 @@ const MyPharosContent = observer(() => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 scrollbar-none">
+          <div className="grid gap-4 scrollbar-none" style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}>
             {ids && ids.length > 0 && (
               getCurrentPageItems().map((id, index) => (
                 <motion.div
