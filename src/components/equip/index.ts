@@ -4,3 +4,4 @@ export * from './EquipDetailModal';
 export * from './ShoppingCart';
 export * from './CustomDropdown';
 export * from './FilterSidebar';
+export * from './MobileFilterMenu';

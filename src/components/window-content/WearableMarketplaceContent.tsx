@@ -18,7 +18,8 @@ import {
   EquipCard,
   EquipDetailModal,
   ShoppingCart,
-  FilterSidebar
+  FilterSidebar,
+  MobileFilterMenu
 } from "@/components/equip"
 import { Win98Loading } from "@/components/ui/win98-loading"
 
@@ -105,6 +106,7 @@ const WearableMarketplaceContent = observer(() => {
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<WearableItem | null>(null);
   const [showCart, setShowCart] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
@@ -112,6 +114,12 @@ const WearableMarketplaceContent = observer(() => {
       setIsPurchasing(true);
     }
   }, [isPending, isConfirming]);
+
+  useEffect(() => {
+    if (!isMobileMode && showMobileFilters) {
+      setShowMobileFilters(false);
+    }
+  }, [isMobileMode, showMobileFilters]);
 
   const addToCart = (item: WearableItem) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -229,76 +237,100 @@ const WearableMarketplaceContent = observer(() => {
   };
 
   return (
-    <div className={`bg-[#c0c0c0] min-h-screen pb-24 ${isMobileMode ? 'p-2' : 'p-4'}`}>
-      {/* Sticky Header */}
-      <div className={`sticky top-0 z-30 bg-[#000080] text-white font-bold mb-4 ${isMobileMode ? 'p-3' : 'p-4'} shadow-lg`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className={isMobileMode ? 'text-lg' : 'text-2xl'}>Wearable Marketplace</h1>
-            <p className={`font-normal ${isMobileMode ? 'text-xs' : 'text-sm'}`}>
-              Browse and purchase exclusive wearables for your GOTCHIs
-            </p>
+    <div className="bg-[#c0c0c0] h-full flex flex-col relative">
+      {isMobileMode && (
+        <div className="px-2 pt-4 pb-0">
+          <div className="win98-group-box">
+            <div className="win98-group-title text-xs font-bold text-[#000080]">
+              🛒 Marketplace
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="text-[#808080] text-xs mt-1">
+                Browse and purchase exclusive wearables
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="relative w-full border-2 border-[#808080] shadow-win98-outer bg-[#c0c0c0] hover:bg-[#b0b0b0] active:shadow-win98-inner font-bold transition-all flex items-center gap-1.5 justify-center py-2 text-sm"
+                >
+                  <span>🔍</span>
+                  <span>Filters</span>
+                  {(selectedCategory !== 'all' || selectedRarity !== 'all') && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={() => setShowCart(true)}
-            className={`relative border-2 border-white bg-[#000060] hover:bg-[#000040] font-bold transition-all
-              ${isMobileMode ? 'px-3 py-2' : 'px-4 py-2'}`}
-          >
-            <Image src="/icons/marketplace.png" alt="Cart" width={24} height={24} />
-            {cart.length > 0 && (
-              <span className={`absolute -top-2 -right-2 bg-red-600 text-white rounded-full
-                ${isMobileMode ? 'w-5 h-5 text-xs' : 'w-6 h-6 text-sm'} flex items-center justify-center animate-pulse`}>
-                {getTotalItems()}
-              </span>
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
-      <div className={`flex gap-4 ${isMobileMode ? 'flex-col gap-3' : ''}`}>
-        <FilterSidebar
-          selectedCategory={selectedCategory}
-          selectedRarity={selectedRarity}
-          resultCount={filteredItems.length}
-          onCategoryChange={setSelectedCategory}
-          onRarityChange={setSelectedRarity}
-          onResetFilters={handleResetFilters}
-        />
+      <div className={`flex gap-4 flex-1 overflow-hidden ${isMobileMode ? 'flex-col' : 'p-4'}`}>
+        {!isMobileMode && (
+          <div className="w-72 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-none">
+            <FilterSidebar
+              selectedCategory={selectedCategory}
+              selectedRarity={selectedRarity}
+              resultCount={filteredItems.length}
+              onCategoryChange={setSelectedCategory}
+              onRarityChange={setSelectedRarity}
+              onResetFilters={handleResetFilters}
+            />
+          </div>
+        )}
 
-        <div className="flex-1">
-          {filteredItems.length === 0 ? (
-            <div className={`text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] ${isMobileMode ? 'py-8' : 'py-16'}`}>
-              <p className={`font-bold text-[#808080] ${isMobileMode ? 'text-base' : 'text-lg'}`}>
-                No items found matching your filters
-              </p>
-              <p className={`text-[#808080] mt-2 ${isMobileMode ? 'text-sm' : ''}`}>
-                Try adjusting your filter settings
-              </p>
-            </div>
-          ) : (
-            <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
-              {filteredItems.map((item) => (
-                <EquipCard
-                  key={item.id}
-                  item={item}
-                  isInCart={cart.some(cartItem => cartItem.id === item.id)}
-                  onItemClick={setSelectedItem}
-                  onAddToCart={addToCart}
-                />
-              ))}
-            </div>
-          )}
+        <div className={`flex-1 bg-[#c0c0c0] overflow-auto scrollbar-none ${isMobileMode ? '' : ''}`}>
+          <div className={isMobileMode ? 'p-2' : 'pr-4'}>
+            {!isMobileMode && (
+              <div className="mb-4 mt-2">
+                <div className="win98-group-box">
+                  <div className="win98-group-title text-xs font-bold text-[#000080]">
+                    🛒 Marketplace
+                  </div>
 
-          {filteredItems.length > 0 && (
-            <div className={`mt-6 text-center border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobileMode ? 'p-3 text-xs' : 'p-4 text-sm'}`}>
-              <p className="mb-2">
-                These wearables can be used to customize your GOTCHIs in the game.
-              </p>
-              <p className="text-[#000080] font-bold">
-                All NFTs are unique and stored on the blockchain!
-              </p>
-            </div>
-          )}
+                  <div className="text-[#808080] text-sm mt-1">
+                    Browse and purchase exclusive wearables for your GOTCHIs
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {filteredItems.length === 0 ? (
+              <div className={`text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] ${isMobileMode ? 'py-8' : 'py-16'}`}>
+                <p className={`font-bold text-[#808080] ${isMobileMode ? 'text-base' : 'text-lg'}`}>
+                  No items found matching your filters
+                </p>
+                <p className={`text-[#808080] mt-2 ${isMobileMode ? 'text-sm' : ''}`}>
+                  Try adjusting your filter settings
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+                  {filteredItems.map((item) => (
+                    <EquipCard
+                      key={item.id}
+                      item={item}
+                      isInCart={cart.some(cartItem => cartItem.id === item.id)}
+                      onItemClick={setSelectedItem}
+                      onAddToCart={addToCart}
+                    />
+                  ))}
+                </div>
+
+                <div className={`mt-6 text-center border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobileMode ? 'p-3 text-xs' : 'p-4 text-sm'}`}>
+                  <p className="mb-2">
+                    These wearables can be used to customize your GOTCHIs in the game.
+                  </p>
+                  <p className="text-[#000080] font-bold">
+                    All NFTs are unique and stored on the blockchain!
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -383,6 +415,17 @@ const WearableMarketplaceContent = observer(() => {
           </div>
         </div>
       )}
+
+      <MobileFilterMenu
+        isOpen={showMobileFilters}
+        selectedCategory={selectedCategory}
+        selectedRarity={selectedRarity}
+        resultCount={filteredItems.length}
+        onCategoryChange={setSelectedCategory}
+        onRarityChange={setSelectedRarity}
+        onResetFilters={handleResetFilters}
+        onClose={() => setShowMobileFilters(false)}
+      />
 
       {showCart && (
         <ShoppingCart

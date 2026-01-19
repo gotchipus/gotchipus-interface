@@ -7,6 +7,7 @@ import { Win98Select } from "@/components/ui/win98-select";
 import { Win98Checkbox } from "@/components/ui/win98-checkbox";
 import GotchiCard from "./all-gotchi/GotchiCard";
 import GotchiDetailView from "./all-gotchi/gotchi-detail-view";
+import { MobileFilterMenu } from "./all-gotchi/MobileFilterMenu";
 import { GotchiMetadata } from "@/lib/types";
 import useSWR from "swr";
 import { useWindowMode, getGridColumns } from "@/hooks/useWindowMode";
@@ -29,9 +30,11 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null);
 
   const { mode: windowMode, width: windowWidth } = useWindowMode()
+  const isMobileMode = windowMode === 'mobile' || (windowWidth !== null && windowWidth <= 640)
   const gridCols = Math.min(getGridColumns(windowWidth), 5) // Max 5 columns for all-gotchi grid
 
   // Filters
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedRarity, setSelectedRarity] = useState<string>("");
   const [levelRange, setLevelRange] = useState<{ min: string; max: string }>({ min: "", max: "" });
   const [selectedCommunityFeatures, setSelectedCommunityFeatures] = useState<Set<string>>(new Set());
@@ -63,6 +66,12 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
       keepPreviousData: true,
     }
   );
+
+  useEffect(() => {
+    if (!isMobileMode && showMobileFilters) {
+      setShowMobileFilters(false);
+    }
+  }, [isMobileMode, showMobileFilters]);
 
   useEffect(() => {
     const currentFilters = `${selectedRarity}-${levelRange.min}-${levelRange.max}-${Array.from(selectedCommunityFeatures).join(',')}-${sortBy}`;
@@ -211,7 +220,7 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
     setSelectedCommunityFeatures(newFeatures);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch();
     }
@@ -234,16 +243,48 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
     : null;
 
   return (
-    <div className="bg-[#c0c0c0] h-full flex flex-col">
-      <div className="flex gap-4 p-4 flex-1 overflow-hidden">
-        <div className="w-64 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-none">
+    <div className="bg-[#c0c0c0] h-full flex flex-col relative">
+      {/* Mobile Header */}
+      {isMobileMode && (
+        <div className="px-2 pt-4 pb-0">
+          <div className="win98-group-box">
+            <div className="win98-group-title text-xs font-bold text-[#000080]">
+              🎮 All Gotchipus
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="text-[#808080] text-xs mt-1">
+                Browse all 20,000 Gotchipus NFTs
+              </div>
+
+              {/* Mobile Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="relative w-full border-2 border-[#808080] shadow-win98-outer bg-[#c0c0c0] hover:bg-[#b0b0b0] active:shadow-win98-inner font-bold transition-all flex items-center gap-1.5 justify-center py-2 text-sm"
+                >
+                  <span>🔍</span>
+                  <span>Filters & Search</span>
+                  {(selectedRarity !== '' || levelRange.min !== '' || levelRange.max !== '' || selectedCommunityFeatures.size > 0 || searchId !== '') && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex gap-4 flex-1 overflow-hidden ${isMobileMode ? 'flex-col' : 'p-4'}`}>
+        {!isMobileMode && (
+          <div className="w-64 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-none">
         <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-outer p-3">
           <label className="text-xs font-bold block mb-2 text-[#000080]">Search by ID</label>
           <input
             type="text"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Enter Token ID (0-19999)"
             disabled={isSearching}
             className="w-full bg-white border-2 border-[#808080] shadow-win98-inner px-2 py-2 text-xs outline-none disabled:opacity-50"
@@ -346,18 +387,21 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
             Showing {allMetadata.length} of {TOTAL_NFTS.toLocaleString()}
           </div>
         </div>
-      </div>
+          </div>
+        )}
 
-      <div ref={scrollContainerRef} className="flex-1 bg-[#c0c0c0] overflow-auto scrollbar-none">
-        <div className="p-4">
-          <div className="mb-2 px-1">
-            <div className="win98-group-box bg-[#c0c0c0]">
-              <div className="win98-group-title text-xs font-bold text-[#000080]">All Gotchipus Collection</div>
-              <div className="text-xs text-[#808080] mt-1">
-                Browse all {TOTAL_NFTS.toLocaleString()} Gotchipus NFTs
+      <div ref={scrollContainerRef} className={`flex-1 bg-[#c0c0c0] overflow-auto scrollbar-none ${isMobileMode ? '' : ''}`}>
+        <div className={isMobileMode ? 'p-2' : 'p-4'}>
+          {!isMobileMode && (
+            <div className="mb-2 px-1 mt-2">
+              <div className="win98-group-box">
+                <div className="win98-group-title text-xs font-bold text-[#000080]">All Gotchipus Collection</div>
+                <div className="text-xs text-[#808080] mt-1">
+                  Browse all {TOTAL_NFTS.toLocaleString()} Gotchipus NFTs
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {error ? (
             <div className="text-center border-2 border-[#808080] shadow-win98-inner bg-[#d4d0c8] py-16">
@@ -414,6 +458,27 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
           onNavigate={handleNavigateDetail}
         />
       )}
+
+      {/* Mobile Filter Menu */}
+      <MobileFilterMenu
+        isOpen={showMobileFilters}
+        searchId={searchId}
+        isSearching={isSearching}
+        selectedRarity={selectedRarity}
+        levelRange={levelRange}
+        selectedCommunityFeatures={selectedCommunityFeatures}
+        sortBy={sortBy}
+        onSearchIdChange={setSearchId}
+        onSearch={handleSearch}
+        onClearSearch={handleClearSearch}
+        onRarityChange={setSelectedRarity}
+        onLevelRangeChange={setLevelRange}
+        onToggleCommunityFeature={toggleCommunityFeature}
+        onSortByChange={setSortBy}
+        onResetFilters={handleResetFilters}
+        onClose={() => setShowMobileFilters(false)}
+        resultCount={allMetadata.length}
+      />
     </div>
   );
 });

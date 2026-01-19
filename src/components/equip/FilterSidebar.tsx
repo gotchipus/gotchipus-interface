@@ -41,7 +41,7 @@ export const FilterSidebar = ({
   const isMobile = useResponsive();
 
   return (
-    <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-3' : 'w-72 p-4 h-fit sticky top-4'}`}>
+    <div className={`border-2 border-[#808080] shadow-win98-outer bg-[#d4d0c8] ${isMobile ? 'p-3' : 'p-4'}`}>
       <div className="mb-4 pb-3 border-b-2 border-[#808080]">
         <h2 className={`font-bold text-[#000080] ${isMobile ? 'text-base' : 'text-lg'}`}>
           🔍 Filters
