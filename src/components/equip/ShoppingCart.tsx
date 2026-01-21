@@ -38,13 +38,13 @@ export const ShoppingCart = ({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-30 z-40"
+        className="absolute inset-0 bg-black bg-opacity-30 z-40"
         onClick={onClose}
       />
 
       <div
-        className={`fixed bg-[#c0c0c0] border-4 border-[#dfdfdf] border-t-white border-l-white border-r-[#808080] border-b-[#808080]
-          shadow-2xl z-50 flex flex-col ${isMobile ? 'inset-4' : 'top-20 right-8 bottom-8 w-96'}`}
+        className={`absolute bg-[#c0c0c0] border-4 border-[#dfdfdf] border-t-white border-l-white border-r-[#808080] border-b-[#808080]
+          shadow-2xl z-50 flex flex-col ${isMobile ? 'inset-4' : 'top-4 right-4 bottom-4 w-96'}`}
       >
         <div className="bg-[#000080] text-white font-bold flex items-center justify-between px-2 py-1">
           <div className="flex items-center gap-2">
