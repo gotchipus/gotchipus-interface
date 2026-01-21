@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     // 转发到后端 /task/create
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/task/create`,
+      `${getBackendUrl()}/task/create`,
       {
         method: 'POST',
         headers: {

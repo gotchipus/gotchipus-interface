@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
@@ -6,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/task/get_completed_task`, {
+    const response = await fetch(`${getBackendUrl()}/task/get_completed_task`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

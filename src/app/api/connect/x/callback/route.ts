@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as jose from 'jose';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
       "x_id": xUserId
     };
 
-    const upsertResponse = await fetch(`${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/account/upsert_x`, {
+    const upsertResponse = await fetch(`${getBackendUrl()}/account/upsert_x`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const upstream = `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/ollama/call_intent`;
+  const upstream = `${getBackendUrl()}/ollama/call_intent`;
 
   const originResp = await fetch(upstream, {
     method: 'POST',

@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
 export async function GET(_req: NextRequest) {
-    const upstream = `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/ollama/stream`;
+    const upstream = `${getBackendUrl()}/ollama/stream`;
   
     const originResp = await fetch(upstream, { cache: 'no-store' });
     if (!originResp.body) {

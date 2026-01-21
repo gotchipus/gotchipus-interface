@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
-
-const getBackendUrl = () => {
-  const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
-  return isDevelopment
-    ? process.env.NEXT_PUBLIC_DEVELOPMENT_URL
-    : process.env.NEXT_PUBLIC_PRODUCTION_URL;
-};
 
 export async function GET(request: NextRequest) {
   try {

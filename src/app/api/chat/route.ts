@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/api-config';
 
 export const runtime = 'edge';
 
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const getUserIntent = `${process.env.NEXT_PUBLIC_DEVELOPMENT_URL}/ollama/get_user_intent`;
+    const getUserIntent = `${getBackendUrl()}/ollama/get_user_intent`;
 
     const getUserIntentResp = await fetch(getUserIntent, {
       method: 'POST',
