@@ -56,6 +56,10 @@ export const WINDOW_SIZE = {
   "all-gotchi": {
     "width": 1200,
     "height": 800
+  },
+  "hook-rank": {
+    "width": 950,
+    "height": 800
   }
 };
 
@@ -73,7 +77,8 @@ export const WINDOW_BG_COLOR = {
   "wearable": "#ffddee",
   "daily-task-hall": "#ffddee",
   "wallet-connect-tba": "#ffddee",
-  "all-gotchi": "#ffddee"
+  "all-gotchi": "#ffddee",
+  "hook-rank": "#ffddee"
 };
 
 export const CHAIN_ID = 688689;
@@ -109,5 +114,6 @@ export const WINDOW_MAX_CONTENT_WIDTH: Record<string, number> = {
   "mint": 800,
   "daily-task-hall": 1000,
   "all-gotchi": 1200,
+  "hook-rank": 1200,
   "default": 1200
 };

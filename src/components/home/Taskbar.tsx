@@ -257,13 +257,13 @@ const Taskbar = observer(({
                       <Image src="/github.svg" alt="GitHub" width={16} height={16} className="mr-1" />
                       <span className="text-xs">GitHub</span>
                     </Link>
-                    <Link 
-                      href="https://docs.gotchipus.com" 
+                    <Link
+                      href="https://docs.gotchipus.com"
                       target="_blank"
                       className="px-3 py-2 bg-[#c0c0c0] border border-[#808080] shadow-win98-outer hover:bg-[#d4d0c8] flex items-center justify-center"
                     >
-                      <Image src="/gitbook.svg" alt="GitBook" width={16} height={16} className="mr-1" />
-                      <span className="text-xs">GitBook</span>
+                      <Image src="/mintlify.svg" alt="Mintlify" width={16} height={16} className="mr-1" />
+                      <span className="text-xs">Mintlify</span>
                     </Link>
                   </div>
                 </div>
@@ -379,7 +379,7 @@ const Taskbar = observer(({
             <Image src="/github.svg" alt="GitHub" width={24} height={24} />
           </Link>
           <Link href="https://docs.gotchipus.com" target="_blank">
-            <Image src="/gitbook.svg" alt="GitBook" width={24} height={24} />
+            <Image src="/mintlify.svg" alt="Mintlify" width={24} height={24} />
           </Link>
         </div>
 

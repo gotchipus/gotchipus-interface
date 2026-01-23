@@ -7,6 +7,7 @@ import WearableMarketplaceContent from "@/src/components/window-content/Wearable
 import DailyTaskHallContent from "@/components/window-content/DailyTaskHallContent"
 import AIContent from "@/components/window-content/AIContent"
 import AllGotchiContent from "@/components/window-content/AllGotchiContent"
+import HookRankContent from "@/components/window-content/HookRankContent"
 
 export interface WindowIconConfig {
   id: string
@@ -62,6 +63,12 @@ export const WINDOW_ICONS: WindowIconConfig[] = [
     icon: "/all-gotchi.png",
     enabled: true,
   },
+  {
+    id: "hook-rank",
+    title: "HookRank",
+    icon: "/hook-rank.png",
+    enabled: true,
+  },
 ]
 
 export const getEnabledWindowIcons = (): WindowIconConfig[] => {
@@ -91,6 +98,8 @@ export const getWindowContent = (
       return <AIContent />
     case "all-gotchi":
       return <AllGotchiContent />
+    case "hook-rank":
+      return <HookRankContent />
     default:
       return <div>Unknown window: {windowId}</div>
   }
