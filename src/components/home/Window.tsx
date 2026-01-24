@@ -6,6 +6,7 @@ import Image from "next/image"
 import { X, Minus } from "lucide-react"
 import type { WindowType } from "@/lib/types"
 import { WINDOW_BG_COLOR, WINDOW_BREAKPOINTS, WINDOW_MAX_CONTENT_WIDTH } from "@/lib/constant"
+import ResizeHandleIcon from "@assets/icons/ResizeHandleIcon"
 
 interface WindowProps {
   window: WindowType
@@ -443,9 +444,7 @@ export default function Window({ window, isActive, onClose, onMinimize, onActiva
           }}
         >
           <div className="w-5 h-5 flex items-end justify-end">
-            <svg width="16" height="16" viewBox="0 0 16 16" className="text-[#808080]">
-              <path d="M15 10 L10 15 M15 6 L6 15 M15 2 L2 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <ResizeHandleIcon className="text-[#808080]" />
           </div>
         </div>
       )}

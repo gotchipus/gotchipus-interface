@@ -13,9 +13,9 @@ export default function AboutContent() {
       
       <div className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] p-4">
         <div className="flex items-center space-x-4">
-          <div className="bg-white border border-[#808080] p-2">
+          <div className="bg-white border border-[#808080]">
             <Image 
-              src="/pus.png" 
+              src="/all-gotchi.png" 
               alt="App Icon" 
               width={48} 
               height={48} 

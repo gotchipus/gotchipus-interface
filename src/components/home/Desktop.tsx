@@ -43,12 +43,12 @@ export default function Desktop({ onOpenWindow, isMobile = false, openWindowIds 
 
   return (
     <div className={`top-0 left-0 w-full h-[calc(100%-28px)] p-4 flex flex-col items-start gap-2 relative ${isMobile ? 'p-2' : ''}`}>
-      <div className={`absolute inset-0 left-10 top-36 flex items-center justify-center z-0 pointer-events-none ${isMobile ? 'left-2' : ''}`}>
-        <Image 
-          src="/gotchipus.png" 
-          alt="Gotchipus" 
-          width={isMobile ? 300 : 600} 
-          height={isMobile ? 300 : 600} 
+      <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
+        <Image
+          src="/gotchipus.png"
+          alt="Gotchipus"
+          width={isMobile ? 300 : 600}
+          height={isMobile ? 300 : 600}
           className="object-contain"
           priority
         />

@@ -68,9 +68,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-vt323">
         <GoogleAnalytics />
-        {/* <Script id="disable-context-menu" strategy="afterInteractive">{
+        <Script id="disable-context-menu" strategy="afterInteractive">{
           `document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, { capture: true });`
-        }</Script> */}
+        }</Script>
         <Providers>
           {children}
           <Toaster />

@@ -10,52 +10,52 @@ interface AgentInfo {
 const AGENT_CONFIG: Record<number, AgentInfo> = {
   0: {
     name: "Pool Analyzer",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Analyzing pool data"
   },
   1: {
     name: "General Assistant",
-    image: "/pus.png", 
+    image: "/all-gotchi.png", 
     description: "Processing your request"
   },
   2: {
     name: "Pet Agent",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Pet your Gotchi"
   },
   3: {
     name: "Mint Agent", 
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Mint Pharos NFT"
   },
   4: {
     name: "Summon Agent",
-    image: "/pus.png", 
+    image: "/all-gotchi.png", 
     description: "Summon new Gotchipus"
   },
   5: {
     name: "Wearable Agent",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Managing wearables"
   },
   6: {
     name: "Call Agent",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Making contract calls"
   },
   7: {
     name: "Swap Agent",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Token swapping"
   },
   8: {
     name: "Liquidity Agent",
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Adding liquidity"
   },
   9: {
     name: "Liquidity Agent", 
-    image: "/pus.png",
+    image: "/all-gotchi.png",
     description: "Removing liquidity"
   }
 };

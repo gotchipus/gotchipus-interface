@@ -112,7 +112,7 @@ const AddLiquidityComponent = ({ onSuccess }: AddLiquidityComponentProps) => {
           const data = await response.json();
           const gotchis = data.ids.map((id: string) => ({
             id,
-            image: `/pus.png`
+            image: `/all-gotchi.png`
           }));
           setGotchiList(gotchis);
         }
