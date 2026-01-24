@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Hook, HookCategory, ViewMode, HookFilters } from '@src/types/hook';
 import { hookApi } from '@src/services/hookApi';
 import { HookCard } from '@src/components/hook-marketplace/HookCard';
@@ -10,6 +10,8 @@ import { useWindowMode } from '@/hooks/useWindowMode';
 import { Win98Select } from '@src/components/ui/Win98Select';
 import AddIcon from '@assets/icons/AddIcon';
 import SearchIcon from '@assets/icons/SearchIcon';
+
+const HOOK_REFRESH_INTERVAL = 30000;
 
 const HookRankContent = () => {
   const { mode: windowMode, width: windowWidth } = useWindowMode();
@@ -46,23 +48,35 @@ const HookRankContent = () => {
     }
   }, [isMobileMode, showMobileFilters]);
 
-  useEffect(() => {
-    const loadHooks = async () => {
-      try {
+  const loadHooks = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        setError(null);
-        const data = await hookApi.loadAllHooks();
-        setHooks(data);
-      } catch (err) {
-        console.error('Failed to load hooks:', err);
+      }
+      setError(null);
+      const data = await hookApi.loadAllHooks();
+      setHooks(data);
+    } catch (err) {
+      console.error('Failed to load hooks:', err);
+      if (showLoading) {
         setError('Failed to load hooks. Please try again later.');
-      } finally {
+      }
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    };
-
-    loadHooks();
+    }
   }, []);
+
+  useEffect(() => {
+    loadHooks(true);
+
+    const refreshInterval = setInterval(() => {
+      loadHooks(false);
+    }, HOOK_REFRESH_INTERVAL);
+
+    return () => clearInterval(refreshInterval);
+  }, [loadHooks]);
 
   const categories: { value: HookCategory | 'all'; label: string }[] = [
     { value: 'all', label: 'All Categories' },
@@ -129,8 +143,7 @@ const HookRankContent = () => {
 
   const handleHookSubmitted = async () => {
     try {
-      const data = await hookApi.loadAllHooks();
-      setHooks(data);
+      await loadHooks(false);
       setShowSubmitForm(false);
     } catch (err) {
       console.error('Failed to refresh hooks:', err);

@@ -58,7 +58,7 @@ export const WINDOW_SIZE = {
     "height": 800
   },
   "hook-rank": {
-    "width": 950,
+    "width": 1300,
     "height": 800
   }
 };
