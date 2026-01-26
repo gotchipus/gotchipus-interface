@@ -193,6 +193,46 @@ const MyPharosContent = observer(() => {
     storyStore.setIsFetching(true);
   };
 
+  const extractJsonValue = (text: string, fieldName: string, allowPartial: boolean = false): string | null => {
+    const fieldPattern = new RegExp(`"${fieldName}":\\s*"`);
+    const startMatch = text.match(fieldPattern);
+
+    if (!startMatch || startMatch.index === undefined) {
+      return null;
+    }
+
+    let startIndex = startMatch.index + startMatch[0].length;
+    let endIndex = startIndex;
+    let inEscape = false;
+    let foundEnd = false;
+
+    while (endIndex < text.length) {
+      const char = text[endIndex];
+
+      if (inEscape) {
+        inEscape = false;
+      } else if (char === '\\') {
+        inEscape = true;
+      } else if (char === '"') {
+        foundEnd = true;
+        break;
+      }
+
+      endIndex++;
+    }
+
+    if (foundEnd || allowPartial) {
+      const rawText = text.substring(startIndex, foundEnd ? endIndex : text.length);
+      return rawText
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\')
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t');
+    }
+
+    return null;
+  };
+
   const handlePreviewSwitchInGenesis = async (index: number) => {
     setSelectedPreviewIndex(index);
 
@@ -207,6 +247,8 @@ const MyPharosContent = observer(() => {
     }
 
     storyStore.setIsFetching(true);
+    storyStore.setGotchiName('');
+    storyStore.setGotchiStory('');
 
     try {
       const response = await fetch('/api/story/stream');
@@ -222,8 +264,10 @@ const MyPharosContent = observer(() => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let streamBuffer = '';
+      let jsonContent = '';
       let nameExtracted = '';
       let storyExtracted = '';
+      let lastStoryLength = 0;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -235,33 +279,52 @@ const MyPharosContent = observer(() => {
         const chunk = decoder.decode(value, { stream: true });
         streamBuffer += chunk;
 
+        const lines = streamBuffer.split('\n');
+        streamBuffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataContent = line.substring(6);
+            jsonContent += dataContent;
+          }
+        }
+
         if (!nameExtracted) {
-          const nameMatch = streamBuffer.match(/"name":\s*"([^"]+)"/);
-          if (nameMatch) {
-            nameExtracted = nameMatch[1];
+          const extracted = extractJsonValue(jsonContent, 'name', false);
+          if (extracted) {
+            nameExtracted = extracted;
             storyStore.setGotchiName(nameExtracted);
           }
         }
 
-        const storyMatch = streamBuffer.match(/"story":\s*"([^"]+)"/);
-        if (storyMatch) {
-          storyExtracted = storyMatch[1];
+        const extracted = extractJsonValue(jsonContent, 'story', true);
+        if (extracted && extracted.length > lastStoryLength) {
+          storyExtracted = extracted;
+          lastStoryLength = extracted.length;
           storyStore.setGotchiStory(storyExtracted);
         }
       }
 
-      if (!nameExtracted || !storyExtracted) {
-        const finalNameMatch = streamBuffer.match(/"name":\s*"([^"]+)"/);
-        const finalStoryMatch = streamBuffer.match(/"story":\s*"([^"]+)"/);
+      if (streamBuffer) {
+        const lines = streamBuffer.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataContent = line.substring(6);
+            jsonContent += dataContent;
+          }
+        }
+      }
 
-        if (finalNameMatch && !nameExtracted) {
-          storyStore.setGotchiName(finalNameMatch[1]);
-          nameExtracted = finalNameMatch[1];
-        }
-        if (finalStoryMatch) {
-          storyStore.setGotchiStory(finalStoryMatch[1]);
-          storyExtracted = finalStoryMatch[1];
-        }
+      const finalName = extractJsonValue(jsonContent, 'name', false);
+      const finalStory = extractJsonValue(jsonContent, 'story', false);
+
+      if (finalName && !nameExtracted) {
+        storyStore.setGotchiName(finalName);
+        nameExtracted = finalName;
+      }
+      if (finalStory && finalStory.length > lastStoryLength) {
+        storyStore.setGotchiStory(finalStory);
+        storyExtracted = finalStory;
       }
 
       setStoryCache(prev => ({

@@ -4,7 +4,7 @@ import { getBackendUrl } from '@/lib/api-config';
 export const runtime = 'edge';
 
 export async function GET(_req: NextRequest) {
-    const upstream = `${getBackendUrl()}/ollama/stream`;
+    const upstream = `${getBackendUrl()}/ai/story/stream`;
   
     const originResp = await fetch(upstream, { cache: 'no-store' });
     if (!originResp.body) {

@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function GET() {
   try {
-    const response = await fetch(`${getBackendUrl()}/ollama/story`, {
+    const response = await fetch(`${getBackendUrl()}/ai/story`, {
       headers: {
         'Content-Type': 'application/json',
       },

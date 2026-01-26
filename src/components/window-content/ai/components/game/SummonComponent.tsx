@@ -87,8 +87,10 @@ const SummonComponent = observer(({ onSummonSuccess }: SummonComponentProps) => 
         if (response.ok) {
           const data = await response.json();
           console.log('data', data);
-          setPusName(data.data.name);
-          setPusStory(data.data.story);
+          if (data.data.storys && data.data.storys.length > 0) {
+            setPusName(data.data.storys[0].name);
+            setPusStory(data.data.storys[0].story);
+          }
         }
       };
 

@@ -579,7 +579,9 @@ const PharosGenesisPage = observer(({
                   >
                     <div className="bg-[#d4d0c8] border border-[#808080] shadow-win98-inner p-4">
                       <div className="text-sm leading-relaxed">
-                        {storyStore.isFetching ? (
+                        {storyStore.gotchiStory ? (
+                          <p>{storyStore.gotchiStory}</p>
+                        ) : storyStore.isFetching ? (
                           <div className="space-y-2">
                             <div className="h-3 bg-gray-300 animate-pulse rounded w-full"></div>
                             <div className="h-3 bg-gray-300 animate-pulse rounded w-3/4"></div>
@@ -587,7 +589,7 @@ const PharosGenesisPage = observer(({
                             <div className="h-3 bg-gray-300 animate-pulse rounded w-2/3"></div>
                           </div>
                         ) : (
-                          <p>{storyStore.gotchiStory || "No story available"}</p>
+                          <p className="text-gray-500">No story available</p>
                         )}
                       </div>
                     </div>
