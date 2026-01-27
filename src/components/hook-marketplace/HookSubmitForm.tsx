@@ -6,6 +6,7 @@ import { hookApi } from '@src/services/hookApi';
 import { CreateHookRequest } from '@src/types/hook-api';
 import { useAccount } from 'wagmi';
 import { Win98Select } from '@src/components/ui/Win98Select';
+import { validateHookSourceCode } from '@src/utils/hookValidation';
 import CloseIcon from '@assets/icons/CloseIcon';
 import RightIcon from '@assets/icons/rightIcon';
 
@@ -19,6 +20,7 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sourceCodeValidation, setSourceCodeValidation] = useState<{ isValid: boolean; error?: string } | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     category: '' as HookCategory | '',
@@ -50,6 +52,12 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
 
     if (!formData.category) {
       setError('Please select a category');
+      return;
+    }
+
+    const validation = validateHookSourceCode(formData.sourceCode);
+    if (!validation.isValid) {
+      setError(validation.error || 'Invalid hook source code');
       return;
     }
 
@@ -212,7 +220,7 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
                     Submit your deployed hook contract
                   </p>
                   <p className="text-xs text-[#000080] mt-1">
-                    Your hook must be deployed on Pharos before submission
+                    Your hook must be deployed on Pharos before submission. Only contracts that inherit from BaseHook (BeforeExecuteHook, AfterExecuteHook, or FullHook) will be accepted.
                   </p>
                 </div>
 
@@ -239,9 +247,55 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
                     </label>
                     <textarea
                       value={formData.sourceCode}
-                      onChange={(e) => setFormData({ ...formData, sourceCode: e.target.value })}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setFormData({ ...formData, sourceCode: newValue });
+                        // Validate on change with debounce
+                        if (newValue.length > 50) {
+                          const validation = validateHookSourceCode(newValue);
+                          setSourceCodeValidation(validation);
+                        } else {
+                          setSourceCodeValidation(null);
+                        }
+                      }}
                       className="w-full border-2 border-[#808080] shadow-win98-inner px-2 py-1 text-xs font-mono h-64 resize-none"
                     />
+
+                    {sourceCodeValidation && (
+                      <div className={`border-2 mt-2 px-3 py-2 ${
+                        sourceCodeValidation.isValid
+                          ? 'border-[#008000] bg-[#e0ffe0]'
+                          : 'border-[#ff0000] bg-[#ffe0e0]'
+                      }`}>
+                        <p className={`text-xs font-bold ${
+                          sourceCodeValidation.isValid
+                            ? 'text-[#008000]'
+                            : 'text-[#ff0000]'
+                        }`}>
+                          {sourceCodeValidation.isValid
+                            ? '✓ Valid Hook Contract'
+                            : '✗ Invalid Hook Contract'}
+                        </p>
+                        {sourceCodeValidation.error && (
+                          <p className="text-xs text-[#ff0000] mt-1">
+                            {sourceCodeValidation.error}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="border-2 border-[#000080] bg-[#e0e0ff] px-3 py-2 mt-2">
+                      <p className="text-xs font-bold text-[#000080] mb-1">
+                        Required Hook Structure:
+                      </p>
+                      <ul className="text-xs text-[#000080] space-y-1 list-disc list-inside">
+                        <li>Import BaseHook (BeforeExecuteHook/AfterExecuteHook/FullHook)</li>
+                        <li>Import IHook interface</li>
+                        <li>Inherit from one of the base hook contracts</li>
+                        <li>Include constructor with _gotchipus parameter</li>
+                      </ul>
+                    </div>
+
                     <p className="text-xs text-[#808080] mt-1">
                       Paste your Solidity source code here
                     </p>
@@ -348,6 +402,35 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
                   </div>
                 </div>
               </div>
+
+              <div className="win98-group-box">
+                <div className="win98-group-title text-xs font-bold">Source Code Validation</div>
+                {(() => {
+                  const validation = validateHookSourceCode(formData.sourceCode);
+                  return (
+                    <div className={`border-2 px-3 py-2 ${
+                      validation.isValid
+                        ? 'border-[#008000] bg-[#e0ffe0]'
+                        : 'border-[#ff0000] bg-[#ffe0e0]'
+                    }`}>
+                      <p className={`text-xs font-bold ${
+                        validation.isValid
+                          ? 'text-[#008000]'
+                          : 'text-[#ff0000]'
+                      }`}>
+                        {validation.isValid
+                          ? '✓ Valid Hook Contract - Ready to submit'
+                          : '✗ Invalid Hook Contract - Cannot submit'}
+                      </p>
+                      {validation.error && (
+                        <p className="text-xs text-[#ff0000] mt-1">
+                          {validation.error}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
         </div>
@@ -382,8 +465,8 @@ export const HookSubmitForm = ({ onClose, onSuccess }: HookSubmitFormProps) => {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={loading}
-                className="border-2 border-[#808080] shadow-win98-outer bg-[#008000] text-white hover:bg-[#006000] active:shadow-win98-inner px-4 py-2 text-sm font-bold disabled:bg-[#808080] disabled:cursor-not-allowed"
+                disabled={loading || !validateHookSourceCode(formData.sourceCode).isValid}
+                className="border-2 border-[#808080] shadow-win98-outer bg-[#008000] text-white hover:bg-[#006000] active:shadow-win98-inner px-4 py-2 text-sm font-bold disabled:bg-[#808080] disabled:cursor-not-allowed disabled:hover:bg-[#808080]"
               >
                 {loading ? 'Submitting...' : 'Submit Hook'}
               </button>

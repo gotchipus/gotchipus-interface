@@ -8,6 +8,7 @@ import { HookDetail } from '@src/components/hook-marketplace/HookDetail';
 import { HookSubmitForm } from '@src/components/hook-marketplace/HookSubmitForm';
 import { useWindowMode } from '@/hooks/useWindowMode';
 import { Win98Select } from '@src/components/ui/Win98Select';
+import { isValidHook } from '@src/utils/hookValidation';
 import AddIcon from '@assets/icons/AddIcon';
 import SearchIcon from '@assets/icons/SearchIcon';
 
@@ -90,6 +91,11 @@ const HookRankContent = () => {
 
   const filteredAndSortedHooks = useMemo(() => {
     let filtered = hooks.filter(hook => {
+      // First, validate that this is a real hook contract
+      if (!isValidHook(hook.sourceCode)) {
+        return false;
+      }
+
       if (filters.category !== 'all' && hook.category !== filters.category) {
         return false;
       }
@@ -165,7 +171,12 @@ const HookRankContent = () => {
 
             <div className="flex flex-col gap-2">
               <div className="text-[#808080] text-xs mt-1">
-                Browse, rank, and discover programmable hooks for your Gotchipus
+                Browse, rank, and discover verified programmable hooks for your Gotchipus
+              </div>
+              <div className="border-2 border-[#008000] bg-[#e0ffe0] px-2 py-1.5">
+                <p className="text-xs text-[#008000]">
+                  ✓ Only validated hook contracts displayed
+                </p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -259,8 +270,13 @@ const HookRankContent = () => {
         </button>
 
         <div className="bg-[#c0c0c0] border-2 border-[#808080] shadow-win98-inner p-2">
-          <div className="text-xs text-[#808080] text-center">
-            {filteredAndSortedHooks.length} hook{filteredAndSortedHooks.length !== 1 ? 's' : ''} found
+          <div className="text-xs text-center">
+            <div className="font-bold text-black mb-1">
+              {filteredAndSortedHooks.length} hook{filteredAndSortedHooks.length !== 1 ? 's' : ''} found
+            </div>
+            <div className="text-[#008000] text-[10px]">
+              ✓ Validated contracts only
+            </div>
           </div>
         </div>
           </div>
@@ -273,7 +289,12 @@ const HookRankContent = () => {
               <div className="win98-group-box bg-[#c0c0c0]">
                 <div className="win98-group-title text-xs font-bold text-[#000080]">HookRank</div>
                 <div className="text-xs text-[#808080] mt-1">
-                  Browse, rank, and discover programmable hooks for your Gotchipus
+                  Browse, rank, and discover verified programmable hooks for your Gotchipus
+                </div>
+                <div className="border-2 border-[#008000] bg-[#e0ffe0] px-3 py-2 mt-2">
+                  <p className="text-xs text-[#008000]">
+                    ✓ Only validated hook contracts are displayed. All hooks must inherit from BaseHook and implement proper hook methods.
+                  </p>
                 </div>
               </div>
             </div>
