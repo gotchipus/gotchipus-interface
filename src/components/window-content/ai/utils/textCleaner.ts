@@ -1,8 +1,8 @@
 
 export function cleanAIText(text: string): string {
   if (!text) return '';
-  
-  return text
+
+  let cleaned = text
     .replace(/\*\*\s*\*\s*([^*]+?):\s*\*\*/g, '**$1:**')
     .replace(/\*\*\s*\*\s*([^*]+?):\s*\*\*\s*/g, '**$1:**\n')
     .replace(/\*\*\*([^*]+?):\*\*/g, '**$1:**')
@@ -25,10 +25,10 @@ export function cleanAIText(text: string): string {
     .replace(/\*\*Features:\s*\*\*\s*\*/g, '**Features:**')
     .replace(/\*\*\s*\*([^*]+?)\*\*\s*\*/g, '**$1:**')
     .replace(/\*\*\s*\*([^*]+?)\*\*\s*/g, '**$1:**')
-    .replace(/\*\*\s*\*([^*]+?)\*\*$/g, '**$1:**')  
+    .replace(/\*\*\s*\*([^*]+?)\*\*$/g, '**$1:**')
     .replace(/\*\*\*([^*]+):\s*\*\*\*/g, '**$1:**')
     .replace(/\*\*([^*]+):\s*\*\*/g, '**$1:**')
-    .replace(/\*\*\*([^*]+):\s*\*\*/g, '**$1:**') 
+    .replace(/\*\*\*([^*]+):\s*\*\*/g, '**$1:**')
     .replace(/\*\s+\*/g, '**')
     .replace(/\*\*\s+\*\*/g, '**')
     .replace(/\*\*\*\s+\*\*\*/g, '***')
@@ -43,10 +43,11 @@ export function cleanAIText(text: string): string {
     .replace(/([^*\n]+)\*\*\*\.\*\*\*([^*\n]+)/g, '$1. $2')
     .replace(/([^*\n]+)\*\*\.\*\*([^*\n]+)/g, '$1. $2')
     .replace(/```\s*\*\s*/g, '```')
-    .replace(/\s*\*\s*```/g, '```') 
+    .replace(/\s*\*\s*```/g, '```')
     .replace(/\n\s*\n\s*\n+/g, '\n\n')
-    .replace(/\n\s*\*\s*\n/g, '\n\n')
-    .trim();
+    .replace(/\n\s*\*\s*\n/g, '\n\n');
+
+  return cleaned.trim();
 }
 
 export function testTextCleaning() {

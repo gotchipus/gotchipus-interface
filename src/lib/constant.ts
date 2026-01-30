@@ -110,7 +110,7 @@ export const WINDOW_MAX_CONTENT_WIDTH: Record<string, number> = {
   "pharos": 1200,
   "dashboard": 1200,
   "wearable": 1200,
-  "ai": 1000,
+  "ai": 9999,
   "mint": 800,
   "daily-task-hall": 1000,
   "all-gotchi": 1200,

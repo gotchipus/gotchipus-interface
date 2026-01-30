@@ -10,47 +10,47 @@ export async function POST(req: NextRequest) {
 
     if (!message || typeof message !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Content field is required and must be a string' }), 
-        { 
-          status: 400, 
-          headers: { 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: 'Content field is required and must be a string' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
         }
       );
     }
 
-    const getUserIntent = `${getBackendUrl()}/ollama/get_user_intent`;
+    const chatEndpoint = `${getBackendUrl()}/ai/chat`;
 
-    const getUserIntentResp = await fetch(getUserIntent, {
+    const chatResp = await fetch(chatEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ msg: message }),
     });
 
-    if (!getUserIntentResp.ok) {
+    if (!chatResp.ok) {
       return new Response(
-        JSON.stringify({ error: `Upstream service error: ${getUserIntentResp.status}` }), 
-        { 
-          status: getUserIntentResp.status, 
-          headers: { 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: `Upstream service error: ${chatResp.status}` }),
+        {
+          status: chatResp.status,
+          headers: { 'Content-Type': 'application/json' }
         }
       );
     }
 
-    const getUserIntentData = await getUserIntentResp.json();
-    
-    if (Number(getUserIntentData.code) !== 0) {
+    const chatData = await chatResp.json();
+
+    if (Number(chatData.code) !== 0 || chatData.status !== 'success') {
       return new Response(
-        JSON.stringify({ error: `Upstream service error: ${getUserIntentData.message}` }), 
-        { 
-          status: 502, 
-          headers: { 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: chatData.data || 'Request failed' }),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'application/json' }
         }
       );
     }
 
-    return NextResponse.json(getUserIntentData.data);
+    return NextResponse.json(chatData);
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(

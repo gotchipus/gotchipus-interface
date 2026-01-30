@@ -49,7 +49,7 @@ export const WINDOW_ICONS: WindowIconConfig[] = [
     id: "ai",
     title: "Chat",
     icon: "/ai-pus.png",
-    enabled: false,
+    enabled: true,
   },
   {
     id: "daily-task-hall",

@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 interface ChatCallbacks {
   onData?: (data: any) => void;
   onText?: (text: string) => void;
+  onThinking?: (text: string) => void;
+  onAction?: (action: any) => void;
   onError?: (error: any) => void;
   onComplete?: () => void;
 }
@@ -16,7 +18,7 @@ interface ChatState {
 const useChat = () => {
   const send = useCallback(
     async (
-      payload: { query: string; is_call_tools: boolean; agent_index: number; message: string },
+      payload: { msg: string },
       callbacks?: ChatCallbacks
     ) => {
       let hasError = false;
@@ -25,10 +27,10 @@ const useChat = () => {
 
       const processContent = (content: string): string => {
         chatState.buffer += content;
-        
+
         let result = '';
         let tempBuffer = chatState.buffer;
-        
+
         while (tempBuffer.length > 0) {
           if (!chatState.inThinkBlock) {
             const thinkStart = tempBuffer.indexOf('<think>');
@@ -42,7 +44,7 @@ const useChat = () => {
               chatState.inThinkBlock = true;
             }
           }
-          
+
           if (chatState.inThinkBlock) {
             const thinkEnd = tempBuffer.indexOf('</think>');
             if (thinkEnd === -1) {
@@ -54,13 +56,13 @@ const useChat = () => {
             }
           }
         }
-        
+
         chatState.buffer = tempBuffer;
         return result;
       };
 
       try {
-        await fetchEventSource('/api/chat/callIntent', {
+        await fetchEventSource('/api/chat/stream', {
           signal: ctrl.signal,
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -75,30 +77,43 @@ const useChat = () => {
 
           onmessage: async (ev) => {
             if (hasError) return;
-            
-            if (ev.event === 'data') {
-              try {
-                const json = JSON.parse(ev.data);
-                callbacks?.onData?.(json);
-              } catch (parseError) {
-                console.error('Failed to parse data event:', parseError);
-              }
-            } else if (ev.event === 'text') {
-              try {
-                const json = JSON.parse(ev.data);
-                if (json.content) {
-                  const filteredContent = processContent(json.content);
-                  
-                  if (filteredContent.trim()) {
-                    callbacks?.onText?.(filteredContent);
+
+            try {
+              const eventData = JSON.parse(ev.data);
+
+              switch (eventData.type) {
+                case 'message_start':
+                  break;
+
+                case 'thinking':
+                  if (eventData.message) {
+                    callbacks?.onThinking?.(eventData.message);
                   }
-                }
-              } catch (parseError) {
-                const filteredContent = processContent(ev.data);
-                if (filteredContent.trim()) {
-                  callbacks?.onText?.(filteredContent);
-                }
+                  break;
+
+                case 'text_delta':
+                  if (eventData.text) {
+                    const filteredContent = processContent(eventData.text);
+                    if (filteredContent.trim()) {
+                      callbacks?.onText?.(filteredContent);
+                    }
+                  }
+                  break;
+
+                case 'action':
+                  if (eventData.action) {
+                    callbacks?.onAction?.(eventData);
+                  }
+                  break;
+
+                case 'message_stop':
+                  break;
+
+                default:
+                  console.warn('Unknown event type:', eventData.type);
               }
+            } catch (parseError) {
+              console.error('Failed to parse SSE data:', parseError, ev.data);
             }
           },
 

@@ -245,11 +245,12 @@
   margin: 1em 0;
 }
 
-/* Markdown 流式渲染容器样式 */
 .markdown-streaming {
   position: relative;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  contain: content;
+  transition: height 0.1s ease-out;
 }
 
 .markdown-streaming > * {
@@ -263,6 +264,32 @@
 .markdown-streaming .animate-pulse {
   animation: blink 1s infinite;
   font-weight: bold;
+}
+
+.markdown-streaming pre {
+  min-height: 2em;
+}
+
+.markdown-streaming ul,
+.markdown-streaming ol {
+  padding-left: 2em;
+  margin: 0.5em 0;
+}
+
+.markdown-streaming ul li {
+  list-style-type: disc;
+  margin: 0.3em 0;
+  line-height: 1.6;
+}
+
+.markdown-streaming ol li {
+  list-style-type: decimal;
+  margin: 0.3em 0;
+  line-height: 1.6;
+}
+
+.markdown-streaming ul > li::marker {
+  color: #000000;
 }
 
 @keyframes blink {

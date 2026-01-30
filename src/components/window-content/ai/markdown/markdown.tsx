@@ -209,7 +209,6 @@ function _MarkDownContent(props: { content: string }) {
       components={{
         pre: PreCode,
         code: (codeProps: any) => {
-          // 行内代码
           if (!codeProps.className) {
             return (
               <code 
@@ -226,7 +225,6 @@ function _MarkDownContent(props: { content: string }) {
               />
             );
           }
-          // 代码块
           return <CustomCode {...codeProps} />;
         },
         p: (pProps) => <p {...pProps} dir="auto" style={{ margin: "0.5em 0", lineHeight: "1.6" }} />,

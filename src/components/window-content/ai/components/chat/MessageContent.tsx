@@ -114,6 +114,22 @@ export const MessageContent = memo(({ message }: Props) => {
         </div>
       );
   }
+}, (prevProps, nextProps) => {
+  const prev = prevProps.message;
+  const next = nextProps.message;
+
+  if (prev.id !== next.id) return false;
+
+  if (next.isStreaming) {
+    return false;
+  }
+
+  return prev.content === next.content &&
+         prev.isCallTools === next.isCallTools &&
+         prev.agentIndex === next.agentIndex &&
+         prev.isLoading === next.isLoading &&
+         prev.isStreaming === next.isStreaming &&
+         JSON.stringify(prev.data) === JSON.stringify(next.data);
 });
 
 MessageContent.displayName = 'MessageContent';

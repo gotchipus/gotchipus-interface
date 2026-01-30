@@ -5,7 +5,7 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const upstream = `${getBackendUrl()}/ollama/call_intent`;
+  const upstream = `${getBackendUrl()}/ai/chat/stream`;
 
   const originResp = await fetch(upstream, {
     method: 'POST',

@@ -33,7 +33,6 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
   const isMobileMode = windowMode === 'mobile' || (windowWidth !== null && windowWidth <= 640)
   const gridCols = Math.min(getGridColumns(windowWidth), 5) // Max 5 columns for all-gotchi grid
 
-  // Filters
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedRarity, setSelectedRarity] = useState<string>("");
   const [levelRange, setLevelRange] = useState<{ min: string; max: string }>({ min: "", max: "" });
@@ -129,7 +128,6 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
       return;
     }
 
-    // Wait for scroll container to be available
     const scrollContainer = scrollContainerRef.current;
     const currentTarget = observerTarget.current;
 
@@ -164,7 +162,6 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
     };
   }, [hasMore, isLoading, loadMoreItems, allMetadata.length]);
 
-  // Handle search
   const handleSearch = async () => {
     const tokenId = parseInt(searchId);
     if (!isNaN(tokenId) && tokenId >= 0 && tokenId < TOTAL_NFTS) {
@@ -244,7 +241,6 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
 
   return (
     <div className="bg-[#c0c0c0] h-full flex flex-col relative">
-      {/* Mobile Header */}
       {isMobileMode && (
         <div className="px-2 pt-4 pb-0">
           <div className="win98-group-box">
@@ -257,7 +253,6 @@ const AllGotchiContent = observer(({ isMobile }: AllGotchiContentProps) => {
                 Browse all 20,000 Gotchipus NFTs
               </div>
 
-              {/* Mobile Buttons */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowMobileFilters(true)}

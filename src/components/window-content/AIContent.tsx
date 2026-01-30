@@ -2,14 +2,19 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { WelcomeScreen, ChatInterface, Message } from "./ai";
-import { InputArea } from "./ai/components/chat/InputArea";
+import { ChatInterface, Message } from "./ai";
+import { ActionCards } from "./ai/components/modern/ActionCards";
+import { ChatHeader } from "./ai/components/modern/ChatHeader";
+import { ChatSidebar } from "./ai/components/modern/ChatSidebar";
+import { ConversationInput } from "./ai/components/modern/ConversationInput";
+import { QuickQuestions } from "./ai/components/modern/QuickQuestions";
 import { ChatResponse } from "./ai/types";
 import useChat from "@/hooks/useChat";
 import { observer } from "mobx-react-lite";
 import { useStores } from "@stores/context";
 import { CustomConnectButton } from "../footer/CustomConnectButton";
 import useResponsive from "@/src/hooks/useResponsive";
+import { useContractRead } from "@/hooks/useContract";
 
 const AIContent = observer(() => {
   const { walletStore } = useStores();
@@ -25,11 +30,25 @@ const AIContent = observer(() => {
     },
   ]);
   const [status, setStatus] = useState<"idle" | "streaming">("idle");
+  const [chatHistory, setChatHistory] = useState<Array<{
+    id: string;
+    title: string;
+    timestamp: Date;
+  }>>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { send: sendChatEvent } = useChat();
   const isProcessingRef = useRef(false);
+
+  const { data: balance, isLoading: isCheckingBalance } = useContractRead(
+    "balanceOf",
+    [walletStore.address],
+    { enabled: walletStore.isConnected && !!walletStore.address }
+  );
+
+  const hasNFT = balance && Number(balance) > 0;
 
   useEffect(() => {
     if (hasStartedChat) {
@@ -66,7 +85,18 @@ const AIContent = observer(() => {
   };
 
   const handleBackToInput = () => {
+    if (hasStartedChat && currentChatId && messages.length > 1) {
+      setChatHistory(prev =>
+        prev.map(chat =>
+          chat.id === currentChatId
+            ? { ...chat, timestamp: new Date() }
+            : chat
+        )
+      );
+    }
+
     setHasStartedChat(false);
+    setCurrentChatId(undefined);
     setInput("");
     setMessages([
       {
@@ -76,10 +106,15 @@ const AIContent = observer(() => {
       },
     ]);
     setStatus("idle");
+    setCurrentChatId(undefined);
     isProcessingRef.current = false;
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
     }
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    console.log("Select chat:", chatId);
   };
 
   const getToolData = useCallback((agentIndex: number) => {
@@ -120,27 +155,14 @@ const AIContent = observer(() => {
   const createTextHandler = useCallback((messageId: string, chatResponse: ChatResponse) => {
     return (chunk: string) => {
       const contentToAdd = processTextChunk(chunk);
-      
+
       setMessages(prev => {
         return prev.map(msg => {
           if (msg.id !== messageId) return msg;
-          
+
           const currentContent = msg.content || '';
-          let newContent;
-          
-          if (currentContent === '') {
-            newContent = contentToAdd;
-          } else {
-            const needsSpace = !currentContent.endsWith(' ') && 
-                             !currentContent.endsWith('\n') && 
-                             !contentToAdd.startsWith(' ') && 
-                             !contentToAdd.startsWith('\n') &&
-                             !contentToAdd.startsWith('*') &&
-                             !contentToAdd.startsWith('#');
-            
-            newContent = currentContent + (needsSpace ? ' ' : '') + contentToAdd;
-          }
-          
+          const newContent = currentContent + contentToAdd;
+
           return {
             ...msg,
             content: newContent,
@@ -172,8 +194,12 @@ const AIContent = observer(() => {
 
     isProcessingRef.current = true;
 
-    if (!hasStartedChat) {
+    const isFirstMessage = !hasStartedChat;
+    const newChatId = isFirstMessage ? Date.now().toString() : currentChatId;
+
+    if (isFirstMessage) {
       setHasStartedChat(true);
+      setCurrentChatId(newChatId);
     }
 
     const userMessage: Message = {
@@ -184,119 +210,104 @@ const AIContent = observer(() => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+
+    if (isFirstMessage) {
+      const chatTitle = message.slice(0, 50) + (message.length > 50 ? "..." : "");
+      setChatHistory(prev => [
+        {
+          id: newChatId || Date.now().toString(),
+          title: chatTitle,
+          timestamp: new Date(),
+        },
+        ...prev,
+      ]);
+    }
     setStatus("streaming");
     setInput("");
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
     }
 
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: "assistant",
+      content: "",
+      createdAt: new Date(),
+      isCallTools: false,
+      agentIndex: 0,
+      isLoading: false,
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    const chatResponse: ChatResponse = {
+      is_call_tools: false,
+      message: "",
+      agent_index: 0,
+    };
+
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await sendChatEvent(
+        {
+          msg: message,
         },
-        body: JSON.stringify({
-          message: message,
-        }),
-      });
+        {
+          onText: (chunk) => {
+            createTextHandler(assistantMessage.id, chatResponse)(chunk);
+          },
+          onThinking: (thinkingText) => {
+            console.log("AI thinking:", thinkingText);
+          },
+          onAction: (actionData) => {
+            const { action, params } = actionData;
 
-      if (response.ok) {
-        const chatResponse: ChatResponse = await response.json();
-        
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: (chatResponse.is_call_tools && chatResponse.agent_index !== 1 && chatResponse.agent_index !== 0) ? chatResponse.message : "",
-          createdAt: new Date(),
-          isCallTools: chatResponse.is_call_tools,
-          agentIndex: chatResponse.agent_index,
-          isLoading: false,
-          isStreaming: !chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1),
-        };
+            const actionToAgentIndex: Record<string, number> = {
+              'pet': 2,
+              'mint': 3,
+              'summon': 4,
+              'wearable': 5,
+              'call': 6,
+              'swap': 7,
+              'addLiquidity': 8,
+              'removeLiquidity': 9,
+            };
 
-        setMessages((prev) => [...prev, assistantMessage]);
+            const agentIndex = actionToAgentIndex[action];
 
-        if (!chatResponse.is_call_tools || (chatResponse.is_call_tools && chatResponse.agent_index === 1)) {
-
-          try {
-            await sendChatEvent(
-              {
-                query: message,
-                is_call_tools: chatResponse.is_call_tools,
-                agent_index: chatResponse.agent_index || 0,
-                message: chatResponse.message,
-              },
-              {
-                onText: (chunk) => {
-                  createTextHandler(assistantMessage.id, chatResponse)(chunk);
-                },
-                onError: (error) => {
-                  updateMessage(assistantMessage.id, {
-                    content: chatResponse.message,
-                    isCallTools: chatResponse.agent_index === 1 ? true : false,
-                    agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
-                    isLoading: false,
-                    isStreaming: false,
-                  });
-                },
-                onComplete: () => {
-                  updateMessage(assistantMessage.id, { isStreaming: false });
-                },
-              }
-            );
-          } catch (textError) {
+            if (agentIndex) {
+              updateMessage(assistantMessage.id, {
+                isCallTools: true,
+                agentIndex: agentIndex,
+                data: { [action]: true, ...params },
+              });
+            }
+          },
+          onError: (error) => {
+            console.error("Stream error:", error);
+            addErrorMessage("Network error! Please try again.");
             updateMessage(assistantMessage.id, {
-              content: chatResponse.message,
-              isCallTools: chatResponse.agent_index === 1 ? true : false,
-              agentIndex: chatResponse.agent_index === 1 ? 1 : undefined,
               isLoading: false,
               isStreaming: false,
             });
-          }
-        } else if (chatResponse.is_call_tools && chatResponse.agent_index >= 2 && chatResponse.agent_index <= 9) {
-          const toolData = getToolData(chatResponse.agent_index);
-          if (toolData) {
-            updateMessage(assistantMessage.id, { data: toolData });
-          }
-        } else if (chatResponse.is_call_tools) {
-          try {
-            await sendChatEvent(
-              {
-                query: message,
-                is_call_tools: true,
-                agent_index: chatResponse.agent_index,
-                message: chatResponse.message,
-              },
-              {
-                onData: (data) => {
-                  const poolData = data.data || data;
-                  updateMessage(assistantMessage.id, { data: poolData });
-                },
-                onText: createTextHandler(assistantMessage.id, chatResponse),
-                onError: (error) => {
-                  console.error("Tool call error:", error);
-                },
-                onComplete: () => {
-                  updateMessage(assistantMessage.id, { isStreaming: false });
-                },
-              }
-            );
-          } catch (toolError) {
-            console.error("Tool call failed:", toolError);
-          }
+          },
+          onComplete: () => {
+            updateMessage(assistantMessage.id, { isStreaming: false });
+          },
         }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        addErrorMessage(errorData.error || "Network error! Please try again.");
-      }
+      );
     } catch (error) {
+      console.error("Send message error:", error);
       addErrorMessage("Network error! Please try again.");
+      updateMessage(assistantMessage.id, {
+        isLoading: false,
+        isStreaming: false,
+      });
     } finally {
       setStatus("idle");
       isProcessingRef.current = false;
     }
-  }, [hasStartedChat, sendChatEvent, createTextHandler, updateMessage, getToolData, addErrorMessage]);
+  }, [hasStartedChat, sendChatEvent, createTextHandler, updateMessage, addErrorMessage]);
 
   const handleSendMessage = () => {
     sendMessage(input);
@@ -308,6 +319,108 @@ const AIContent = observer(() => {
       handleSendMessage();
     }
   };
+
+  const handleRegenerate = useCallback(async (messageId: string) => {
+    if (isProcessingRef.current) return;
+
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return;
+
+    let userMessage: Message | undefined;
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        userMessage = messages[i];
+        break;
+      }
+    }
+
+    if (!userMessage) return;
+
+    isProcessingRef.current = true;
+
+    setMessages(prev => prev.slice(0, messageIndex));
+
+    const assistantMessage: Message = {
+      id: Date.now().toString(),
+      role: "assistant",
+      content: "",
+      createdAt: new Date(),
+      isCallTools: false,
+      agentIndex: 0,
+      isLoading: false,
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+    setStatus("streaming");
+
+    const chatResponse: ChatResponse = {
+      is_call_tools: false,
+      message: "",
+      agent_index: 0,
+    };
+
+    try {
+      await sendChatEvent(
+        {
+          msg: userMessage.content,
+        },
+        {
+          onText: (chunk) => {
+            createTextHandler(assistantMessage.id, chatResponse)(chunk);
+          },
+          onThinking: (thinkingText) => {
+            console.log("AI thinking:", thinkingText);
+          },
+          onAction: (actionData) => {
+            const { action, params } = actionData;
+
+            const actionToAgentIndex: Record<string, number> = {
+              'pet': 2,
+              'mint': 3,
+              'summon': 4,
+              'wearable': 5,
+              'call': 6,
+              'swap': 7,
+              'addLiquidity': 8,
+              'removeLiquidity': 9,
+            };
+
+            const agentIndex = actionToAgentIndex[action];
+
+            if (agentIndex) {
+              updateMessage(assistantMessage.id, {
+                isCallTools: true,
+                agentIndex: agentIndex,
+                data: { [action]: true, ...params },
+              });
+            }
+          },
+          onError: (error) => {
+            console.error("Stream error:", error);
+            addErrorMessage("Network error! Please try again.");
+            updateMessage(assistantMessage.id, {
+              isLoading: false,
+              isStreaming: false,
+            });
+          },
+          onComplete: () => {
+            updateMessage(assistantMessage.id, { isStreaming: false });
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Regenerate error:", error);
+      addErrorMessage("Network error! Please try again.");
+      updateMessage(assistantMessage.id, {
+        isLoading: false,
+        isStreaming: false,
+      });
+    } finally {
+      setStatus("idle");
+      isProcessingRef.current = false;
+    }
+  }, [messages, sendChatEvent, createTextHandler, updateMessage, addErrorMessage]);
 
   const handleSummonSuccess = useCallback((
     tokenId: string,
@@ -434,69 +547,130 @@ const AIContent = observer(() => {
     );
   }
 
+  if (isCheckingBalance) {
+    return (
+      <div className="h-full flex items-center justify-center bg-[#c0c0c0]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#000080] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#000080] font-medium">Checking your Gotchis...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasNFT) {
+    return (
+      <div className={`h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className="text-center flex flex-col items-center max-w-md">
+          <div className={`mb-4 ${isMobile ? 'mb-2' : ''}`}>
+            <Image src="/not-any.png" alt="No Gotchis" width={isMobile ? 80 : 120} height={isMobile ? 80 : 120} />
+          </div>
+          <h3 className={`font-bold mb-2 ${isMobile ? 'text-lg' : 'text-xl'}`}>No Gotchipus Found</h3>
+          <p className={`text-[#000080] mb-4 ${isMobile ? 'text-sm' : ''} text-center`}>
+            You need to own at least one Gotchipus NFT to use the AI assistant.
+            Each Gotchipus has its unique personality and abilities!
+          </p>
+          <div className="flex gap-2">
+            <a
+              href="/gotchi"
+              className="px-4 py-2 bg-[#d4d0c8] border-2 border-[#808080] shadow-win98-outer hover:bg-white active:shadow-win98-inner text-sm"
+            >
+              View All Gotchis
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-[#c0c0c0] w-full h-full relative flex flex-col">
-      <div className={`flex-1 overflow-hidden ${!hasStartedChat ? 'pt-28' : 'pt-2'}`}>
-        {!hasStartedChat ? (
-          <>
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md">
-              <div className="bg-white/95 backdrop-blur-sm border border-amber-200 rounded-lg shadow-lg px-4 py-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  <span className="text-amber-700 font-medium">Testing Phase</span>
-                </div>
-                <p className="text-gray-600 text-base mt-1 leading-relaxed">
-                  AI responses may be slower as we optimize performance. Thanks for your patience! 🚀
+    <div className="bg-[#c0c0c0] h-full flex flex-col relative">
+      <div className="flex gap-0 flex-1 overflow-hidden">
+        {!isMobile && (
+          <ChatSidebar
+            onNewChat={handleBackToInput}
+            chatHistory={chatHistory}
+            onSelectChat={handleSelectChat}
+            currentChatId={currentChatId}
+          />
+        )}
+
+        <div className="flex-1 flex flex-col overflow-hidden bg-[#c0c0c0]">
+          <ChatHeader />
+
+          {!hasStartedChat ? (
+            <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-3 py-6">
+              <div className="text-center mb-6">
+                <h2 className="text-4xl font-bold mb-2 text-[#000080]">
+                  Hello, GOTCHI
+                </h2>
+                <p className="text-[#808080] text-sm">
+                  Ready to trade, summon, or play your Gotchi? Just ask me!
                 </p>
               </div>
+
+              <div className="mb-6">
+                <ActionCards
+                  onQuestionClick={sendMessage}
+                  userName="GOTCHI"
+                />
+              </div>
+
+              <div className="max-w-2xl w-full px-4">
+                <div className="mb-2">
+                  <ConversationInput
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onSend={handleSendMessage}
+                    inputRef={inputRef}
+                    isLoading={status === "streaming"}
+                  />
+                </div>
+
+                <QuickQuestions onQuestionClick={sendMessage} />
+              </div>
             </div>
-            <WelcomeScreen
-              input={input}
-              onInputChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onSendMessage={handleSendMessage}
-              inputRef={inputRef}
-              isDisabled={status === "streaming"}
-              onQuestionClick={sendMessage}
-            />
-          </>
-        ) : (
-          <div className="h-full flex flex-col">
-            <ChatInterface
-              messages={messages}
-              onBackClick={handleBackToInput}
-              chatContainerRef={chatContainerRef}
-              messagesEndRef={messagesEndRef}
-              status={status}
-              onSummonSuccess={handleSummonSuccess}
-              onSummonDataReady={handleSummonDataReady}
-              onMintDataReady={handleMintDataReady}
-              onPetDataReady={handlePetDataReady}
-              onMintSuccess={handleMintSuccess}
-              onPetSuccess={handlePetSuccess}
-              onWearableSuccess={handleWearableSuccess}
-              onWearableDataReady={handleWearableDataReady}
-              onCallSuccess={handleCallSuccess}
-              onCallDataReady={handleCallDataReady}
-            />
-          </div>
-        )}
+          ) : (
+            <>
+              <div className="flex-1 overflow-hidden p-3">
+                <div className="h-full max-w-2xl mx-auto ">
+                  <ChatInterface
+                    messages={messages}
+                    chatContainerRef={chatContainerRef}
+                    messagesEndRef={messagesEndRef}
+                    status={status}
+                    onSummonSuccess={handleSummonSuccess}
+                    onSummonDataReady={handleSummonDataReady}
+                    onMintDataReady={handleMintDataReady}
+                    onPetDataReady={handlePetDataReady}
+                    onMintSuccess={handleMintSuccess}
+                    onPetSuccess={handlePetSuccess}
+                    onWearableSuccess={handleWearableSuccess}
+                    onWearableDataReady={handleWearableDataReady}
+                    onCallSuccess={handleCallSuccess}
+                    onCallDataReady={handleCallDataReady}
+                    onRegenerate={handleRegenerate}
+                  />
+                </div>
+              </div>
+
+              <div className="p-3">
+                <div className="max-w-2xl mx-auto">
+                  <ConversationInput
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onSend={handleSendMessage}
+                    inputRef={inputRef}
+                    isLoading={status === "streaming"}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-      
-      {hasStartedChat && (
-        <footer className="shrink-0 py-4 px-4">
-          <div className="max-w-2xl mx-auto">
-            <InputArea
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onSendMessage={handleSendMessage}
-              inputRef={inputRef}
-              isDisabled={status === "streaming"}
-            />
-          </div>
-        </footer>
-      )}
     </div>
   );
 });
